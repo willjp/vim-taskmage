@@ -29,6 +29,9 @@ else:
 #internal
 
 
+#!TODO: to_ptaskdata:  save comments
+#!TODO: to_ptaskdata:  multiline tasks
+#!TODO: test output of from_taskdata back into to_ptaskdata
 class PtaskFile( UserString ):
     """
     Converts a :py:obj:`PtaskDataFile` JSON object into
@@ -39,6 +42,8 @@ class PtaskFile( UserString ):
 
         self.data  = ''
         self._dict = {}
+
+        self._saved_data = OrderedDict()  # { UUID:{..task-contents..} }
 
         if filepath:
             self.data = self.from_ptaskdata( filepath )
@@ -70,9 +75,9 @@ class PtaskFile( UserString ):
                 *{*2F23AD7FEF854B6F921689F310192A1D*} task2
                     *{*9A70C15B39B149FFBBC69C6B5ACC7801*} subtask
         """
-        rawdata    = json.load( open(filepath,'r') )
-        self.data  = ''
-
+        rawdata          = json.load( open(filepath,'r') )
+        self.data        = ''
+        self._saved_data = OrderedDict()
 
         hierarchy = {
             'toplevel_tasks': [],
@@ -89,6 +94,7 @@ class PtaskFile( UserString ):
         #
         # saved as OrderedDict() so that item-order is preserved.
         for task in rawdata:
+            self._saved_data[ task['_id'] ] = task
             if 'section' in task:
                 if task['section']:
                     if task['section'] not in hierarchy['sections']:
@@ -105,6 +111,7 @@ class PtaskFile( UserString ):
 
             else:
                 hierarchy['toplevel_tasks'].append( task['_id'] )
+
 
 
         # recurse through toplevel tasks, then sections,
@@ -135,6 +142,97 @@ class PtaskFile( UserString ):
 
 
         return ptask_str
+
+    def to_ptaskdata(self, fd):
+        """
+        Args:
+            fd (a file-descriptor):
+                A file-descriptor containing a *.ptask file
+        """
+
+        task = ''
+        task_indentation = 0
+        for line in fd:
+
+            if not line:
+                continue
+
+            uuid_regex      = '{\*[A-Z0-9]+\*}'
+            exist_taskmatch = re.search( uuid_regex, line )
+            new_taskmatch   = re.search( '^\s*[*-xo](?!{\*)', line )
+
+
+            # Continue task, if indentation is equal/morethan
+            # and not the beginning of a new task
+            # ===============================================
+            if task_indentation:
+                whitespace = re.match('^\w*(?!\*+-x)', line)
+                if whitespace:
+                    indentation = len(whitespace.group())
+                    if indentation >= task_indentation:
+                        task += ('\n'+ line)
+                        continue
+
+
+            # Existing task
+            # =============
+            if exist_taskmatch:
+                task = ''
+                task_indentation = 0
+                uuid_bracketed = exist_taskmatch.group()
+                linesplit = uuid_bracketed.split( uuid_bracketed )
+
+                if len(linesplit) != 2:
+                    raise RuntimeError(
+                        'Incomplete or Invalid task: %s' % line
+                    )
+
+                status_char  = linesplit[0][-1]
+                uuid         = line[len(linesplit[0]):len(linesplit[1])]
+                status       = self._status_from_statuschar( status_char )
+
+                if not status:
+                    raise RuntimeError(
+                        'Invalid task. Missing or invalid status-char (+-x*): %s' % line
+                    )
+                print( uuid, status, line )
+                task = linesplit[1]
+                task_indentation = linesplit
+
+            # New task
+            # ========
+            elif new_taskmatch:
+                task = ''
+                task_indentation = 0
+                status_char = new_taskmatch.group()[-1]
+                status      = self._status_from_statuschar( status_char )
+                if not status:
+                    raise RuntimeError(
+                        'Invalid task. Missing or invalid status-char (+-x*): %s' % line
+                    )
+                print( status, line )
+                task = len(new_taskmatch.group()[:-1])
+                task_indentation = linesplit
+
+
+    def _status_from_statuschar(self, status_char ):
+        """
+
+        """
+        if status_char == 'o':
+            return 'wip'
+
+        elif status_char == 'x':
+            return 'done'
+
+        elif status_char == '*':
+            return 'todo'
+
+        elif status_char == '-':
+            return 'skip'
+
+        return False
+
 
     def _get_ptaskdata_tasks(self, taskId, ptask_str, jsondata, hierarchy, depth=0 ):
         """
