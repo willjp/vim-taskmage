@@ -18,6 +18,7 @@ from   collections   import OrderedDict
 import sys
 import os
 import json
+import re
 if sys.version_info[0] <= 2:
     from UserString  import UserString
     from UserDict    import IterableUserDict
@@ -143,15 +144,67 @@ class PtaskFile( UserString ):
 
         return ptask_str
 
-    def to_ptaskdata(self, fd):
+
+    def ptask_taskinfo(self, fd):
         """
+        Reads a *.ptask file, and extracts structured information
+        about the tasks it contains. This information can be used
+        to update a *.ptaskdata file.
+
+
         Args:
             fd (a file-descriptor):
                 A file-descriptor containing a *.ptask file
+
+        Returns:
+
+            A list of all tasks contained in the file.
+
+            .. code-block:: python
+
+                tasks = [
+                    # existing tasks will have uuids
+                    {
+                        'uuid':   '2dc12f0a0884461cab1a8582a88632c7',
+                        'text':   'this is\n my todo',
+                        'status': 'todo',
+                    },
+
+                    # new tasks will *not* have a uuid
+                    {
+                        'uuid':    None,
+                        'text':   'this is my other todo',
+                        'status': 'done',
+                    },
+
+                ]
         """
+
+        tasks = [] # the output var
 
         task = ''
         task_indentation = 0
+
+        last_uuid   = None
+        last_status = None
+
+        def add_task2tasks( tasks, task, uuid, status ):
+            # adds current task to `tasks`
+            trailing_blanklines = 0
+            for i in range(len(task)):
+                if not task[i]:   trailing_blanklines +=1
+                else:             break
+
+            task = task[ : trailing_blanklines ]
+            if task:
+                tasks.append({
+                    'uuid': last_uuid,
+                    'text': '\n'.join(task),
+                    'status': last_status,
+                })
+            return tasks
+
+
         for line in fd:
 
             if not line:
@@ -169,40 +222,59 @@ class PtaskFile( UserString ):
                 whitespace = re.match('^\w*(?!\*+-x)', line)
                 if whitespace:
                     indentation = len(whitespace.group())
+
+                    # if line is indented, (and not another task) add to comment
                     if indentation >= task_indentation:
-                        task += ('\n'+ line)
+                        task.append( line.strip() )
                         continue
+
+                    # if line is completely empty, add newline
+                    elif not line.split():
+                        task.append( line.strip() )
+                        continue
+
+                    else:
+                        tasks = add_task2tasks( tasks, task, last_uuid, last_status )
+                        task  = []
+
 
 
             # Existing task
             # =============
             if exist_taskmatch:
-                task = ''
+                task = []
                 task_indentation = 0
                 uuid_bracketed = exist_taskmatch.group()
-                linesplit = uuid_bracketed.split( uuid_bracketed )
+                linesplit = line.split( uuid_bracketed )
 
                 if len(linesplit) != 2:
                     raise RuntimeError(
                         'Incomplete or Invalid task: %s' % line
                     )
+                elif not linesplit[0]:
+                    raise RuntimeError(
+                        'Incomplete or Invalid task: %s' % line
+                    )
 
                 status_char  = linesplit[0][-1]
-                uuid         = line[len(linesplit[0]):len(linesplit[1])]
+                uuid         = uuid_bracketed[2:-2]
                 status       = self._status_from_statuschar( status_char )
 
                 if not status:
                     raise RuntimeError(
                         'Invalid task. Missing or invalid status-char (+-x*): %s' % line
                     )
-                print( uuid, status, line )
-                task = linesplit[1]
-                task_indentation = linesplit
+                task.append( linesplit[1].strip() )
+
+                # remember details in case multiline
+                task_indentation = len(linesplit[0])+1
+                last_uuid        = uuid
+                last_status      = status
+
 
             # New task
             # ========
             elif new_taskmatch:
-                task = ''
                 task_indentation = 0
                 status_char = new_taskmatch.group()[-1]
                 status      = self._status_from_statuschar( status_char )
@@ -210,10 +282,19 @@ class PtaskFile( UserString ):
                     raise RuntimeError(
                         'Invalid task. Missing or invalid status-char (+-x*): %s' % line
                     )
-                print( status, line )
-                task = len(new_taskmatch.group()[:-1])
+                task.append(  line[ len(new_taskmatch.group()) : ] )
                 task_indentation = linesplit
 
+                # remember details in case multiline
+                task_indentation = len(linesplit[0])+1
+                last_uuid        = None
+                last_status      = status
+
+        # add final task
+        if task:
+            tasks = add_task2tasks( tasks, task, last_uuid, last_status )
+
+        return tasks
 
     def _status_from_statuschar(self, status_char ):
         """
@@ -368,9 +449,24 @@ class PtaskDataFile( IterableUserDict ):
 if __name__ == '__main__':
     import os
     projdir   = '/'.join( os.path.realpath(__file__).split('/')[:-2] )
-    ptaskdata_file = '{projdir}/examples/work.ptaskdata'.format(**locals())
-    ptask = PtaskFile( ptaskdata_file )
 
-    print(ptask)
+    def test_ptaskdata_2_ptask( projdir ):
+        ptaskdata_file = '{projdir}/examples/work.ptaskdata'.format(**locals())
+        ptask = PtaskFile( ptaskdata_file )
+
+        print(ptask)
+
+    def test_ptask_2_ptaskdata( projdir ):
+        with open( '{projdir}/examples/work_valid.ptask'.format(**locals()), 'r' ) as fd:
+            ptask = PtaskFile()
+            ptask.ptask_taskinfo( fd )
+
+    def runtests():
+        #test_ptaskdata_2_ptask( projdir )
+        test_ptask_taskinfo( projdir )
+
+    runtests()
+
+
 
 
