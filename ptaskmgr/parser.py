@@ -30,8 +30,10 @@ else:
 #internal
 
 
+#!TODO: save categories!!
 #!TODO: to_ptaskdata:  save comments
-#!TODO: to_ptaskdata:  multiline tasks
+#!TODO: to_ptaskdata:  multiline tasks (test)
+#!TODO: extract task hierarchies!
 #!TODO: test output of from_taskdata back into to_ptaskdata
 class PtaskFile( UserString ):
     """
@@ -76,6 +78,7 @@ class PtaskFile( UserString ):
                 *{*2F23AD7FEF854B6F921689F310192A1D*} task2
                     *{*9A70C15B39B149FFBBC69C6B5ACC7801*} subtask
         """
+
         rawdata          = json.load( open(filepath,'r') )
         self.data        = ''
         self._saved_data = OrderedDict()
@@ -185,22 +188,33 @@ class PtaskFile( UserString ):
         task = ''
         task_indentation = 0
 
-        last_uuid   = None
-        last_status = None
+        last_line    = ''
+        last_uuid    = None
+        last_status  = None
+        last_section = None
 
-        def add_task2tasks( tasks, task, uuid, status ):
-            # adds current task to `tasks`
+        def add_task2tasks( tasks, task, uuid, status, section ):
+            """
+            adds current task to `tasks`
+            """
+
+            # strip all newlines after the task
+            # (but keep newlines in the middle of task)
             trailing_blanklines = 0
-            for i in range(len(task)):
+            for i in reversed(range(len(task))):
                 if not task[i]:   trailing_blanklines +=1
                 else:             break
 
-            task = task[ : trailing_blanklines ]
+            if trailing_blanklines:
+                task = task[ : -1 * trailing_blanklines ]
+
+
             if task:
                 tasks.append({
-                    'uuid': last_uuid,
-                    'text': '\n'.join(task),
-                    'status': last_status,
+                    'uuid'    : last_uuid,
+                    'text'    : '\n'.join(task),
+                    'status'  : last_status,
+                    'section' : section,
                 })
             return tasks
 
@@ -208,44 +222,70 @@ class PtaskFile( UserString ):
         for line in fd:
 
             if not line:
+                last_line = ''
                 continue
 
             uuid_regex      = '{\*[A-Z0-9]+\*}'
             exist_taskmatch = re.search( uuid_regex, line )
-            new_taskmatch   = re.search( '^\s*[*-xo](?!{\*)', line )
+            new_taskmatch   = re.search( '^[ \t]*[*-xo][ \t]', line )
+
+
+            # Section-Title
+            # =============
+            if last_line:
+                if re.match( '^(?P<char>[=-`:.\'"~^_\*#])(?P=char)*[ \t]*$', line):
+
+                    if len(line.rstrip()) >= len(last_line.rstrip()):
+
+                        if task:
+                            task  = task[:-1]
+                            tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
+                            task  = []
+
+                        last_section = last_line.strip()
+                        last_line    = line
+                        continue
 
 
             # Continue task, if indentation is equal/morethan
             # and not the beginning of a new task
             # ===============================================
             if task_indentation:
-                whitespace = re.match('^\w*(?!\*+-x)', line)
-                if whitespace:
-                    indentation = len(whitespace.group())
+                # if not task
+                if not re.match('^[ \t]*[*+-x]( |{*)', line ):
+                    # get whitespace
+                    whitespace = re.match('^[ \t]*', line)
+                    if whitespace:
+                        indentation = len(whitespace.group())
 
-                    # if line is indented, (and not another task) add to comment
-                    if indentation >= task_indentation:
-                        task.append( line.strip() )
-                        continue
+                        # if line is indented, (and not another task) add to comment
+                        if indentation >= task_indentation:
+                            task.append( line.strip() )
+                            last_line = line
+                            continue
 
-                    # if line is completely empty, add newline
-                    elif not line.split():
-                        task.append( line.strip() )
-                        continue
+                        # if line is completely empty, add newline
+                        elif not line.split():
+                            task.append( line.strip() )
+                            last_line = line
+                            continue
 
-                    else:
-                        tasks = add_task2tasks( tasks, task, last_uuid, last_status )
-                        task  = []
+                        # if indentation is different, then
+                        # then the last task is finished.
+                        else:
+                            tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
+                            task  = []
 
 
 
             # Existing task
             # =============
             if exist_taskmatch:
+                tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
                 task = []
                 task_indentation = 0
-                uuid_bracketed = exist_taskmatch.group()
-                linesplit = line.split( uuid_bracketed )
+                uuid_bracketed   = exist_taskmatch.group()
+                linesplit        = line.split( uuid_bracketed )
 
                 if len(linesplit) != 2:
                     raise RuntimeError(
@@ -275,14 +315,16 @@ class PtaskFile( UserString ):
             # New task
             # ========
             elif new_taskmatch:
+                tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
+                task  = []
                 task_indentation = 0
-                status_char = new_taskmatch.group()[-1]
+                status_char = new_taskmatch.group()[-2]  # space then char
                 status      = self._status_from_statuschar( status_char )
                 if not status:
                     raise RuntimeError(
                         'Invalid task. Missing or invalid status-char (+-x*): %s' % line
                     )
-                task.append(  line[ len(new_taskmatch.group()) : ] )
+                task.append(  line[ len(new_taskmatch.group()) : ].strip() )
                 task_indentation = linesplit
 
                 # remember details in case multiline
@@ -290,9 +332,13 @@ class PtaskFile( UserString ):
                 last_uuid        = None
                 last_status      = status
 
+            last_line = line
+
+
+
         # add final task
         if task:
-            tasks = add_task2tasks( tasks, task, last_uuid, last_status )
+            tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
 
         return tasks
 
@@ -446,6 +492,7 @@ class PtaskDataFile( IterableUserDict ):
 
 
 
+
 if __name__ == '__main__':
     import os
     projdir   = '/'.join( os.path.realpath(__file__).split('/')[:-2] )
@@ -456,10 +503,14 @@ if __name__ == '__main__':
 
         print(ptask)
 
-    def test_ptask_2_ptaskdata( projdir ):
+    def test_ptask_taskinfo( projdir ):
         with open( '{projdir}/examples/work_valid.ptask'.format(**locals()), 'r' ) as fd:
             ptask = PtaskFile()
-            ptask.ptask_taskinfo( fd )
+            taskinfo  = ptask.ptask_taskinfo( fd )
+
+            print('----')
+            for task in taskinfo:
+                print( task )
 
     def runtests():
         #test_ptaskdata_2_ptask( projdir )
