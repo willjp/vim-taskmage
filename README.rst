@@ -3,6 +3,16 @@ README.rst
 
 A simple plaintext task manager
 
+.. note:
+
+    TO DOCUMENT:
+
+    Lines beginning with a #, that is not a part
+    of a title's underline are considered comments
+    and ignored
+
+
+
 Requires:
 ========
 

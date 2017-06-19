@@ -30,11 +30,9 @@ else:
 #internal
 
 
-#!TODO: save categories!!
-#!TODO: to_ptaskdata:  save comments
-#!TODO: to_ptaskdata:  multiline tasks (test)
+#!TODO: to_ptaskdata:  save comments insead of just ignoring them
 #!TODO: extract task hierarchies!
-#!TODO: test output of from_taskdata back into to_ptaskdata
+#!TODO: *.ptask to *.ptaskdata
 class PtaskFile( UserString ):
     """
     Converts a :py:obj:`PtaskDataFile` JSON object into
@@ -185,7 +183,7 @@ class PtaskFile( UserString ):
 
         tasks = [] # the output var
 
-        task = ''
+        task  = []
         task_indentation = 0
 
         last_line    = ''
@@ -208,7 +206,6 @@ class PtaskFile( UserString ):
             if trailing_blanklines:
                 task = task[ : -1 * trailing_blanklines ]
 
-
             if task:
                 tasks.append({
                     'uuid'    : last_uuid,
@@ -230,10 +227,11 @@ class PtaskFile( UserString ):
             new_taskmatch   = re.search( '^[ \t]*[*-xo][ \t]', line )
 
 
+
             # Section-Title
             # =============
             if last_line:
-                if re.match( '^(?P<char>[=-`:.\'"~^_\*#])(?P=char)*[ \t]*$', line):
+                if re.match( '^(?P<char>[=\-`:.\'"~^_\*#])(?P=char)*[ \t]*$', line):
 
                     if len(line.rstrip()) >= len(last_line.rstrip()):
 
@@ -246,13 +244,24 @@ class PtaskFile( UserString ):
                         last_line    = line
                         continue
 
+            # Comment
+            # =======
+            # if '#' was not used for a title underline,
+            # and a line starts with '#', it is a comment and ignored.
+            if line:
+                if line[0] == '#':
+                    last_line = line
+                    continue
 
-            # Continue task, if indentation is equal/morethan
-            # and not the beginning of a new task
-            # ===============================================
-            if task_indentation:
+
+            # Multiline task-descriptions
+            # (indentation >= task-definition indentation)
+            # ============================================
+            if task_indentation != None:
+
                 # if not task
-                if not re.match('^[ \t]*[*+-x]( |{*)', line ):
+                if not re.match('^[ \t]*[*+x\-]( |{*)', line ):
+
                     # get whitespace
                     whitespace = re.match('^[ \t]*', line)
                     if whitespace:
@@ -325,12 +334,12 @@ class PtaskFile( UserString ):
                         'Invalid task. Missing or invalid status-char (+-x*): %s' % line
                     )
                 task.append(  line[ len(new_taskmatch.group()) : ].strip() )
-                task_indentation = linesplit
 
                 # remember details in case multiline
-                task_indentation = len(linesplit[0])+1
+                task_indentation = len(line) - len(line.lstrip())
                 last_uuid        = None
                 last_status      = status
+
 
             last_line = line
 
