@@ -259,31 +259,55 @@ class PtaskFile( UserString ):
             # ============================================
             if task_indentation != None:
 
-                # if not task
-                if not re.match('^[ \t]*[*+x\-]( |{*)', line ):
+                # get whitespace
+                whitespace  = re.match('^[ \t]*', line)
+                indentation = len(whitespace.group())
 
-                    # get whitespace
-                    whitespace = re.match('^[ \t]*', line)
-                    if whitespace:
-                        indentation = len(whitespace.group())
+                # if line is a task-definition
+                if re.match('^[ \t]*[*+x\-]( |{\*)', line ):
+                    pass
 
-                        # if line is indented, (and not another task) add to comment
-                        if indentation >= task_indentation:
-                            task.append( line.strip() )
-                            last_line = line
-                            continue
+                    # TODO: Need to keep history of last-task indentation
+                    #       levels. so that when a task is LESS INDENTED
+                    #       than the last task, we know which task it is
+                    #       parented to...
 
-                        # if line is completely empty, add newline
-                        elif not line.split():
-                            task.append( line.strip() )
-                            last_line = line
-                            continue
+                    # new task
+                    #if indentation == task_indentation:
+                    #    tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
+                    #    task  = []
 
-                        # if indentation is different, then
-                        # then the last task is finished.
-                        else:
-                            tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
-                            task  = []
+                    ## new task, but parented to another task
+                    #elif indentation > task_indentation:
+                    #    tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
+                    #    task  = []
+
+                    ## check indentation to get
+                    #else:
+
+
+                # if line is not task
+                else:
+                    # if line is indented, (and not another task) add to
+                    # task-description
+                    if indentation >= task_indentation:
+                        task.append( line.strip() )
+                        last_line = line
+                        continue
+
+                    # if line is completely empty, add newline to
+                    # task-description
+                    elif not line.split():
+                        task.append( line.strip() )
+                        last_line = line
+                        continue
+
+                    # if indentation is different, then
+                    # then the last task is finished.
+                    else:
+                        tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
+                        task  = []
+
 
 
 
