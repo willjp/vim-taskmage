@@ -15,6 +15,7 @@ from   __future__    import absolute_import
 from   __future__    import division
 from   __future__    import print_function
 from   collections   import OrderedDict
+import uuid
 import sys
 import os
 import json
@@ -30,8 +31,8 @@ else:
 #internal
 
 
-#!TODO: to_ptaskdata:  save comments insead of just ignoring them
 #!TODO: extract task hierarchies!
+#!TODO: to_ptaskdata:  save comments insead of just ignoring them
 #!TODO: *.ptask to *.ptaskdata
 class PtaskFile( UserString ):
     """
@@ -166,18 +167,15 @@ class PtaskFile( UserString ):
                 tasks = [
                     # existing tasks will have uuids
                     {
-                        'uuid':   '2dc12f0a0884461cab1a8582a88632c7',
+                        'uuid':   '2DC12F0A0884461CAB1A8582A88632C7',
                         'text':   'this is\n my todo',
                         'status': 'todo',
-                    },
+                        'isnew':  True/False,
 
-                    # new tasks will *not* have a uuid
-                    {
-                        'uuid':    None,
-                        'text':   'this is my other todo',
-                        'status': 'done',
+                        ## and either of ##
+                        'parent':      'AB9C073FD0074AAB97216F15407D3EF8',  # None, uuid or section-name
+                        'parent_type': 'task',                              # root, task or section
                     },
-
                 ]
         """
 
@@ -191,7 +189,7 @@ class PtaskFile( UserString ):
         last_status  = None
         last_section = None
 
-        def add_task2tasks( tasks, task, uuid, status, section ):
+        def add_task2tasks( tasks, task, _uuid, status, section ):
             """
             adds current task to `tasks`
             """
@@ -206,12 +204,25 @@ class PtaskFile( UserString ):
             if trailing_blanklines:
                 task = task[ : -1 * trailing_blanklines ]
 
+
+            # if new task, assign a UUID to it,
+            # and mark it as new.
+            isnew = True
+            if _uuid == None:
+                _uuid = uuid.uuid4().hex
+                isnew = True
+
+            # determine parent type
+            # TODO
+
             if task:
                 tasks.append({
-                    'uuid'    : last_uuid,
-                    'text'    : '\n'.join(task),
-                    'status'  : last_status,
-                    'section' : section,
+                    'uuid'       : _uuid,
+                    'text'       : '\n'.join(task),
+                    'status'     : last_status,
+                    'parent'     : section,
+                    'parent_type': 'section',
+                    'isnew'      : isnew,
                 })
             return tasks
 
@@ -330,7 +341,7 @@ class PtaskFile( UserString ):
                     )
 
                 status_char  = linesplit[0][-1]
-                uuid         = uuid_bracketed[2:-2]
+                _uuid        = uuid_bracketed[2:-2]
                 status       = self._status_from_statuschar( status_char )
 
                 if not status:
@@ -341,7 +352,7 @@ class PtaskFile( UserString ):
 
                 # remember details in case multiline
                 task_indentation = len(linesplit[0])+1
-                last_uuid        = uuid
+                last_uuid        = _uuid
                 last_status      = status
 
 
