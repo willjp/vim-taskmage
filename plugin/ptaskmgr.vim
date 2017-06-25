@@ -16,6 +16,6 @@ endif
 
 
 " with bufreadpre, the current bufferpath is still correct
-autocmd BufReadPre  *.ptaskdata  execute 'call ptaskmgr.vim_plugin.PtaskFile(' . expand('%:p') . ')'
+autocmd BufReadPost  *.ptaskdata  execute 'py ptaskmgr.vim_plugin.read_ptaskfile( "' . expand('%:p') . '" )'
 
 

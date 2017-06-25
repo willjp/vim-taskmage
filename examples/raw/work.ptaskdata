@@ -1,6 +1,6 @@
 [
     {
-        "_id":      "40429d679a504ed99f97d0d16067b2b3",
+        "_id":      "40429D679A504ED99F97D0D16067B2B3",
         "section":  "other",
         "created":  "2017-06-11T22:40:52.460849-04:00",
         "finished": null,
@@ -8,7 +8,7 @@
         "status":   "skip"
     },
     {
-        "_id":      "F01F59290DEC4A03AF60571D20C2F52F",
+        "_id":      "E061DCB183EF4C418E97DEE63332C1A0",
         "section":  "misc",
         "created":  "2017-06-11T22:40:52.460849-04:00",
         "finished": null,
@@ -31,7 +31,7 @@
         "status":   "todo"
     },
     {
-        "_id":      "1641e30c9fc44143b553ff68c503c25e",
+        "_id":      "1641E30C9FC44143B553FF68C503C25E",
         "created":  "2017-06-11T22:40:52.460849-04:00",
         "finished": null,
         "text":     "Another task without parents",

@@ -687,13 +687,13 @@ if __name__ == '__main__':
     projdir   = '/'.join( os.path.realpath(__file__).split('/')[:-2] )
 
     def test_ptaskdata_2_ptask( projdir ):
-        ptaskdata_file = '{projdir}/examples/work.ptaskdata'.format(**locals())
+        ptaskdata_file = '{projdir}/examples/raw/work.ptaskdata'.format(**locals())
         ptask = PtaskFile( ptaskdata_file )
 
         print(ptask)
 
     def test_ptask_taskinfo( projdir ):
-        with open( '{projdir}/examples/work_valid.ptask'.format(**locals()), 'r' ) as fd:
+        with open( '{projdir}/examples/raw/work_valid.ptask'.format(**locals()), 'r' ) as fd:
             ptask = PtaskFile()
             taskinfo  = ptask.ptask_taskinfo( fd )
 

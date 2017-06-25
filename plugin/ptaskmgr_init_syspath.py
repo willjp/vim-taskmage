@@ -18,7 +18,9 @@ import sys
 #external
 #internal
 
-filedir = '/'.join(__file__.replace('\\','/').split('/')[:-1])
+
+filedir = vim.eval('s:scriptroot')
+
 if filedir not in sys.path:
     sys.path.append( filedir )
 
