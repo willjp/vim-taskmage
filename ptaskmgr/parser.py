@@ -25,7 +25,7 @@ if sys.version_info[0] <= 2:
     from UserDict    import IterableUserDict
 else:
     from collections import UserString
-    from collections import UserDict
+    from collections import UserDict as IterableUserDict
 #package
 #external
 #internal
@@ -184,9 +184,11 @@ class PtaskFile( UserString ):
                 ]
         """
 
-        tasks = [] # the output var
+        tasks = [] # the output var (see doctag)
 
-        task  = []
+        task  = [] # each item represents a new line in a multiline task
+                   # ['line1', 'line2', 'line3', ... ]
+
         task_indentation = 0   # number of spaces/tabs of the last task (still currently active task)
                                # used to identify multiline tasks
 
@@ -229,14 +231,17 @@ class PtaskFile( UserString ):
 
                     if len(line.rstrip()) >= len(last['line'].rstrip()):
 
-                        if task:
-                            task  = task[:-1]
-                            tasks = self._add_task2tasks( tasks, task, last, None ) # None is tempval
-                            task  = []
+                        section = last['line'].strip()
+                        if section:
+                            if task:
+                                import ipdb;ipdb.set_trace()
+                                task  = task[:-1]
+                                tasks = self._add_task2tasks( tasks, task, last )
+                                task  = []
 
-                        last['section'] = last['line'].strip()
-                        last['line']    = line
-                        continue
+                            last['section'] = section
+                            last['line']    = line
+                            continue
 
             # Comment
             # =======
@@ -257,15 +262,23 @@ class PtaskFile( UserString ):
                 continue
 
 
+            if not line.strip():
+                continue
+
 
             # Existing task
             # =============
             if exist_taskmatch:
-                tasks = self._add_task2tasks( tasks, task, last, None ) # None is tempval
-                task = []
-                task_indentation = 0
+
                 uuid_bracketed   = exist_taskmatch.group()
                 linesplit        = line.split( uuid_bracketed )
+                indentation      = len(linesplit[0])+1
+                last             = self._set_lastindent( last, indentation )
+
+                # append last task
+                tasks = self._add_task2tasks( tasks, task, last )
+                task = []
+
 
                 if len(linesplit) != 2:
                     raise RuntimeError(
@@ -286,8 +299,9 @@ class PtaskFile( UserString ):
                     )
                 task.append( linesplit[1].strip() )
 
+
                 # remember details in case multiline
-                task_indentation = len(linesplit[0])+1
+                task_indentation = indentation
                 last['uuid']     = _uuid
                 last['status']   = status
 
@@ -295,9 +309,15 @@ class PtaskFile( UserString ):
             # New task
             # ========
             elif new_taskmatch:
-                tasks = self._add_task2tasks( tasks, task, last, None ) # None is tempval
+
+                indentation = len(line) - len(line.lstrip())
+                last        = self._set_lastindent( last, indentation )
+
+                # append last task
+                tasks = self._add_task2tasks( tasks, task, last )
                 task  = []
-                task_indentation = 0
+
+                #
                 status_char = new_taskmatch.group()[-2]  # space then char
                 status      = self._status_from_statuschar( status_char )
                 if not status:
@@ -306,10 +326,12 @@ class PtaskFile( UserString ):
                     )
                 task.append(  line[ len(new_taskmatch.group()) : ].strip() )
 
+
                 # remember details in case multiline
-                task_indentation = len(line) - len(line.lstrip())
-                last['uuid']     = None
+                task_indentation = indentation
+                last['uuid']     = tasks[-1]['uuid']
                 last['status']   = status
+
 
 
             last['line'] = line
@@ -318,7 +340,7 @@ class PtaskFile( UserString ):
 
         # add final task
         if task:
-            tasks = self._add_task2tasks( tasks, task, last, None ) # None is tempval
+            tasks = self._add_task2tasks( tasks, task, last)
 
         return tasks
 
@@ -340,6 +362,42 @@ class PtaskFile( UserString ):
 
         return False
 
+    def _set_lastindent(self, last, indentation):
+        """
+        sets up ``last['indent']`` based on the current
+        task-definition's indentation.
+
+        Returns:
+
+            List indicating the task-hierarchy at definition
+            of the current task.
+
+
+            .. code-block:: python
+
+                [         # indentation #    # uuid at indent #
+                    _taskindent(    3,    '9D5ED5630105428FA29048B65787DB05' ),
+                    _taskindent(    6,    '40061BF97AD34524B8E37C3C06A82D4F' ),
+                    ...
+                ]
+        """
+
+        while last['indents']:
+            if   last['indents'][-1].indent == indentation:
+                last['indents'][-1] = _taskindent( indentation, last['uuid'] )
+                break
+
+            elif last['indents'][-1].indent < indentation:
+                last['indents'].append( _taskindent(indentation, last['uuid']) )
+                break
+
+            else:
+                last['indents'] = last['indents'][:-1]
+
+        if not last['indents']:
+            last['indents'].append( _taskindent(indentation, last['uuid']) )
+
+        return last
 
     def _parse_task_multiline(self, last, task_indentation, line, tasks, task ):
         """
@@ -388,35 +446,10 @@ class PtaskFile( UserString ):
             whitespace  = re.match('^[ \t]*', line)
             indentation = len(whitespace.group())
 
-            # if line is a task-definition
-            # ============================
-            if re.match('^[ \t]*[*+x\-]( |{\*)', line ):
-
-                # TODO: Need to keep history of last-task indentation
-                #       levels. so that when a task is LESS INDENTED
-                #       than the last task, we know which task it is
-                #       parented to...
-
-
-                # new task
-                #if indentation == task_indentation:
-                #    tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
-                #    task  = []
-
-                ## new task, but parented to another task
-                #elif indentation > task_indentation:
-                #    tasks = add_task2tasks( tasks, task, last_uuid, last_status, last_section )
-                #    task  = []
-
-                ## check indentation to get
-                #else:
-                tasks = self._add_task2tasks( tasks, task, last, None ) # None is tempval
-                task  = []
-
-
             # if line is not task
             # ===================
-            else:
+            if not re.match('^[ \t]*[*+x\-]( |{\*)', line ):
+
                 # if line is indented, (and not another task) add to
                 # task-description
                 if indentation >= task_indentation:
@@ -436,13 +469,13 @@ class PtaskFile( UserString ):
                 #
                 # ( might be comment, section-header, ... )
                 else:
-                    tasks = self._add_task2tasks( tasks, task, last, None ) # None is tempval
+                    tasks = self._add_task2tasks( tasks, task, last )
                     task  = []
 
 
         return (task_continued, last, tasks, task)
 
-    def _add_task2tasks(self, tasks, task, last, parent_task ):
+    def _add_task2tasks(self, tasks, task, last ):
         """
         adds current task to `tasks`
         """
@@ -462,24 +495,36 @@ class PtaskFile( UserString ):
         # and mark it as new.
         isnew = True
         if last['uuid'] == None:
-            last['uuid'] = uuid.uuid4().hex
+            last['uuid'] = uuid.uuid4().hex.upper()
             isnew = True
 
-        # determine parent type
+        # determine parent/parent_type
+        if len(last['indents']) <=1 and not last['section']:
+            parent      = None
+            parent_type = 'root'
+
+        elif len(last['indents']) <= 1 and last['section']:
+            parent      = last['section']
+            parent_type = 'section'
+
+        else:
+            parent      = last['indents'][-2].uuid
+            parent_type = 'task'
+
+
         # TODO
+        print( last['uuid'], '\n'.join(task), last['indents'] )
 
         if task:
             tasks.append({
                 'uuid'       : last['uuid'],
                 'text'       : '\n'.join(task),
                 'status'     : last['status'],
-                'parent'     : last['section'],
-                'parent_type': 'section',
+                'parent'     : parent,
+                'parent_type': parent_type,
                 'isnew'      : isnew,
             })
         return tasks
-
-
 
 
     def _get_ptaskdata_tasks(self, taskId, ptask_str, jsondata, hierarchy, depth=0 ):
