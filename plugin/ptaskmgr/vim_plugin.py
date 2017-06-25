@@ -13,23 +13,28 @@ from   __future__    import unicode_literals
 from   __future__    import absolute_import
 from   __future__    import division
 from   __future__    import print_function
+import datetime
+import json
 import sys
 import os
 #package
 import ptaskmgr.parser
 #external
 import vim
+import six
 #internal
 
 
 
-def read_ptaskfile( ptaskdata_filepath ):
+def read_ptaskfile():
     """
-    Replaces the entire contents (JSON)
-    of the file with the user-friendly editable version.
+    Replaces the entire contents of the *.ptask file (JSON)
+    with the user-friendly ReStructuredText-list format.
 
 
     Example:
+
+        *from:*
 
         .. code-block:: python
 
@@ -52,7 +57,7 @@ def read_ptaskfile( ptaskdata_filepath ):
                 },
             ]
 
-        to
+        *to:*
 
         .. code-block:: ReStructuredText
 
@@ -67,7 +72,67 @@ def read_ptaskfile( ptaskdata_filepath ):
     vim.current.buffer[:] = parsed.split('\n')
     vim.command('set ft=ptaskmgr')
 
+def buffer_to_ptaskfile():
+    """
+    Changes the contents of the currently opened
+    file back to JSON before it gets saved to disk.
+    """
+
+    # saved JSON data
+    taskdata     = ptaskmgr.parser.PtaskDataFile( vim.current.buffer.name )
+    new_taskdata = []
+
+    now = datetime.datetime.utcnow()
+
+    try:
+        # vim Rst contents parsed into taskinfo
+        conts        = vim.current.buffer[:]
+        buffer_info  = ptaskmgr.parser.PtaskFile().ptask_taskinfo( conts )
 
 
+        for task in buffer_info:
+            new_task = {
+                'status': task['status'],
+                'text'  : task['text'],
+                '_id'   : task['uuid'],
+            }
+
+            # finished
+            if task['status'] in ('skip','done'):
+                new_task['finished'] = True
+            else:
+                new_task['finished'] = False
 
 
+            # created timestamp
+            if task['isnew']:
+                new_task['created'] = now.isoformat()
+
+
+            # parent info
+            if task['parent_type'] == 'root':
+                pass
+
+            elif task['parent_type'] == 'task':
+                new_task['parenttask'] = task['parent']
+
+            elif task['parent_type'] == 'section':
+                new_task['section'] = task['parent']
+
+            else:
+                raise KeyError(
+                    'Unexpected task `parent_type`: "%s"' % task['parent_type']
+                )
+
+            new_taskdata.append( new_task )
+
+    except:
+        vim.current.buffer[:] = json.dumps( list(taskdata), indent=2 ).split('\n')
+        six.reraise( *sys.exc_info() )
+
+
+    vim.current.buffer[:] = json.dumps( list(new_taskdata), indent=2 ).split('\n')
+
+
+if __name__ == '__main__':
+    pass

@@ -1,106 +1,193 @@
-README.rst
-==========
+ptaskmgr
+========
 
-A simple plaintext task manager
+A simple plaintext task manager, inspired by git and taskwarrior.
 
-.. note:
 
-    TO DOCUMENT:
 
-    Lines beginning with a #, that is not a part
-    of a title's underline are considered comments
-    and ignored
+
+**You Edit a file that looks like this:**
+
+.. code-block:: ReStructuredText
+
+    Trip Home
+    =========
+
+    * grocery shopping
+      * apples
+      * oranges
+      * sick supplies for Alex
+        for while she isn't feeling well
+      * deodorant
+        
+    Home
+    ====
+
+    * finish ZNC server setup
+        * write saltstack recipe for ZNC server setup
+        * test saltstack recipe
+
+
+
+**(Actually you are editing this, details are just hidden):**
+
+
+.. code-block:: ReStructuredText
+
+    Trip Home
+    =========
+
+    *{*40429D679A504ED99F97D0D16067B2B3*} grocery shopping
+      *{*E061DCB183EF4C418E97DEE63332C1A0*} apples
+      *{*10A71C4E3FCE439A86F1F001BD6BE99D*} oranges
+      *{*C96A9133AFC448B2B295451757C5C5EC*} sick supplies for Alex
+        for while she isn't feeling well
+      *{*EBFEBD42B4894431A3AA048D4AED02B1*} deodorant
+        
+    ...
+
+
+**But for each task you have access to data like this:**
+
+.. code-block:: javascript
+
+    [
+    {
+        "_id":      "40429D679A504ED99F97D0D16067B2B3",
+        "section":  "Trip Home",
+        "created":  "2017-06-11T22:40:52.460849-04:00",
+        "finished": false,
+        "text":     "apples",
+        "status":   "todo"
+    },
+    {
+        "_id":        "E061DCB183EF4C418E97DEE63332C1A0",
+        "parenttask": "40429D679A504ED99F97D0D16067B2B3",
+        "created":    "2017-06-11T22:40:52.460849-04:00",
+        "finished":   false,
+        "text":       "apples",
+        "status":     "todo"
+    },
+
+    //
+    // ... and so on ...
+    //
+
+    ]
+
+
+
+
+|
+|
+
+.. contents:: Table Of Contents
+
+|
+|
 
 
 
 Requires:
-========
+=========
 
-.. note::
+python modules:
 
-    Nope, screw that, conceal is builtin to the vim helpfiles,
-    and I can simply use a custom syntaxhighlighting file
-    to do what I need :)
+    * six_
 
 
 
-vim plugins:
-    * Glaive_       (required by foldcol)
-    * foldcol.vim_  (to be integrated)
+Syntax:
+=======
 
+Task-data is stored in json-formatted files assigned the extension ``.ptask``.
+With this plugin enabled, opening one of these files using vim parses that file,
+and replaces the loaded buffer with a ReStructuredText inspired task-list.
 
-_Glaive:      https://github.com/paulhybryant/foldcol
-_foldcol.vim: https://github.com/paulhybryant/foldcol
-
-.. code-block:: vimrc
-
-    # install using vundle
-    Plugin 'https://github.com/paulhybryant/foldcol'
-    Plugin 'google/vim-maktaba'
-    Plugin 'google/vim-glaive'
-    Plugin 'google/vim-codefmt'
-
-
-
-
-The Plan
-========
-
-Internally, all data is stored in YAML files.
-When the todo command is issued, a plaintextfile is generated
-from the current datafiles, that the user can edit. Changes to this
-file are recorded back into the yaml files.
-
-For the moment, we will completely ignore prerequisites,
-and any sort of priority.
-
-
+Instead of only using ``*`` as the list marker, I have added a few others
+which contain special meaning:
 
 .. code-block:: bash
 
-    $todo/<filename>.yml                           ## current todos
-    $todo/__completed__/<filename>/<section>.yml   ## completed todos
+
+    *   # todo
+    x   # finished
+    -   # skipped
+    o   # currently active task
+
+In order to create new tasks, simply add them to the file.
+Every time the file is saved, it is parsed/converted back to JSON,
+the ``.ptask`` file is updated, and the current ReStructuredText formatted
+file is reloaded.
+
+
+Sections
+--------
+
+Tasks can be categorized into sections (which take the format of a
+ReStructuredText header). This is purely for convenience. Currently
+sections cannot be nested (sorry).
+
+
+.. code-block:: ReStructuredText
+
+    * fix mouse scrollwheel
+    * water plants
+
+    Tommorrow
+    =========
+
+    * christmas shopping
+    * ptaskmgr documentation
+
+
+    Work
+    ====
+
+    * package ep110
+
+
+Task Hierarchy
+--------------
+
+Task Hierarchies can be established simply by indenting tasks
+underneath another. This information is stored in the JSON file,
+so that other views/reports into the data can be created.
+
+.. code-block:: ReStructuredText
+
+
+    * do the laundry
+
+    * clean the kitchen
+
+      * wash the floors
+      * clean the inside of the oven
+        * find oven cleaner
+        * clean
+
+        * a really long task
+          that takes multiple lines
+
+          with some space in the middle
+
+
+Comments
+--------
+
+Inline comments (within tasks) are also supported.
+My intention for this is a means of writing yourself
+little notes about tasks, that are highlighted differently.
+
+.. code-block:: ReStructuredText
+
+
+    * do dishes  # start with forks!
+                 # then continue with spoons!
+
+    * another task
 
 
 
-.. code-block:: yaml
-
-    8bbbe14d6ab74516a68a3366cb53cf33:
-        section:  misc                                ## only assigned if no parent task
-        parent:   a96c2c16855c4ce3b0d41d79340319c8    ## any parent-task (it's all just tasks)
-        created:  '2017-06-11T14:31:47.805790-04:00' 
-        finished: null
-        text: |
-            Make sure to do blah and blah.
-
-
-.. code-block:: vimrc
-
-    ## within the vim file, we will use the vim plugin:  foldcol.vim
-    ## to perform an inline, horizontal fold. This way all of the data
-    ## will be packaged and editable within the vim file, but it will
-    ## still appear like a plaintext list, and users can use their preferred
-    ## vim keybindings.
-
-    ## Looks like
-
-    * Make sure to do blah and blah
-
-    ## but is actually    
-    {* uuid:8bbbe14d6ab74516a68a3366cb53cf33 *} Make sure to do blah and blah
-
-    ## new files can be created that would expose one note at a
-    ## time with all of the yaml fields (if you wanted to edit
-    ## start/end times or individual work sessions.
-    ## (hotkeys should probably be provided to edit dates etc)
-    ## (looots of validation)
-
-    8bbbe14d6ab74516a68a3366cb53cf33:
-        created:  '2017-06-11T14:31:47.805790-04:00' 
-        finished: null
-        text: |
-            Make sure to do blah and blah.
-
-
-
+.. _six: https://pypi.python.org/pypi/six
 

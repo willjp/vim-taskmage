@@ -22,10 +22,10 @@ import json
 import re
 if sys.version_info[0] <= 2:
     from UserString  import UserString
-    from UserDict    import IterableUserDict
+    from UserList    import UserList
 else:
     from collections import UserString
-    from collections import UserDict as IterableUserDict
+    from collections import UserList
 #package
 #external
 #internal
@@ -34,7 +34,6 @@ else:
 _taskindent = namedtuple( 'task', ['indent','uuid'] )
 
 
-#!TODO: extract task hierarchies!
 #!TODO: to_ptaskdata:  save comments insead of just ignoring them
 #!TODO: *.ptask to *.ptaskdata
 class PtaskFile( UserString ):
@@ -54,6 +53,7 @@ class PtaskFile( UserString ):
 
         if filepath:
             self.data = self.from_ptaskdata( filepath )
+
 
     def from_ptaskdata(self, filepath):
         """
@@ -151,8 +151,123 @@ class PtaskFile( UserString ):
 
         return ptask_str
 
+    def _get_ptaskdata_tasks(self, taskId, ptask_str, jsondata, hierarchy, depth=0 ):
+        """
 
-    def ptask_taskinfo(self, fd):
+        Args:
+            taskId (str):
+                the uuid assigned to a particular task
+
+            ptask_str (str):
+                the string destined to be the *.ptask file so far.
+                (return value)
+
+            jsondata (list(dict)):
+                the raw parsed *.ptaskdata file (json)
+
+            hierarchy (dict):
+                A dict of taskIds (parent), and their children.
+                Used to arrange tasks in their proper hierarchy.
+
+                .. code-block:: python
+
+                    {
+                        'tasks':          [ 'eb75388ab53d441093a6165cb28cac4d', 'b815e7ff99c8492a91bd3543ac5cded2', ... ],
+                        'toplevel_tasks': [ 'eb75388ab53d441093a6165cb28cac4d', 'b815e7ff99c8492a91bd3543ac5cded2', ... ],
+                        'sections':       [ 'eb75388ab53d441093a6165cb28cac4d', 'b815e7ff99c8492a91bd3543ac5cded2', ... ],
+                    }
+
+            depth (int, optional):
+                the recursion depth of the current task.
+                (automatically incremented by 1 during every recurse)
+
+        Returns:
+
+            A string destined to be a ptask file
+            (ready for editing in vim)
+
+            .. code-block:: python
+
+                *{*901A94884FE94EA18DE1879623986DF5*} task
+                    *{*11F9AAEF279A45C19E9B38B56A0F4076*} subtask
+                    *{*334a1033493f44178e098b32bbf82e29*} subtask
+
+
+                section
+                =======
+
+                *{*308BD44370D543C8AFD5FF81F6383B1B*} task
+                *{*2F23AD7FEF854B6F921689F310192A1D*} task2
+                    *{*9A70C15B39B149FFBBC69C6B5ACC7801*} subtask
+        """
+
+        task = self._task_from_taskId( taskId, jsondata )
+
+        if not task:
+            return
+
+        if task['status'] == 'todo':
+            status = '*'
+        elif task['status'] == 'done':
+            status = 'x'
+        elif task['status'] == 'wip':
+            status = 'o'
+        elif task['status'] == 'skip':
+            status = '-'
+
+        # current task
+        ptask_str += ('    '*depth) + '%s{{*{_id}*}} {text}\n'.format(**task) % status
+
+        # recurse for subtasks
+        if task['_id'] in hierarchy['tasks']:
+            for _taskId in hierarchy['tasks'][ task['_id'] ]:
+                ptask_str = self._get_ptaskdata_tasks(
+                    taskId    = _taskId,
+                    ptask_str = ptask_str,
+                    jsondata  = jsondata,
+                    hierarchy = hierarchy,
+                    depth     = depth+1,
+                )
+
+        return ptask_str
+
+    def _task_from_taskId(self, taskId, jsondata):
+        """
+        Returns:
+
+            .. code-block:: python
+
+                # If a task matching taskId is found
+                {
+                    '_id': 'cb798ab368eb400fa4d0edd941c03536',
+                    'section': 'misc',
+                    'created': '2017-06-12T21:42:43.084966-04:00',
+                    'finished': None,
+                    'text':    'Make sure to do blah',
+                }
+
+                # If no task matches taskId
+                False
+        """
+        # find task from taskId
+        # =====================
+        for task in jsondata:
+            if task['_id'] == taskId:
+                return task
+
+        logger.error('Corrupted Data: Unable to find task with ID: %s' % taskId)
+        return False
+
+    def edit_task(self):
+        """
+        Edit a single task as a conf file
+        """
+        # will require it's own pair of data vs string
+        # (unless we use something like a conf-file as intermediary)
+        raise NotImplementedError('TODO')
+
+
+    def ptask_taskinfo(self, fileconts):
         """
         Reads a *.ptask file, and extracts structured information
         about the tasks it contains. This information can be used
@@ -160,8 +275,9 @@ class PtaskFile( UserString ):
 
 
         Args:
-            fd (a file-descriptor):
-                A file-descriptor containing a *.ptask file
+            fileconts ( list(str) ):
+                A list, where each item represents a separate line
+                in the ReStructuredText form of the task.
 
         Returns:
 
@@ -217,7 +333,7 @@ class PtaskFile( UserString ):
         }
 
 
-        for line in fd:
+        for line in fileconts:
 
             if not line:
                 last['line'] = ''
@@ -403,7 +519,6 @@ class PtaskFile( UserString ):
                 section = last['line'].strip()
                 if section:
                     if task:
-                        import ipdb;ipdb.set_trace()
                         task  = task[:-1]
                         tasks = self._add_task2tasks( tasks, task, last )
                         task  = []
@@ -413,7 +528,6 @@ class PtaskFile( UserString ):
                     istitle = True
 
         return (istitle, last, tasks, task)
-
 
     def _parse_task_multiline(self, last, task_indentation, line, tasks, task ):
         """
@@ -550,134 +664,25 @@ class PtaskFile( UserString ):
         return tasks
 
 
-    def _get_ptaskdata_tasks(self, taskId, ptask_str, jsondata, hierarchy, depth=0 ):
-        """
 
-        Args:
-            taskId (str):
-                the uuid assigned to a particular task
-
-            ptask_str (str):
-                the string destined to be the *.ptask file so far.
-                (return value)
-
-            jsondata (list(dict)):
-                the raw parsed *.ptaskdata file (json)
-
-            hierarchy (dict):
-                A dict of taskIds (parent), and their children.
-                Used to arrange tasks in their proper hierarchy.
-
-                .. code-block:: python
-
-                    {
-                        'tasks':          [ 'eb75388ab53d441093a6165cb28cac4d', 'b815e7ff99c8492a91bd3543ac5cded2', ... ],
-                        'toplevel_tasks': [ 'eb75388ab53d441093a6165cb28cac4d', 'b815e7ff99c8492a91bd3543ac5cded2', ... ],
-                        'sections':       [ 'eb75388ab53d441093a6165cb28cac4d', 'b815e7ff99c8492a91bd3543ac5cded2', ... ],
-                    }
-
-            depth (int, optional):
-                the recursion depth of the current task.
-                (automatically incremented by 1 during every recurse)
-
-        Returns:
-
-            A string destined to be a ptask file
-            (ready for editing in vim)
-
-            .. code-block:: python
-
-                *{*901A94884FE94EA18DE1879623986DF5*} task
-                    *{*11F9AAEF279A45C19E9B38B56A0F4076*} subtask
-                    *{*334a1033493f44178e098b32bbf82e29*} subtask
-
-
-                section
-                =======
-
-                *{*308BD44370D543C8AFD5FF81F6383B1B*} task
-                *{*2F23AD7FEF854B6F921689F310192A1D*} task2
-                    *{*9A70C15B39B149FFBBC69C6B5ACC7801*} subtask
-        """
-
-        task = self._task_from_taskId( taskId, jsondata )
-
-        if not task:
-            return
-
-        if task['status'] == 'todo':
-            status = '*'
-        elif task['status'] == 'done':
-            status = 'x'
-        elif task['status'] == 'wip':
-            status = 'o'
-        elif task['status'] == 'skip':
-            status = '-'
-
-        # current task
-        ptask_str += ('    '*depth) + '%s{{*{_id}*}} {text}\n'.format(**task) % status
-
-        # recurse for subtasks
-        if task['_id'] in hierarchy['tasks']:
-            for _taskId in hierarchy['tasks'][ task['_id'] ]:
-                ptask_str = self._get_ptaskdata_tasks(
-                    taskId    = _taskId,
-                    ptask_str = ptask_str,
-                    jsondata  = jsondata,
-                    hierarchy = hierarchy,
-                    depth     = depth+1,
-                )
-
-        return ptask_str
-
-    def _task_from_taskId(self, taskId, jsondata):
-        """
-        Returns:
-
-            .. code-block:: python
-
-                # If a task matching taskId is found
-                {
-                    '_id': 'cb798ab368eb400fa4d0edd941c03536',
-                    'section': 'misc',
-                    'created': '2017-06-12T21:42:43.084966-04:00',
-                    'finished': None,
-                    'text':    'Make sure to do blah',
-                }
-
-                # If no task matches taskId
-                False
-        """
-        # find task from taskId
-        # =====================
-        for task in jsondata:
-            if task['_id'] == taskId:
-                return task
-
-        logger.error('Corrupted Data: Unable to find task with ID: %s' % taskId)
-        return False
-
-    def edit_task(self):
-        """
-        Edit a single task as a conf file
-        """
-        # will require it's own pair of data vs string
-        # (unless we use something like a conf-file as intermediary)
-        raise NotImplementedError('TODO')
-
-
-
-class PtaskDataFile( IterableUserDict ):
+class PtaskDataFile( UserList ):
     """
     Converts a :py:obj:`PtaskFile` string (vim buffer) into
     a JSON file.
     """
-    def __init__(self, filepath=None, string=None):
-        IterableUserDict.__init__(self)
-        pass
+    def __init__(self, filepath=None ):
+        UserList.__init__(self)
 
-    def save(self, filepath):
-        pass
+        if filepath:
+            self._read_from_file( filepath )
+
+    def _read_from_file(self, filepath):
+
+        if not filepath:
+            self.data = {}
+            return
+
+        self.data = json.load( open(filepath, 'r') )
 
 
 
