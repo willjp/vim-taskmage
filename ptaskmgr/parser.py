@@ -177,6 +177,9 @@ class PtaskFile( UserString ):
                         'status': 'todo',
                         'isnew':  True/False,
 
+                        'section': 'kitchen tasks',  # regardless of the item this task is parented to,
+                                                     # the task's section (None, if root task)
+
                         ## and either of ##
                         'parent':      'AB9C073FD0074AAB97216F15407D3EF8',  # None, uuid or section-name
                         'parent_type': 'task',                              # root, task or section
@@ -199,6 +202,8 @@ class PtaskFile( UserString ):
             'uuid':    None,
             'status':  None,
             'section': None,
+            'section_started': False,  # True after the first task has been added
+                                       # to a section
 
             'indents': [],   # in escalating order of indentation: 3, 6, 9, ...
                              # the last item in list indicates the last task's
@@ -227,21 +232,10 @@ class PtaskFile( UserString ):
             # Section-Title
             # =============
             if last['line']:
-                if re.match( '^(?P<char>[=\-`:.\'"~^_\*#])(?P=char)*[ \t]*$', line):
+                (istitle, last, tasks, task) = self._parse_sectiontitle( tasks, task, last, line )
 
-                    if len(line.rstrip()) >= len(last['line'].rstrip()):
-
-                        section = last['line'].strip()
-                        if section:
-                            if task:
-                                import ipdb;ipdb.set_trace()
-                                task  = task[:-1]
-                                tasks = self._add_task2tasks( tasks, task, last )
-                                task  = []
-
-                            last['section'] = section
-                            last['line']    = line
-                            continue
+                if istitle:
+                    continue
 
             # Comment
             # =======
@@ -399,6 +393,28 @@ class PtaskFile( UserString ):
 
         return last
 
+    def _parse_sectiontitle(self, tasks, task, last, line ):
+
+        istitle = False
+        if re.match( '^(?P<char>[=\-`:.\'"~^_\*#])(?P=char)*[ \t]*$', line):
+
+            if len(line.rstrip()) >= len(last['line'].rstrip()):
+
+                section = last['line'].strip()
+                if section:
+                    if task:
+                        import ipdb;ipdb.set_trace()
+                        task  = task[:-1]
+                        tasks = self._add_task2tasks( tasks, task, last )
+                        task  = []
+
+                    last['section'] = section
+                    last['line']    = line
+                    istitle = True
+
+        return (istitle, last, tasks, task)
+
+
     def _parse_task_multiline(self, last, task_indentation, line, tasks, task ):
         """
         Checks if this line is a continuation of the previous
@@ -508,17 +524,24 @@ class PtaskFile( UserString ):
             parent_type = 'section'
 
         else:
-            parent      = last['indents'][-2].uuid
-            parent_type = 'task'
+            handled = False
+            if tasks:
+                if tasks[-1]['section'] != last['section']:
+                    parent      = last['section']
+                    parent_type = 'section'
+                    handled     = True
+
+            if not handled:
+                parent      = last['indents'][-2].uuid
+                parent_type = 'task'
 
 
-        # TODO
-        print( last['uuid'], '\n'.join(task), last['indents'] )
-
+        # add to `tasks`
         if task:
             tasks.append({
                 'uuid'       : last['uuid'],
                 'text'       : '\n'.join(task),
+                'section'    : last['section'],
                 'status'     : last['status'],
                 'parent'     : parent,
                 'parent_type': parent_type,
