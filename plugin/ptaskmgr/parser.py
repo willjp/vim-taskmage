@@ -384,6 +384,7 @@ class PtaskFile( UserString ):
                 linesplit        = line.split( uuid_bracketed )
                 indentation      = len(linesplit[0])+1
                 last             = self._set_lastindent( last, indentation )
+                _uuid            = uuid_bracketed[2:-2]
 
                 # append last task
                 tasks = self._add_task2tasks( tasks, task, last )
@@ -420,12 +421,17 @@ class PtaskFile( UserString ):
             # ========
             elif new_taskmatch:
 
-                indentation = len(line) - len(line.lstrip())
-                last        = self._set_lastindent( last, indentation )
+                indentation  = len(line) - len(line.lstrip())
+                last         = self._set_lastindent( last, indentation )
 
                 # append last task
+                numtasks = len(tasks)
                 tasks = self._add_task2tasks( tasks, task, last )
                 task  = []
+
+                if numtasks == len(tasks):
+                    last['line'] = line
+                    continue
 
                 #
                 status_char = new_taskmatch.group()[-2]  # space then char
@@ -439,9 +445,8 @@ class PtaskFile( UserString ):
 
                 # remember details in case multiline
                 task_indentation = indentation
-                last['uuid']     = tasks[-1]['uuid']
+                last['uuid']     = None
                 last['status']   = status
-
 
 
             last['line'] = line
@@ -609,6 +614,7 @@ class PtaskFile( UserString ):
         """
         adds current task to `tasks`
         """
+
 
         # strip all newlines after the task
         # (but keep newlines in the middle of task)
