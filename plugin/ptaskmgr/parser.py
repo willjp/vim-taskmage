@@ -274,6 +274,12 @@ class PtaskFile( UserString ):
         to update a *.ptaskdata file.
 
 
+        .. note::
+
+            If debugging, for whatever reason the *last* printed line
+            does not get displayed.
+
+
         Args:
             fileconts ( list(str) ):
                 A list, where each item represents a separate line
@@ -337,11 +343,10 @@ class PtaskFile( UserString ):
 
             if not line:
                 last['line'] = ''
-                continue
 
             uuid_regex      = '{\*[A-Z0-9]+\*}'
             exist_taskmatch = re.search( uuid_regex, line )
-            new_taskmatch   = re.search( '^[ \t]*[*-xo][ \t]', line )
+            new_taskmatch   = re.search( '^[ \t]*[*\-xo][ \t]', line )
 
 
 
@@ -376,13 +381,14 @@ class PtaskFile( UserString ):
                 continue
 
 
+
             # Existing task
             # =============
             if exist_taskmatch:
 
                 uuid_bracketed   = exist_taskmatch.group()
                 linesplit        = line.split( uuid_bracketed )
-                indentation      = len(linesplit[0])+1
+                indentation      = len(line) - len(line.lstrip())
                 last             = self._set_lastindent( last, indentation )
                 _uuid            = uuid_bracketed[2:-2]
 
@@ -424,16 +430,13 @@ class PtaskFile( UserString ):
                 indentation  = len(line) - len(line.lstrip())
                 last         = self._set_lastindent( last, indentation )
 
+
                 # append last task
                 numtasks = len(tasks)
                 tasks = self._add_task2tasks( tasks, task, last )
                 task  = []
 
-                if numtasks == len(tasks):
-                    last['line'] = line
-                    continue
 
-                #
                 status_char = new_taskmatch.group()[-2]  # space then char
                 status      = self._status_from_statuschar( status_char )
                 if not status:
@@ -450,7 +453,6 @@ class PtaskFile( UserString ):
 
 
             last['line'] = line
-
 
 
         # add final task
@@ -612,7 +614,8 @@ class PtaskFile( UserString ):
 
     def _add_task2tasks(self, tasks, task, last ):
         """
-        adds current task to `tasks`
+        Adds the last-started task to tasks.
+        (should be run whenever a task ends (new task definition, change of indentation, etc)
         """
 
 
