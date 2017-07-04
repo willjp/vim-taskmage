@@ -616,6 +616,42 @@ class PtaskFile( UserString ):
         """
         Adds the last-started task to tasks.
         (should be run whenever a task ends (new task definition, change of indentation, etc)
+
+        Args:
+            tasks (list):
+                pass
+
+            task (list):
+                A list containing the task's message. Each listitem
+                represents a new line of text.
+
+                .. code-block:: python
+
+                    [
+                        'line1',
+                        'line2',
+                        'line3',
+                        ...
+                    ]
+
+            last (dict):
+                Dictionary containing information about the last
+                defined task.
+
+                .. code-block:: python
+
+                    {
+                        'line':            '',      #?
+                        'uuid':             None,   # if a saved-task, the UUID
+                        'status':          'todo',
+                        'section':         ' None,  # 'home', ...  the last started section, or None
+                        'section_started': False,   # True after the first task has been added to a section
+                        'indents':         [        # a list containing each parent-level of indent
+                                            task(indent=0,uuid=None),
+                                            task(indent=4,uuid=None),
+                                           ],
+                    }
+
         """
 
 
@@ -637,7 +673,7 @@ class PtaskFile( UserString ):
             last['uuid'] = uuid.uuid4().hex.upper()
             isnew = True
 
-        # determine parent/parent_type
+        # determine parent/parent_type (by indentation)
         if len(last['indents']) <=1 and not last['section']:
             parent      = None
             parent_type = 'root'
