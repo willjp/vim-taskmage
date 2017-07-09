@@ -91,8 +91,6 @@ def buffer_to_ptaskfile():
 
 
         for task in buffer_info:
-            print( task )
-            print( '--' )
             new_task = {
                 'status': task.status,
                 'text'  : task.text,
@@ -116,10 +114,10 @@ def buffer_to_ptaskfile():
                 pass
 
             elif task.parent_type == 'task':
-                new_task['parenttask'] = task['parent']
+                new_task['parenttask'] = task.parent
 
             elif task.parent_type == 'section':
-                new_task['section'] = task['parent']
+                new_task['section'] = task.parent
 
 
             new_taskdata.append( new_task )

@@ -50,10 +50,11 @@ _taskdef = namedtuple(
     # while parsing, info about
     # a task-definition
     'taskdef', [
-        'uuid',    # 8FE95847DF73449096393F90E4E61535
-        'status',  # 'todo', 'done', ...
-        'isnew',   # True/False
-        'text',    # [ line, line, ... ]
+        'uuid',        # 8FE95847DF73449096393F90E4E61535
+        'status',      # 'todo', 'done', ...
+        'isnew',       # True/False
+        'text',        # [ line, line, ... ]
+        'indentation', # number of whitespace characters at start of line
     ]
 )
 _taskindent = namedtuple(
@@ -77,8 +78,17 @@ class _ParserHandled( Enum ):
 
 
 
+#!TODO: tasks broken with multiple headers set
+#        ( last task of 1st header moves into 2nd header)
+#        ( has to do with time headers are parsed... )
+
 #!TODO: to_ptaskdata:  save comments insead of just ignoring them
 #!TODO: *.ptask to *.ptaskdata
+
+#!TODO: set task-hierarchy, at the same time that indentation
+#!      is set. At this point, we can very clearly evaluate
+#!      what belongs to what else.
+
 class PtaskFile( UserString ):
     """
     Converts a :py:obj:`PtaskDataFile` JSON object into
@@ -353,6 +363,7 @@ class PtaskFile( UserString ):
             if not line:
                 line = ''
 
+            count = 0
             for method in (
                 self._handle_sectionheader,
                 self._handle_comment,
@@ -375,6 +386,9 @@ class PtaskFile( UserString ):
                             tasks        = self._add_taskdef_to_tasks(
                                 tasks, last_encountered, last_taskdef
                             )
+                            last_encountered = self._set_last_encountered_indentation(
+                                last_taskdef.uuid, last_taskdef.indentation, last_encountered
+                            )
                             last_taskdef = None
 
 
@@ -387,6 +401,7 @@ class PtaskFile( UserString ):
                 if handled:
                     break
 
+                count +=1
 
         if last_taskdef:
             tasks = self._add_taskdef_to_tasks(
@@ -394,8 +409,6 @@ class PtaskFile( UserString ):
             )
 
 
-        #print( tasks )
-        #print('---')
         return tasks
 
     def _status_from_statuschar(self, status_char ):
@@ -445,7 +458,7 @@ class PtaskFile( UserString ):
 
         if re.match( '^(?P<char>[=\-`:.\'"~^_\*#])(?P=char)*[ \t]*$', line):
 
-            if len(line.rstrip()) >= len(last['line'].rstrip()):
+            if len(line.rstrip()) >= len(last_encountered['line'].rstrip()):
 
                 section = last_encountered['line'].strip()
                 if section:
@@ -516,11 +529,10 @@ class PtaskFile( UserString ):
             not last_taskdef,                         # no task currently being read, cannot continue extending task
             re.match('^[ \t]*[*+x\-]( |{\*)', line ), # this line is a task-definition, so not a continuation
             not len(last_encountered['indents']),     # no previous task indent, nothing to extend
-
         ]):
             return (handled, last_encountered, last_taskdef)
 
-        if len(whitespace) > last_encountered['indents'][-1].indentation:
+        if indentation > last_encountered['indents'][-1].indentation:
             handled = _ParserHandled.ContinuedDefinition
             last_taskdef.text.append( line.strip() )
 
@@ -543,6 +555,7 @@ class PtaskFile( UserString ):
 
         uuid_regex      = '{\*[A-Z0-9]+\*}'
         exist_taskmatch = re.search( uuid_regex, line )
+
 
         if not exist_taskmatch:
             return (handled, last_encountered, last_taskdef)
@@ -577,28 +590,12 @@ class PtaskFile( UserString ):
             )
 
         last_taskdef = _taskdef(
-            uuid   = _uuid,
-            status = status,
-            isnew  = False,
-            text   = [ linesplit[1].strip() ],
+            uuid        = _uuid,
+            status      = status,
+            isnew       = False,
+            text        = [ linesplit[1].strip() ],
+            indentation = indentation,
         )
-
-        # update `last_encountered['indents']`
-        # ====================================
-        if last_encountered['indents']:
-            indent = _taskindent( uuid=_uuid, indentation=indentation )
-
-            if indentation == last_encountered['indents']:
-                last_encountered['indents'][-1] = indent
-
-            elif indentation > last_encountered['indents']:
-                last_encountered['indents'].append( indent )
-
-            else:
-                while last_encountered['indents']:
-                    if indentation <= last_encountered['indents'][-1]:
-                        last_encountered = last_encountered[:-1]
-                last_encountered['indents'].append( indent )
 
         return (handled, last_encountered, last_taskdef)
 
@@ -627,7 +624,7 @@ class PtaskFile( UserString ):
         indentation = len(line) - len(line.lstrip())
         status_char = new_taskmatch.group()[-2]  # space then char
         status      = self._status_from_statuschar( status_char )
-        _uuid       = uuid.uuid4().hex
+        _uuid       = uuid.uuid4().hex.upper()
 
         if not status:
             raise RuntimeError(
@@ -635,28 +632,12 @@ class PtaskFile( UserString ):
             )
 
         last_taskdef = _taskdef(
-            uuid   = _uuid,
-            status = status,
-            isnew  = True,
-            text   = [ line[ len(new_taskmatch.group()) : ].strip() ],
+            uuid        = _uuid,
+            status      = status,
+            isnew       = True,
+            text        = [ line[ len(new_taskmatch.group()) : ].strip() ],
+            indentation = indentation,
         )
-
-        # update `last_encountered['indents']`
-        # ====================================
-        if last_encountered['indents']:
-            indent = _taskindent( uuid=_uuid, indentation=indentation )
-
-            if indentation == last_encountered['indents']:
-                last_encountered['indents'][-1] = indent
-
-            elif indentation > last_encountered['indents']:
-                last_encountered['indents'].append( indent )
-
-            else:
-                while last_encountered['indents']:
-                    if indentation <= last_encountered['indents'][-1]:
-                        last_encountered = last_encountered[:-1]
-                last_encountered['indents'].append( indent )
 
         return (handled, last_encountered, last_taskdef)
 
@@ -677,23 +658,18 @@ class PtaskFile( UserString ):
             last_taskdef.text._replace( text=last_taskdef.text[ : -1 * trailing_blanklines ] )
 
 
-        # if new task, assign a UUID to it
-        if last_taskdef.isnew:
-            last_taskdef._replace( uuid = uuid.uuid4().hex.upper() )
-
-
-
         # determine parent/parent_type (by indentation)
-        if len(last_encountered['indents']) <=1 and not last_encountered['section']:
-            parent      = None
-            parent_type = 'root'
-
-        elif len(last_encountered['indents']) <= 1 and last_encountered['section']:
-            parent      = last_encountered['section']
-            parent_type = 'section'
+        if len(last_encountered['indents']) == 0:
+            if not last_encountered['section']:
+                parent      = None
+                parent_type = 'root'
+            else:
+                parent      = last_encountered['section']
+                parent_type = 'section'
 
         else:
             handled = False
+
             if tasks:
                 if tasks[-1].section != last_encountered['section']:
                     parent      = last_encountered['section']
@@ -701,7 +677,7 @@ class PtaskFile( UserString ):
                     handled     = True
 
             if not handled:
-                parent      = last_encountered['indents'][-2].uuid
+                parent      = last_encountered['indents'][-1].uuid
                 parent_type = 'task'
 
 
@@ -719,6 +695,24 @@ class PtaskFile( UserString ):
                 )
             )
         return tasks
+
+    def _set_last_encountered_indentation(self, _uuid, indentation, last_encountered):
+        indent = _taskindent( uuid=_uuid, indentation=indentation )
+
+        while last_encountered['indents']:
+            if   indentation == last_encountered['indents'][-1].indentation:
+                last_encountered['indents'] = last_encountered['indents'][:-1]
+                break
+
+            elif indentation  < last_encountered['indents'][-1].indentation:
+                last_encountered['indents'] = last_encountered['indents'][:-1]
+
+            else:
+                break
+
+        last_encountered['indents'].append( indent )
+
+        return last_encountered
 
 
 
