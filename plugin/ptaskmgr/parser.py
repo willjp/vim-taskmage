@@ -63,6 +63,11 @@ _taskindent = namedtuple(
 )
 
 class _ParserHandled( Enum ):
+    """
+    First item in return-value from each PtaskFile
+    parser method. Indicates that an item was handled
+    by the method, and categorizes how it was handled.
+    """
 
     NewItemDefinition   = 1 # a new item was defined, so the last task should end
 
@@ -307,21 +312,32 @@ class PtaskFile( UserString ):
 
     def ptask_taskinfo(self, fileconts):
         """
+        Args:
+            fileconts (collections.Iterable):
+                A list, file-descriptor, or other iterable
+                collection where each item represents a single
+                line of text from the ReStructuredText
+                formatted taskfile.
+
         Returns:
-            [
-                _taskinfo(
-                    uuid        = '3B958E62E79D4A08BF3F70D1601E7305',
-                    text        = 'linea\nlineb\nlinec',
-                    section     = 'Home Todos',
-                    status      = 'todo',
-                    parent      = 'root',
-                    parent_type = None,
-                    isnew       = True,
-                ),
-                _taskinfo(...),
-                _taskinfo(...),
-                ...
-            ]
+
+            .. code-block:: python
+
+                [
+                    _taskinfo(
+                        uuid        = '3B958E62E79D4A08BF3F70D1601E7305',
+                        text        = 'linea\nlineb\nlinec',
+                        section     = 'Home Todos',
+                        status      = 'todo',
+                        parent      = 'root',
+                        parent_type = None,
+                        isnew       = True,
+                    ),
+                    _taskinfo(...),
+                    _taskinfo(...),
+                    ...
+                ]
+
         """
 
         last_encountered  = {
@@ -384,7 +400,8 @@ class PtaskFile( UserString ):
 
     def _status_from_statuschar(self, status_char ):
         """
-
+        Returns the text-status from the status-character
+        used in a ReStructuredText format ptask file.
         """
         if status_char == 'o':
             return 'wip'
@@ -401,20 +418,27 @@ class PtaskFile( UserString ):
         return False
 
     def _handle_sectionheader(self, line, last_encountered, last_taskdef):
+        """
+        section-headers take 2x lines,
+
+        Example:
+
+            .. code-block:: ReStructuredText
+
+                section-header
+                ==============
+
+
+         * the section-header text
+
+         * a stream of repeated characters at least as long
+           as the text
+
+
+        """
 
         handled = False
 
-        # section-headers take 2x lines,
-        # ex:
-        #
-        #      section-header
-        #      ==============
-        #
-        #  * the text
-        #
-        #  * a stream of repeated characters at least as long
-        #    as the text
-        #
         if not last_encountered['line']:
             return (handled, last_encountered, last_taskdef)
 
@@ -435,15 +459,19 @@ class PtaskFile( UserString ):
 
     def _handle_comment(self, line, last_encountered, last_taskdef):
         """
-        Returns:
+        Non-Inline Comments are entirely ignored (not saved to the ptaskfile).
+        A comment is any line where the first character is a '#'
 
-            .. code-block:: python
+        (as long as it is not a part of a section-header).
 
-                (
-                    handled,          # True/False -- If True, continue
-                    last_encountered, # {'line':.., 'section':.., 'indents':.. }
-                    last_taskdef,     # taskdef()  -- the last started task-definition
-                )
+        Example:
+
+            .. code-block:: ReStructuredText
+
+                # a comment (will not be saved)
+
+                * do the laundry  # inline comments are preserved
+                * do the dishes
         """
         handled = False
 
@@ -457,6 +485,27 @@ class PtaskFile( UserString ):
         return (handled, last_encountered, last_taskdef)
 
     def _handle_continued_taskdef(self, line, last_encountered, last_taskdef ):
+        """
+
+        If a task is already started,
+        this line is not a task,
+        and this line is indented more than the last task definition:
+
+        This line is part of a multiline task.
+
+        Example:
+
+            .. code-block:: ReStructuredText
+
+                * This is my
+                  very long task  # <-- continued taskdef
+
+                  it occupies
+                  multiple
+                  lines
+
+
+        """
         handled = False
 
         whitespace  = re.match('^[ \t]*', line)
@@ -479,6 +528,17 @@ class PtaskFile( UserString ):
         return (handled, last_encountered, last_taskdef)
 
     def _handle_existing_taskdef(self, line, last_encountered, last_taskdef ):
+        """
+        Handles a task-definition that has already been assigned
+        a UUID.
+
+        Example:
+
+            .. code-block:: ReStructuredText
+
+                *{*8DFD23B7636E4A0F91B7E13515762609*} My first task is to take over the world
+
+        """
         handled = False
 
         uuid_regex      = '{\*[A-Z0-9]+\*}'
@@ -543,6 +603,17 @@ class PtaskFile( UserString ):
         return (handled, last_encountered, last_taskdef)
 
     def _handle_new_taskdef(self, line, last_encountered, last_taskdef ):
+        """
+        Handles a task-definition that is not yet tracked in the ptaskfile.
+        (has no uuid).
+
+        Example:
+
+            .. code-block:: ReStructuredText
+
+                * My first task is to take over the world
+
+        """
         handled       = False
         new_taskmatch = re.search( '^[ \t]*[*\-xo][ \t]', line )
 
@@ -590,6 +661,10 @@ class PtaskFile( UserString ):
         return (handled, last_encountered, last_taskdef)
 
     def _add_taskdef_to_tasks(self, tasks, last_encountered, last_taskdef ):
+        """
+        Creates a :py:obj:`_taskinfo` object for the task,
+        and appends it to the list `tasks`.
+        """
 
         # strip all newlines after the task
         # (but keep newlines in the middle of task)
@@ -644,6 +719,7 @@ class PtaskFile( UserString ):
                 )
             )
         return tasks
+
 
 
 class PtaskDataFile( UserList ):
