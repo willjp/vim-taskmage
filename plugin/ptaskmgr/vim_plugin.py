@@ -91,38 +91,36 @@ def buffer_to_ptaskfile():
 
 
         for task in buffer_info:
+            print( task )
+            print( '--' )
             new_task = {
-                'status': task['status'],
-                'text'  : task['text'],
-                '_id'   : task['uuid'],
+                'status': task.status,
+                'text'  : task.text,
+                '_id'   : task.uuid,
             }
 
             # finished
-            if task['status'] in ('skip','done'):
+            if task.status in ('skip','done'):
                 new_task['finished'] = True
             else:
                 new_task['finished'] = False
 
 
             # created timestamp
-            if task['isnew']:
+            if task.isnew:
                 new_task['created'] = now.isoformat()
 
 
             # parent info
-            if task['parent_type'] == 'root':
+            if task.parent_type == 'root':
                 pass
 
-            elif task['parent_type'] == 'task':
+            elif task.parent_type == 'task':
                 new_task['parenttask'] = task['parent']
 
-            elif task['parent_type'] == 'section':
+            elif task.parent_type == 'section':
                 new_task['section'] = task['parent']
 
-            else:
-                raise KeyError(
-                    'Unexpected task `parent_type`: "%s"' % task['parent_type']
-                )
 
             new_taskdata.append( new_task )
 
