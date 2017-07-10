@@ -79,16 +79,7 @@ class _ParserHandled( Enum ):
 
 
 
-#!TODO: tasks broken with multiple headers set
-#        ( last task of 1st header moves into 2nd header)
-#        ( has to do with time headers are parsed... )
-
-#!TODO: to_ptaskdata:  save comments insead of just ignoring them
-#!TODO: *.ptask to *.ptaskdata
-
-#!TODO: set task-hierarchy, at the same time that indentation
-#!      is set. At this point, we can very clearly evaluate
-#!      what belongs to what else.
+#!TODO: Save comments insead of just ignoring them
 
 class PtaskFile( UserString ):
     """
@@ -680,15 +671,32 @@ class PtaskFile( UserString ):
         else:
             handled = False
 
+            # if section-changed, then this task (regardless of indentation)
+            # is rooted to the section
             if tasks:
                 if tasks[-1].section != last_taskdef.section:
                     parent      = last_taskdef.section
                     parent_type = 'section'
                     handled     = True
 
+            # otherwise, check indentation to determine
+            # the task's parent
             if not handled:
-                parent      = last_encountered['indents'][-1].uuid
-                parent_type = 'task'
+                for indent in reversed(last_encountered['indents']):
+                    if indent.indentation < last_taskdef.indentation:
+                        parent      = indent.uuid
+                        parent_type = 'task'
+                        handled     = True
+                        break
+
+                if not handled:
+                    if last_taskdef.section:
+                        parent      = last_taskdef.section
+                        parent_type = 'section'
+                    else:
+                        parent      = None
+                        parent_type = 'root'
+
 
 
         # add to `tasks`
