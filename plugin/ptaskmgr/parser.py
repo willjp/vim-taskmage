@@ -387,6 +387,13 @@ class PtaskFile( UserString ):
                             tasks = self._add_taskdef_to_tasks(
                                 tasks, last_encountered, last_taskdef
                             )
+
+                            # clear indentation history if new section
+                            if tasks:
+                                if tasks[-1].section != last_taskdef.section:
+                                    last_encountered['indents'] = []
+
+                            # set indents
                             last_encountered = self._set_last_encountered_indentation(
                                 last_taskdef.uuid, last_taskdef.indentation, last_encountered
                             )
@@ -466,7 +473,6 @@ class PtaskFile( UserString ):
 
                     handled = _ParserHandled.NewItemDefinition
                     last_encountered['section'] = section
-                    last_encountered['indents'] = []
                     last_taskdef                = None
 
         return (handled, last_encountered, last_taskdef)
