@@ -55,6 +55,7 @@ _taskdef = namedtuple(
         'isnew',       # True/False
         'text',        # [ line, line, ... ]
         'indentation', # number of whitespace characters at start of line
+        'section',     # section-header at the time the task was defined
     ]
 )
 _taskindent = namedtuple(
@@ -383,7 +384,7 @@ class PtaskFile( UserString ):
                 if handled:
                     if handled == _ParserHandled.NewItemDefinition:
                         if last_taskdef:
-                            tasks        = self._add_taskdef_to_tasks(
+                            tasks = self._add_taskdef_to_tasks(
                                 tasks, last_encountered, last_taskdef
                             )
                             last_encountered = self._set_last_encountered_indentation(
@@ -595,6 +596,7 @@ class PtaskFile( UserString ):
             isnew       = False,
             text        = [ linesplit[1].strip() ],
             indentation = indentation,
+            section     = last_encountered['section'],
         )
 
         return (handled, last_encountered, last_taskdef)
@@ -637,6 +639,7 @@ class PtaskFile( UserString ):
             isnew       = True,
             text        = [ line[ len(new_taskmatch.group()) : ].strip() ],
             indentation = indentation,
+            section     = last_encountered['section'],
         )
 
         return (handled, last_encountered, last_taskdef)
@@ -646,6 +649,7 @@ class PtaskFile( UserString ):
         Creates a :py:obj:`_taskinfo` object for the task,
         and appends it to the list `tasks`.
         """
+
 
         # strip all newlines after the task
         # (but keep newlines in the middle of task)
@@ -660,19 +664,19 @@ class PtaskFile( UserString ):
 
         # determine parent/parent_type (by indentation)
         if len(last_encountered['indents']) == 0:
-            if not last_encountered['section']:
+            if not last_taskdef.section:
                 parent      = None
                 parent_type = 'root'
             else:
-                parent      = last_encountered['section']
+                parent      = last_taskdef.section
                 parent_type = 'section'
 
         else:
             handled = False
 
             if tasks:
-                if tasks[-1].section != last_encountered['section']:
-                    parent      = last_encountered['section']
+                if tasks[-1].section != last_taskdef.section:
+                    parent      = last_taskdef.section
                     parent_type = 'section'
                     handled     = True
 
@@ -687,7 +691,7 @@ class PtaskFile( UserString ):
                 _taskinfo(
                     uuid        = last_taskdef.uuid,
                     text        = '\n'.join(last_taskdef.text),
-                    section     = last_encountered['section'],
+                    section     = last_taskdef.section,
                     status      = last_taskdef.status,
                     parent      = parent,
                     parent_type = parent_type,
