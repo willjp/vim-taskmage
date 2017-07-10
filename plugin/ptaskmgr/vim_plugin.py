@@ -28,8 +28,8 @@ import six
 
 def read_ptaskfile():
     """
-    Replaces the entire contents of the *.ptask file (JSON)
-    with the user-friendly ReStructuredText-list format.
+    Replaces a *.ptask file (JSON) opened in vim
+    with a parsed, ReStructuredText-inspired task format.
 
 
     Example:
@@ -74,8 +74,13 @@ def read_ptaskfile():
 
 def buffer_to_ptaskfile():
     """
-    Changes the contents of the currently opened
-    file back to JSON before it gets saved to disk.
+    Converts a ReStructuredText formatted *.ptask file in a vim-buffer
+    back to JSON (within the vim-buffer).
+
+    This runs whenever vim saves a *.ptask buffer. The file is temporarily
+    converted back to JSON before save, then the saved-file is re-read
+    and converted back to ReStructuredText so the user can continue
+    editing tasks within vim.
     """
 
     # saved JSON data
@@ -128,6 +133,7 @@ def buffer_to_ptaskfile():
 
 
     vim.current.buffer[:] = json.dumps( list(new_taskdata), indent=2 ).split('\n')
+
 
 
 if __name__ == '__main__':

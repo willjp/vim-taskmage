@@ -79,7 +79,13 @@ class _ParserHandled( Enum ):
 
 
 
+#!TODO: This should be divided into functions,
+#!        the classes don't make sense...
+
 #!TODO: Save comments insead of just ignoring them
+
+#!TODO: Archive tasks
+
 
 class PtaskFile( UserString ):
     """
@@ -97,19 +103,18 @@ class PtaskFile( UserString ):
         self._saved_data = OrderedDict()  # { UUID:{..task-contents..} }
 
         if filepath:
-            self.data = self.from_ptaskdata( filepath )
+            self.data = self.from_ptaskfile( filepath )
 
 
-    def from_ptaskdata(self, filepath):
+    def from_ptaskfile(self, filepath):
         """
-        Reads a *.ptaskdata file (JSON), and parses
-        it into a format that will be used within vim
-        to edit tasks.
+        Reads a *.ptask file (JSON), and parses it into
+        the ReStructuredText format.
 
         Args:
             filepath (str):
-                the path to a (valid) *.ptaskdata file, that
-                you want represented as a *.ptask file.
+                the path to a (valid) *.ptask file, that
+                you want represented as a ReStructuredText file.
 
         Returns:
 
