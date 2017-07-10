@@ -78,6 +78,13 @@ class _ParserHandled( Enum ):
                             # add the item to the list of tasks just yet.
 
 
+#!TODO: Figure out how to determine project-root,
+#!      so that tasks can be archived.
+#!
+#!      it might make most sense to use a directory
+#!      just like git. In this way, we can keep track
+#!      of completed tasks in addition to keeping track
+#!      of the project-root.
 
 #!TODO: This should be divided into functions,
 #!        the classes don't make sense...
@@ -307,6 +314,7 @@ class PtaskFile( UserString ):
 
         logger.error('Corrupted Data: Unable to find task with ID: %s' % taskId)
         return False
+
 
     def edit_task(self):
         """
@@ -736,6 +744,10 @@ class PtaskFile( UserString ):
         last_encountered['indents'].append( indent )
 
         return last_encountered
+
+
+    def archive_task(self):
+        pass
 
 
 

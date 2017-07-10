@@ -95,6 +95,7 @@ python modules:
 
     * six_
 
+.. _six: https://pypi.python.org/pypi/six
 
 
 Syntax:
@@ -189,5 +190,32 @@ little notes about tasks, that are highlighted differently.
 
 
 
-.. _six: https://pypi.python.org/pypi/six
+
+
+
+Project:
+========
+
+Like git, ptaskmgr uses a directory to indicate both a project-root,
+and store completed task-data. Currently ptaskmgr has no configuration,
+but this is where it would be located if it was to required.
+
+
+.. code-block:: python
+
+    /home/todo/.ptaskmgr/
+
+        completed/                # bulk-storage of completed tasks
+
+            module_name/
+                section1.ptask
+                section2.ptask
+                section3.ptask
+                ...
+            module_name/
+                section1.ptask
+                section2.ptask
+                ...
+
+
 
