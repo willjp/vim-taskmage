@@ -25,6 +25,8 @@ import six
 #internal
 
 
+# Core Functions
+# ==============
 
 def read_ptaskfile():
     """
@@ -133,6 +135,51 @@ def buffer_to_ptaskfile():
 
 
     vim.current.buffer[:] = json.dumps( list(new_taskdata), indent=2 ).split('\n')
+
+def archive_completed_tasks( taskIds ):
+    """
+    Archives provided taskIds (from opened *.ptask file in ReStructuredText format)
+    if their status is *complete*.
+
+
+    Args:
+        taskIds ('FFC02020BC984711838327B888EFAD1C', '51DAD4BC86C54C07B8B5829ECFAE4B5E'):
+
+    Returns:
+        A subset of the provided taskIds that were
+        successfully archived.
+
+        .. code-block:: python
+
+            set(['FFC02020BC984711838327B888EFAD1C', ...])
+    """
+    pass
+
+
+
+# Fine Grain Controls
+# ===================
+
+def archive_selected():
+    """
+    Archives any completed tasks within visual selection (if present),
+    or if not present, a completed task touching the current cursor.
+    """
+    pass
+
+def complete_selected():
+    """
+    Completes
+    """
+
+# Utility
+# =======
+
+def get_tasks_under_cursor():
+    """
+    Obtains task under cursor (if no visual selection)
+    or all tasks touched by visual-selection.
+    """
 
 
 

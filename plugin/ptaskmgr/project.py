@@ -36,6 +36,18 @@ def get_projectroot(cwd='.'):
     if os.path.isfile( cwd ):
         (cwd,filename) = os.path.split( cwd )
 
+    cwd      = cwd.replace('\\','/')
+    dirpaths = cwd.split('/')
+
+    while dirpaths:
+        if os.path.isdir( '/'.join(cwd) + '.ptaskmgr' ):
+            return '/'.join(cwd) + '.ptaskmgr'
+        dirpaths = dirpaths[:-1]
+
+    raise RuntimeError(
+        'Unable to find project-root'
+    )
+
 
 
 
