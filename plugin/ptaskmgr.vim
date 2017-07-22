@@ -15,10 +15,14 @@ else
 endif
 
 
-" with bufreadpre, the current bufferpath is still correct
-autocmd BufRead      *.ptask  py ptaskmgr.vim_plugin.read_ptaskfile()
-autocmd BufWritePre  *.ptask  py ptaskmgr.vim_plugin.buffer_to_ptaskfile()
-autocmd BufWritePost *.ptask  py ptaskmgr.vim_plugin.read_ptaskfile()
+
+    " on-read, replace buffer with RST
+autocmd BufRead      *.ptask  py ptaskmgr.vim_plugin.jsonfile_to_rst()
+
+    " on-write, replace buffer with JSON, then 
+    " after save convert back into RST
+autocmd BufWritePre  *.ptask  py ptaskmgr.vim_plugin.rst_to_json()
+autocmd BufWritePost *.ptask  py ptaskmgr.vim_plugin.jsonfile_to_rst()
 
 
 

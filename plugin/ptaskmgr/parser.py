@@ -94,15 +94,62 @@ class _ParserHandled( Enum ):
 #!TODO: Archive tasks
 
 
-class PtaskFile( UserString ):
+class Parser_json( UserList ):
+    pass
+
+class Parser_rst( UserString ):
+    pass
+
+
+
+class PtaskFile( UserList ):
     """
+    Reads a *.ptask file (or a string of raw, serialized json),
+    and
+
+    Reads JSON *.ptask file.
     Converts a :py:obj:`PtaskDataFile` JSON object into
     a file designed to be edited in vim.
     """
-    def __init__(self, filepath=None):
-        UserString.__init__(self,'')
+    def __init__(self, fileconts=None, filepath=None):
+        """
 
-        self.data  = ''
+
+        Args:
+
+            fileconts (str, optional):
+                the un-serialized json text (as a string).
+
+                .. code-block:: python
+
+                    [
+                        {
+                            "status"   : "todo",
+                            "created"  : "2017-07-10T01:01:03.688830",
+                            "text"     : "d",
+                            "section"  : "def",
+                            "finished" : false,
+                            "_id"      : "EF98F701F45D45C0A4BFFD183DB35814"
+                        },
+                        {
+                            "status"     : "todo",
+                            "created"    : "2017-07-10T01:01:03.688830",
+                            "text"       : "e",
+                            "parenttask" : "EF98F701F45D45C0A4BFFD183DB35814",
+                            "finished"   : false,
+                            "_id"        : "6128DC89E7054D96B46BFA126DA92AD9"
+                        }
+                        ...
+                    ]
+
+
+            filepath (str): ``(ex: '/path/to/file.ptask' )``
+                the full filepath to the file containing JSON text.
+
+        """
+        UserList.__init__(self,'')
+
+        self.data  = []
         self._dict = {}
 
 
@@ -110,16 +157,20 @@ class PtaskFile( UserString ):
         self._saved_data = OrderedDict()  # { UUID:{..task-contents..} }
 
         if filepath:
-            self.data = self.from_ptaskfile( filepath )
+            rawdata   = json.load( open(filepath,'r') )
+            self.data = self.from_ptaskfile( rawdata )
+
+        if fileconts:
+            self.data = self.from_ptaskfile( rawdata=fileconts )
 
 
-    def from_ptaskfile(self, filepath):
+    def from_ptaskfile(self, rawdata ):
         """
         Reads a *.ptask file (JSON), and parses it into
         the ReStructuredText format.
 
         Args:
-            filepath (str):
+            rawdata (str):
                 the path to a (valid) *.ptask file, that
                 you want represented as a ReStructuredText file.
 
@@ -140,7 +191,6 @@ class PtaskFile( UserString ):
                     *{*9A70C15B39B149FFBBC69C6B5ACC7801*} subtask
         """
 
-        rawdata          = json.load( open(filepath,'r') )
         self.data        = ''
         self._saved_data = OrderedDict()
 

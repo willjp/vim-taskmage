@@ -28,7 +28,7 @@ import six
 # Core Functions
 # ==============
 
-def read_ptaskfile():
+def jsonfile_to_rst():
     """
     Replaces a *.ptask file (JSON) opened in vim
     with a parsed, ReStructuredText-inspired task format.
@@ -74,7 +74,7 @@ def read_ptaskfile():
     vim.current.buffer[:] = parsed.split('\n')
     vim.command('set ft=ptaskmgr')
 
-def buffer_to_ptaskfile():
+def rst_to_json():
     """
     Converts a ReStructuredText formatted *.ptask file in a vim-buffer
     back to JSON (within the vim-buffer).
@@ -83,6 +83,12 @@ def buffer_to_ptaskfile():
     converted back to JSON before save, then the saved-file is re-read
     and converted back to ReStructuredText so the user can continue
     editing tasks within vim.
+
+    Side Effect:
+
+        Current buffer (ptask in ReStructuredText mode)
+        is parsed back into JSON within the current vim buffer.
+
     """
 
     # saved JSON data
