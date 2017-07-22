@@ -22,6 +22,7 @@ import sys
 import os
 import json
 import re
+import datetime
 if sys.version_info[0] <= 2:
     from UserString  import UserString
     from UserList    import UserList
@@ -29,6 +30,7 @@ else:
     from collections import UserString
     from collections import UserList
 #package
+from . import six
 #external
 #internal
 
@@ -42,7 +44,7 @@ _taskinfo = namedtuple(
         'section',
         'status',
         'parent',
-        'parent_type',
+        'parent_type', # 'root', 'section', 'task'
         'isnew'
     ]
 )
@@ -93,107 +95,320 @@ class _ParserHandled( Enum ):
 
 #!TODO: Archive tasks
 
+#!TODO: json-ptyhon enforce datatypes? anything special to do here?
+#!TODO: validate taskdata in _load_from_taskdata!!!
 
-class Parser_json( UserList ):
-    pass
-
-class Parser_rst( UserString ):
-    pass
+#!TODO: do we really need both _taskdef AND _taskinfo (?)
 
 
+class _TaskDataFmt( Enum ):
+    data = 1
+    rst  = 2
+    json = 3
 
-class PtaskFile( UserList ):
-    """
-    Reads a *.ptask file (or a string of raw, serialized json),
-    and
 
-    Reads JSON *.ptask file.
-    Converts a :py:obj:`PtaskDataFile` JSON object into
-    a file designed to be edited in vim.
-    """
-    def __init__(self, fileconts=None, filepath=None):
+class TaskData( UserList ):
+    datafmt = _TaskDataFmt # enum with various data formats
+    def __init__(self, taskdata=None, datafmt=None ):
         """
-
+        An object representing a single *.ptask file's list of tasks
+        as a python list.
 
         Args:
+            taskdata (str, list, optional):
+                The data that you would like to use (parse)
+                to intialize this :py:obj:`TaskData` object's
+                data.
 
-            fileconts (str, optional):
-                the un-serialized json text (as a string).
+            datafmt (ptaskmgr.TaskData.datafmt, optional):
+                Indicates the type of data `taskdata` is.
 
-                .. code-block:: python
+        Attributes:
 
-                    [
-                        {
+            datafmt (Enum):
+                Enum class that lists the accepted
+                types of TaskData formats.
+
+                * `data (list)`: The native-format of this TaskData object,
+                                 equivalent to the raw JSON file (*.ptask),
+                                 once parsed by this class.
+
+                                 .. code-block:: python
+
+                                    [
+                                      {
+                                        "status"   : "todo",
+                                        "text"     : "a",
+                                        "finished" : false,
+                                        "_id"      : "C176274F1CD741D2AB3FB3F2FAA05D06"
+                                      },
+                                      ...
+                                    ]
+
+                * `rst (str)`:  A string in the ReStructuredText inspired format.
+                                This format is the view of the tasklist that is
+                                edited by the user.
+
+                                .. code-block:: ReStructuredText
+
+                                    *{*36F8F60D60DD46698BE972213697D531*} clean kitchen
+                                        *{*329BB41F3A4446B3A171206BF63D2483*} clean stove
+                                        * clean fridge
+                                        * wash dishes
+
+                                    Homework
+                                    ========
+
+                                    * Calculus: Chapter 11
+
+
+                * `json (str)`: A raw, unparsed string of JSON.
+
+                    .. code-block:: json
+
+                        [
+                          {
                             "status"   : "todo",
-                            "created"  : "2017-07-10T01:01:03.688830",
-                            "text"     : "d",
-                            "section"  : "def",
+                            "text"     : "a",
                             "finished" : false,
-                            "_id"      : "EF98F701F45D45C0A4BFFD183DB35814"
-                        },
-                        {
-                            "status"     : "todo",
-                            "created"    : "2017-07-10T01:01:03.688830",
-                            "text"       : "e",
-                            "parenttask" : "EF98F701F45D45C0A4BFFD183DB35814",
-                            "finished"   : false,
-                            "_id"        : "6128DC89E7054D96B46BFA126DA92AD9"
-                        }
-                        ...
-                    ]
+                            "_id"      : "C176274F1CD741D2AB3FB3F2FAA05D06"
+                          },
+                          ...
+                        ]
 
 
-            filepath (str): ``(ex: '/path/to/file.ptask' )``
-                the full filepath to the file containing JSON text.
+                See also:
+                    * :py:meth:`set_data`
 
         """
-        UserList.__init__(self,'')
+        UserList.__init__(self)
 
-        self.data  = []
-        self._dict = {}
+        # Load
+        if any([taskdata, datafmt]):
+            if not all([taskdata, datafmt]):
+                raise TypeError(
+                    'If either `taskdata` or `datafmt` arguments are provided, '
+                    'they are both required.'
+                )
 
-
-
-        self._saved_data = OrderedDict()  # { UUID:{..task-contents..} }
-
-        if filepath:
-            rawdata   = json.load( open(filepath,'r') )
-            self.data = self.from_ptaskfile( rawdata )
-
-        if fileconts:
-            self.data = self.from_ptaskfile( rawdata=fileconts )
+            self.set_data( taskdata, datafmt )
 
 
-    def from_ptaskfile(self, rawdata ):
+    def isinitialized(self):
         """
-        Reads a *.ptask file (JSON), and parses it into
-        the ReStructuredText format.
+        Returns ``True`` if this object has had it's information
+        set using :py:meth:`set_data` .
+        """
+        if self._isinitialized:
+            return True
+        return False
+
+    def clear(self):
+        """
+        DisAssociates this object with it's info.
+        """
+        self._isinitialized = False
+        self.data           = []
+
+
+    def set_data(self, taskdata, datafmt ):
+        """
+        Reads from a source, and updates the tasklist this object represents.
 
         Args:
-            rawdata (str):
-                the path to a (valid) *.ptask file, that
-                you want represented as a ReStructuredText file.
+            taskdata (str, list):
+                The data that you would like to use (parse)
+                to intialize this :py:obj:`TaskData` object's
+                data.
+
+            datafmt (ptaskmgr.TaskData.datafmt):
+                Indicates the type of data `taskdata` is.
+
+
+        Side Effect:
+
+            This object's tasklist is set:
+
+            .. code-block:: python
+
+                [
+                  {
+                    "status"   : "todo",
+                    "text"     : "a",
+                    "finished" : false,
+                    "_id"      : "C176274F1CD741D2AB3FB3F2FAA05D06"
+                  },
+                  {
+                    "status"     : "todo",
+                    "text"       : "b",
+                    "finished"   : false,
+                    "_id"        : "6D2C0034D18B475E8210909796FB151E",
+                    "parenttask" : "C176274F1CD741D2AB3FB3F2FAA05D06"
+                  },
+                ]
+
+        """
+
+        self.clear()
+
+        if datafmt == TaskData.datafmt.data:
+            self._load_from_taskdata( taskdata )
+
+        elif datafmt == TaskData.datafmt.rst:
+            self._load_from_rst( taskdata )
+
+        elif datafmt == TaskData.datafmt.json:
+            self._load_from_json( taskdata )
+
+        else:
+            raise TypeError(
+                ('`datafmt` expects a choice from the enum '
+                '`TaskData.datafmt`. Received: %s') % datafmt
+            )
+
+        self._isinitialized = True
+
+    def _load_from_taskdata(self, taskdata):
+        """
+        Validates and sets TaskData.
+        """
+        #TODO: validate taskdata!
+        self.data = taskdata
+
+    def _load_from_json(self, jsonstr ):
+        """
+        Loads TaskData from a non-decoded json object (string).
+        """
+
+        taskdata  = json.loads( jsonstr )
+
+        #TODO: convert datatypes into native(?)
+
+        self._load_from_taskdata( taskdata )
+
+    def _load_from_rst(self, rst):
+        """
+        Args:
+            rst (str):
+                A string representing a full, multiline taskdata
+                JSON object represented in ReStructuredText format.
+        """
+        taskdata = _RstTaskParser( rst.split('\n') )
+        self._load_from_taskdata( taskdata )
+
+
+    def render_datafmt(self, datafmt):
+        """
+        Renders the current :py:obj:`TaskData` list to
+        another one of the supported formats, and returns
+        it.
+
+        Args:
+            datafmt (ptaskmgr.TaskData.datafmt):
+                Indicates the type of data `taskdata` is.
+
+        Returns:
+
+            * `data`: a copy of this object (python list)
+            * `json`: a JSON string, ready to be written to a file
+            * `rst`:  a string in the ReStructuredText inspired task list format.
+        """
+
+        if datafmt == TaskData.datafmt.data:
+            return self._render_to_taskdata()
+
+        elif datafmt == TaskData.datafmt.rst:
+            return self._render_to_rst()
+
+        elif datafmt == TaskData.datafmt.json:
+            return self._render_to_json()
+
+        else:
+            raise TypeError(
+                ('`datafmt` expects a choice from the enum '
+                '`TaskData.datafmt`. Received: %s') % datafmt
+            )
+
+    def _render_to_taskdata(self):
+        """
 
         Returns:
 
             .. code-block:: python
 
-                *{*901A94884FE94EA18DE1879623986DF5*} task
-                    *{*11F9AAEF279A45C19E9B38B56A0F4076*} subtask
-                    *{*334a1033493f44178e098b32bbf82e29*} subtask
+                [
+                    {
+                        "_id":      "40429D679A504ED99F97D0D16067B2B3",
+                        "section":  "other",
+                        "created":  "2017-06-11T22:40:52.460849-04:00",
+                        "finished": null,
+                        "text":     "A task under a different category",
+                        "status":   "skip"
+                    },
+                    {
+                        "_id":      "E061DCB183EF4C418E97DEE63332C1A0",
+                        "section":  "misc",
+                        "created":  "2017-06-11T22:40:52.460849-04:00",
+                        "finished": null,
+                        "text":     "A test comment within a category",
+                        "status":   "todo"
+                    },
+                ]
+        """
+        return list(self)
 
+    def _render_to_json(self):
+        """
+        Produces an encoded JSON object, ready
+        to be written to a file
 
-                section
-                =======
+        Returns:
 
-                *{*308BD44370D543C8AFD5FF81F6383B1B*} task
-                *{*2F23AD7FEF854B6F921689F310192A1D*} task2
-                    *{*9A70C15B39B149FFBBC69C6B5ACC7801*} subtask
+            .. code-block:: json
+
+                [
+                    {
+                        "_id":      "40429D679A504ED99F97D0D16067B2B3",
+                        "section":  "other",
+                        "created":  "2017-06-11T22:40:52.460849-04:00",
+                        "finished": null,
+                        "text":     "A task under a different category",
+                        "status":   "skip"
+                    },
+                    {
+                        "_id":      "E061DCB183EF4C418E97DEE63332C1A0",
+                        "section":  "misc",
+                        "created":  "2017-06-11T22:40:52.460849-04:00",
+                        "finished": null,
+                        "text":     "A test comment within a category",
+                        "status":   "todo"
+                    },
+                ]
+
+        """
+        return json.dumps( list(self), indent=2 )
+
+    def _render_to_rst(self):
+        """
+        ReStructures the current data as a ReStructuredText inspired
+        string. This is what users edit in vim.
+
+        Returns:
+
+            .. code-block:: ReStructuredText
+
+                *{*36F8F60D60DD46698BE972213697D531*} clean kitchen
+                    *{*329BB41F3A4446B3A171206BF63D2483*} clean stove
+                    * clean fridge
+                    * wash dishes
+
+                Homework
+                ========
+
+                * Calculus: Chapter 11
         """
 
-        self.data        = ''
-        self._saved_data = OrderedDict()
-
+        tasks     = OrderedDict()
         hierarchy = {
             'toplevel_tasks': [],
             'sections':       OrderedDict(),
@@ -208,8 +423,8 @@ class PtaskFile( UserList ):
         # }
         #
         # saved as OrderedDict() so that item-order is preserved.
-        for task in rawdata:
-            self._saved_data[ task['_id'] ] = task
+        for task in self.data:
+            tasks[ task['_id'] ] = task
             if 'section' in task:
                 if task['section']:
                     if task['section'] not in hierarchy['sections']:
@@ -230,36 +445,38 @@ class PtaskFile( UserList ):
 
 
         # recurse through toplevel tasks, then sections,
-        # building `ptask_str` progressively
+        # building `rst_str` progressively
         # ==============================================
 
-        ptask_str = '\n\n'
+        rst_str = '\n\n'
 
         for taskId in hierarchy['toplevel_tasks']:
-            ptask_str = self._get_ptaskdata_tasks(
+            rst_str = self._get_taskhier_branch_rst(
                 taskId    = taskId,
-                ptask_str = ptask_str,
-                jsondata  = rawdata,
+                ptask_str = rst_str,
                 hierarchy = hierarchy,
             )
+
         for section in hierarchy['sections']:
-            ptask_str += '\n\n'
-            ptask_str += section +'\n'
-            ptask_str += '=' * len(section) +'\n\n'
+            rst_str += '\n\n'
+            rst_str += section +'\n'
+            rst_str += '=' * len(section) +'\n\n'
 
             for taskId in hierarchy['sections'][section]:
-                ptask_str = self._get_ptaskdata_tasks(
+                rst_str = self._get_taskhier_branch_rst(
                     taskId    = taskId,
-                    ptask_str = ptask_str,
-                    jsondata  = rawdata,
+                    ptask_str = rst_str,
                     hierarchy = hierarchy,
                 )
 
+        return rst_str
 
-        return ptask_str
-
-    def _get_ptaskdata_tasks(self, taskId, ptask_str, jsondata, hierarchy, depth=0 ):
+    def _get_taskhier_branch_rst(self, taskId, ptask_str, hierarchy, depth=0 ):
         """
+        Renders a task and all of it's entire child-task hierarchy
+        in the ReStructuredText inspired format
+        (appending to the existing `ptask_str`, if provided).
+
 
         Args:
             taskId (str):
@@ -268,9 +485,6 @@ class PtaskFile( UserList ):
             ptask_str (str):
                 the string destined to be the *.ptask file so far.
                 (return value)
-
-            jsondata (list(dict)):
-                the raw parsed *.ptaskdata file (json)
 
             hierarchy (dict):
                 A dict of taskIds (parent), and their children.
@@ -299,84 +513,163 @@ class PtaskFile( UserList ):
                     *{*11F9AAEF279A45C19E9B38B56A0F4076*} subtask
                     *{*334a1033493f44178e098b32bbf82e29*} subtask
 
-
-                section
-                =======
-
-                *{*308BD44370D543C8AFD5FF81F6383B1B*} task
-                *{*2F23AD7FEF854B6F921689F310192A1D*} task2
-                    *{*9A70C15B39B149FFBBC69C6B5ACC7801*} subtask
         """
 
-        task = self._task_from_taskId( taskId, jsondata )
+        taskinfo = self.get_taskinfo( taskId )
 
-        if not task:
+        if not taskinfo:
             return
 
-        if task['status'] == 'todo':
-            status = '*'
-        elif task['status'] == 'done':
-            status = 'x'
-        elif task['status'] == 'wip':
-            status = 'o'
-        elif task['status'] == 'skip':
-            status = '-'
+        if   taskinfo.status  == 'todo': status = '*'
+        elif taskinfo.status  == 'done': status = 'x'
+        elif taskinfo.status  == 'wip':  status = 'o'
+        elif taskinfo.status  == 'skip': status = '-'
 
         # current task
-        ptask_str += ('    '*depth) + '%s{{*{_id}*}} {text}\n'.format(**task) % status
+        ptask_str += ('    '*depth) + '%s{*%s*} %s\n' % (status, taskinfo.uuid, taskinfo.text)
+
 
         # recurse for subtasks
-        if task['_id'] in hierarchy['tasks']:
-            for _taskId in hierarchy['tasks'][ task['_id'] ]:
-                ptask_str = self._get_ptaskdata_tasks(
+        if taskinfo.uuid in hierarchy['tasks']:
+            for _taskId in hierarchy['tasks'][ taskinfo.uuid ]:
+                ptask_str = self._get_taskhier_branch_rst(
                     taskId    = _taskId,
                     ptask_str = ptask_str,
-                    jsondata  = jsondata,
                     hierarchy = hierarchy,
                     depth     = depth+1,
                 )
 
         return ptask_str
 
-    def _task_from_taskId(self, taskId, jsondata):
+
+    def get_taskinfo(self, taskId):
         """
+        Obtains a `taskinfo` :py:obj:`namedtuple` with task information.
+
         Returns:
 
             .. code-block:: python
 
                 # If a task matching taskId is found
-                {
-                    '_id': 'cb798ab368eb400fa4d0edd941c03536',
-                    'section': 'misc',
-                    'created': '2017-06-12T21:42:43.084966-04:00',
-                    'finished': None,
-                    'text':    'Make sure to do blah',
-                }
+                taskinfo = _taskinfo(
+                    uuid        = 'cb798ab368eb400fa4d0edd941c03536',
+                    text        = 'Make sure to do blah',
+                    section     = None,  # or the section name
+                    status      = 'todo',
+                    parent      = None
+                    parent_type = 'root', # 'root', 'section', 'task'
+
+                    isnew       = False,  # all tasks obtained from this method
+                                          # return False, because they exist in
+                                          # this TaskData() object.
+                )
 
                 # If no task matches taskId
                 False
         """
+
+        if not self.isinitialized():
+            raise RuntimeError(
+                'Cannot retrive a taskId if this object is not initialized with any taskdata.'
+                'Make sure to run `TaskData().set_data()` before using this method.'
+            )
+
         # find task from taskId
         # =====================
-        for task in jsondata:
+        for task in self.data:
             if task['_id'] == taskId:
-                return task
+
+                if 'parenttask' in task:
+                    parent      = task['parenttask']
+                    parent_type = 'task'
+
+                elif 'section' in task:
+                    parent      = task['section']
+                    parent_type = 'section'
+
+                else:
+                    parent      = None
+                    parent_type = 'root'
+
+
+                section = None
+                if section in task:
+                    section = task['section']
+
+                taskinfo = _taskinfo(
+                    uuid        = taskId,
+                    text        = task['text'],
+                    section     = section,
+                    status      = task['status'],
+                    parent      = parent,
+                    parent_type = parent_type,
+                    isnew       = False,
+                )
+
+                return taskinfo
 
         logger.error('Corrupted Data: Unable to find task with ID: %s' % taskId)
         return False
 
 
-    def edit_task(self):
+
+class _RstTaskParser( UserList ):
+    """
+    Parses a ReStructuredText inspired todolist into
+    a format that is compatible with :py:obj:`ptaskmgr.TaskData`
+    """
+    def __init__(self, fileconts ):
         """
-        Edit a single task as a conf file
+        Args:
+            fileconts (collections.Iterable):
+                A list, file-descriptor, or other iterable
+                collection where each item represents a single
+                line of text from the ReStructuredText
+                formatted taskfile.
         """
-        # will require it's own pair of data vs string
-        # (unless we use something like a conf-file as intermediary)
-        raise NotImplementedError('TODO')
+        UserList.__init__(self)
+
+        now = datetime.datetime.utcnow()
+
+        taskdata = []
+        for task in self._taskinfo_from_rst( fileconts ):
+            new_task = {
+                'status': task.status,
+                'text'  : task.text,
+                '_id'   : task.uuid,
+            }
+
+            # finished
+            if task.status in ('skip','done'):
+                new_task['finished'] = True
+            else:
+                new_task['finished'] = False
 
 
-    def ptask_taskinfo(self, fileconts):
+            # created timestamp
+            if task.isnew:
+                new_task['created'] = now.isoformat()
+
+
+            # parent info
+            if task.parent_type == 'root':
+                pass
+
+            elif task.parent_type == 'task':
+                new_task['parenttask'] = task.parent
+
+            elif task.parent_type == 'section':
+                new_task['section'] = task.parent
+
+
+            taskdata.append( new_task )
+
+        self.data = taskdata
+
+    def _taskinfo_from_rst(self, fileconts):
         """
+        Creates a list of :py:obj:`_taskinfo` objects for all.
+
         Args:
             fileconts (collections.Iterable):
                 A list, file-descriptor, or other iterable
@@ -796,58 +1089,9 @@ class PtaskFile( UserList ):
         return last_encountered
 
 
-    def archive_task(self):
-        pass
-
-
-
-class PtaskDataFile( UserList ):
-    """
-    Converts a :py:obj:`PtaskFile` string (vim buffer) into
-    a JSON file.
-    """
-    def __init__(self, filepath=None ):
-        UserList.__init__(self)
-
-        if filepath:
-            self._read_from_file( filepath )
-
-    def _read_from_file(self, filepath):
-
-        if not filepath:
-            self.data = {}
-            return
-
-        self.data = json.load( open(filepath, 'r') )
-
-
 
 
 if __name__ == '__main__':
     import os
     projdir   = '/'.join( os.path.realpath(__file__).split('/')[:-2] )
-
-    def test_ptaskdata_2_ptask( projdir ):
-        ptaskdata_file = '{projdir}/examples/raw/work.ptaskdata'.format(**locals())
-        ptask = PtaskFile( ptaskdata_file )
-
-        print(ptask)
-
-    def test_ptask_taskinfo( projdir ):
-        with open( '{projdir}/examples/raw/work_valid.ptask'.format(**locals()), 'r' ) as fd:
-            ptask = PtaskFile()
-            taskinfo  = ptask.ptask_taskinfo( fd )
-
-            print('----')
-            for task in taskinfo:
-                print( task )
-
-    def runtests():
-        #test_ptaskdata_2_ptask( projdir )
-        test_ptask_taskinfo( projdir )
-
-    runtests()
-
-
-
 

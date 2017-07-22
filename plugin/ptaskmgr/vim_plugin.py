@@ -18,7 +18,7 @@ import json
 import sys
 import os
 #package
-import ptaskmgr.parser
+from ptaskmgr.parser import TaskData
 #external
 import vim
 import six
@@ -27,6 +27,17 @@ import six
 
 # Core Functions
 # ==============
+
+def _read_jsonfile( filepath ):
+    json_taskdata = ''
+    if os.path.isfile( filepath ):
+        with open( filepath, 'r' ) as fd:
+            json_taskdata = fd.read()
+
+    if not json_taskdata.strip():
+        json_taskdata = '[]'
+
+    return json_taskdata
 
 def jsonfile_to_rst():
     """
@@ -70,8 +81,11 @@ def jsonfile_to_rst():
     """
     filepath = vim.current.buffer.name
 
-    parsed = ptaskmgr.parser.PtaskFile( filepath )
-    vim.current.buffer[:] = parsed.split('\n')
+    taskdata     = TaskData( _read_jsonfile(filepath), TaskData.datafmt.json )
+    rst_taskdata = taskdata.render_datafmt( TaskData.datafmt.rst )
+
+
+    vim.current.buffer[:] = rst_taskdata.split('\n')
     vim.command('set ft=ptaskmgr')
 
 def rst_to_json():
@@ -91,56 +105,45 @@ def rst_to_json():
 
     """
 
-    # saved JSON data
-    taskdata     = ptaskmgr.parser.PtaskDataFile( vim.current.buffer.name )
-    new_taskdata = []
+    # currently saved JSON data
+    filepath = vim.current.buffer.name
 
+    current_taskdata = TaskData(
+        taskdata = _read_jsonfile( filepath ),
+        datafmt  = TaskData.datafmt.json,
+    )
     now = datetime.datetime.utcnow()
 
+
+    # parse vim buffer's RST --> JSON
     try:
-        # vim Rst contents parsed into taskinfo
-        conts        = vim.current.buffer[:]
-        buffer_info  = ptaskmgr.parser.PtaskFile().ptask_taskinfo( conts )
+        conts = vim.current.buffer[:]
+
+        new_taskdata = TaskData(
+            taskdata = '\n'.join( conts ),
+            datafmt  = TaskData.datafmt.rst
+        )
+
+        vim.current.buffer[:] = (
+            new_taskdata.render_datafmt(
+                TaskData.datafmt.json
+            ).split('\n')
+        )
 
 
-        for task in buffer_info:
-            new_task = {
-                'status': task.status,
-                'text'  : task.text,
-                '_id'   : task.uuid,
-            }
 
-            # finished
-            if task.status in ('skip','done'):
-                new_task['finished'] = True
-            else:
-                new_task['finished'] = False
-
-
-            # created timestamp
-            if task.isnew:
-                new_task['created'] = now.isoformat()
-
-
-            # parent info
-            if task.parent_type == 'root':
-                pass
-
-            elif task.parent_type == 'task':
-                new_task['parenttask'] = task.parent
-
-            elif task.parent_type == 'section':
-                new_task['section'] = task.parent
-
-
-            new_taskdata.append( new_task )
-
+    # restore original saved TASKDATA on error
     except:
-        vim.current.buffer[:] = json.dumps( list(taskdata), indent=2 ).split('\n')
+        json_taskdata = current_taskdata.render_datafmt(
+            TaskData.datafmt.json
+        )
+        if not json_taskdata.strip():
+            json_taskdata = '[]'
+
+        vim.current.buffer[:] = json_taskdata.split('\n')
         six.reraise( *sys.exc_info() )
 
 
-    vim.current.buffer[:] = json.dumps( list(new_taskdata), indent=2 ).split('\n')
 
 def archive_completed_tasks( taskIds ):
     """
