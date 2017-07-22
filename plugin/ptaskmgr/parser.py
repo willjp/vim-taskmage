@@ -31,8 +31,31 @@ else:
     from collections import UserList
 #package
 from . import six
+from .project import get_projectroot
 #external
 #internal
+
+
+#!TODO: Figure out how to determine project-root,
+#!      so that tasks can be archived.
+#!
+#!      it might make most sense to use a directory
+#!      just like git. In this way, we can keep track
+#!      of completed tasks in addition to keeping track
+#!      of the project-root.
+
+#!TODO: This should be divided into functions,
+#!        the classes don't make sense...
+
+#!TODO: Save comments insead of just ignoring them
+
+#!TODO: Archive tasks
+
+#!TODO: json-ptyhon enforce datatypes? anything special to do here?
+#!TODO: validate taskdata in _load_from_taskdata!!!
+
+#!TODO: do we really need both _taskdef AND _taskinfo (?)
+
 
 
 _taskinfo = namedtuple(
@@ -79,29 +102,11 @@ class _ParserHandled( Enum ):
                             # to handle with other parser methods, but do not
                             # add the item to the list of tasks just yet.
 
-
-#!TODO: Figure out how to determine project-root,
-#!      so that tasks can be archived.
-#!
-#!      it might make most sense to use a directory
-#!      just like git. In this way, we can keep track
-#!      of completed tasks in addition to keeping track
-#!      of the project-root.
-
-#!TODO: This should be divided into functions,
-#!        the classes don't make sense...
-
-#!TODO: Save comments insead of just ignoring them
-
-#!TODO: Archive tasks
-
-#!TODO: json-ptyhon enforce datatypes? anything special to do here?
-#!TODO: validate taskdata in _load_from_taskdata!!!
-
-#!TODO: do we really need both _taskdef AND _taskinfo (?)
-
-
 class _TaskDataFmt( Enum ):
+    """
+    Enum listing the various accepted input/output formats
+    of for :py:obj:`ptaskmgr.TaskData` .
+    """
     data = 1
     rst  = 2
     json = 3
@@ -610,6 +615,46 @@ class TaskData( UserList ):
 
         logger.error('Corrupted Data: Unable to find task with ID: %s' % taskId)
         return False
+
+    def archive_tasks(self, taskIds):
+        """
+        Archives tasks fro this :py:obj:`TaskData` object.
+
+        Args:
+            taskIds (list(str), optional): ``(ex: None, ['E7E47D40A54244B997A61F074738CCF7', ...] )``
+                A list of uuids of the tasks you'd like to archive.
+        """
+        # nothing to do
+        if not taskIds:
+            return
+
+        raise NotImplementedError('todo')
+
+
+        # remove tasks from self.data
+        archived_tasks = {}
+        for i in range(len(self.data)):
+            task = self.data[i]
+
+            if task['_id'] in taskIds:
+
+
+                # remove from self.data
+                archived_tasks[ task['_id'] ] = self.data.pop(i)
+
+
+
+    def archive_completed(self):
+        """
+        Archives all completed tasks.
+        """
+        completed_tasks = set()
+        for task in self.data:
+            if task['status'] in ('skip','done'):
+                completed_tasks.add( task['_id'] )
+
+        if completed_tasks:
+            self.archive_tasks( completed_tasks )
 
 
 
