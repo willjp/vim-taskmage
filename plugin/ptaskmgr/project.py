@@ -30,8 +30,19 @@ def get_projectroot(cwd='.'):
             to start searching for the projectroot from.
 
             (otherwise, the current directory is used)
+
+    Returns:
+
+        .. code-block:: python
+
+            '/path/to/project' ## (directory containing .ptaskmgr directory)
+            False              ## if no project is found
+
     """
+
     cwd = os.path.abspath( cwd )
+    if cwd[-1] == '/':
+        cwd = cwd[:-1]
 
     if os.path.isfile( cwd ):
         (cwd,filename) = os.path.split( cwd )
@@ -40,14 +51,12 @@ def get_projectroot(cwd='.'):
     dirpaths = cwd.split('/')
 
     while dirpaths:
-        if os.path.isdir( '/'.join(cwd) + '.ptaskmgr' ):
-            return '/'.join(cwd) + '.ptaskmgr'
+        testdir = '/'.join(dirpaths) +'/.ptaskmgr'
+        if os.path.isdir( testdir ):
+            return '/'.join(dirpaths)
         dirpaths = dirpaths[:-1]
 
-    raise RuntimeError(
-        'Unable to find project-root'
-    )
-
+    return False
 
 def create_projectroot( dirpath ):
     """

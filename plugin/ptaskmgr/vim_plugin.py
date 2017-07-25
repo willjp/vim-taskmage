@@ -18,7 +18,8 @@ import json
 import sys
 import os
 #package
-from ptaskmgr.parser import TaskData
+from ptaskmgr.parser  import TaskData
+from ptaskmgr.project import get_projectroot, create_projectroot
 #external
 import vim
 import six
@@ -144,8 +145,7 @@ def rst_to_json():
         six.reraise( *sys.exc_info() )
 
 
-
-def archive_completed_tasks( taskIds ):
+def archive_completed_tasks():
     """
     Archives provided taskIds (from opened *.ptask file in ReStructuredText format)
     if their status is *complete*.
@@ -162,7 +162,41 @@ def archive_completed_tasks( taskIds ):
 
             set(['FFC02020BC984711838327B888EFAD1C', ...])
     """
-    pass
+
+    filepath = vim.current.buffer.name
+    fmt_rst  = TaskData.datafmt.rst
+    fmt_json = TaskData.datafmt.json
+
+    # get path to archived tasks
+    projectroot = get_projectroot( filepath )
+    if not projectroot:
+        raise RuntimeError( 'No project was found in parent '
+                            'hierarchy (.ptaskmgr directory)' )
+    root2task_path    = filepath[ len(projectroot) : ]
+    archivedtask_path = projectroot +'/.ptaskmgr'+ root2task_path
+
+
+    # convert current vim buffer(rst) to json,
+    # and obtain contents of archived taskfile
+    conts = vim.current.buffer[:]
+    vimbuf_taskdata   = TaskData( '\n'.join(conts), fmt_rst )
+    archived_taskdata = TaskData( _read_jsonfile(archivedtask_path), fmt_json )
+
+    # move tasks from vimbuf_taskdata to archived_taskdata
+    removed_tasks = vimbuf_taskdata.remove_completed()
+    for taskinfo in removed_tasks:
+        archived_taskdata.add_taskinfo( taskinfo )
+
+
+    # write changes to vimbuffer/archived taskfiles
+    with open( filepath, 'w' ) as fd:
+        fd.write( vimbuf_taskdata.render_datafmt(fmt_json) )
+
+    with open( archivedtask_path, 'w' ) as fd:
+        fd.write( archived_taskdata.render_datafmt(fmt_json) )
+
+    # reopen
+    vim.command('edit "%s"' % filepath)
 
 
 

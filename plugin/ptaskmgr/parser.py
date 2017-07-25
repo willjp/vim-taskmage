@@ -35,24 +35,13 @@ from .project import get_projectroot
 #external
 #internal
 
-
-#!TODO: Figure out how to determine project-root,
-#!      so that tasks can be archived.
+#!TODO: Task Archiving is technically working BUT:
 #!
-#!      it might make most sense to use a directory
-#!      just like git. In this way, we can keep track
-#!      of completed tasks in addition to keeping track
-#!      of the project-root.
-
-#!TODO: This should be divided into functions,
-#!        the classes don't make sense...
+#!        * completed child-tasks are being archived ignoring parent status
+#!        * completed tasks are being saved as NULL in the json object
+#!          instead of their dictionary object
 
 #!TODO: Save comments insead of just ignoring them
-
-#!TODO: Archive tasks
-
-#!TODO: json-ptyhon enforce datatypes? anything special to do here?
-#!TODO: validate taskdata in _load_from_taskdata!!!
 
 #!TODO: do we really need both _taskdef AND _taskinfo (?)
 
@@ -102,6 +91,8 @@ class _ParserHandled( Enum ):
                             # to handle with other parser methods, but do not
                             # add the item to the list of tasks just yet.
 
+
+
 class _TaskDataFmt( Enum ):
     """
     Enum listing the various accepted input/output formats
@@ -110,6 +101,7 @@ class _TaskDataFmt( Enum ):
     data = 1
     rst  = 2
     json = 3
+
 
 
 class TaskData( UserList ):
@@ -301,6 +293,18 @@ class TaskData( UserList ):
         taskdata = _RstTaskParser( rst.split('\n') )
         self._load_from_taskdata( taskdata )
 
+
+    def add_taskinfo(self, taskinfo):
+        """
+        Adds a single task to this taskdata object
+        from a :py:obj:`_taskinfo` namedtuple.
+
+        Args:
+            taskinfo (_taskinfo):
+                A :py:obj:`_taskinfo` object representing a task
+        """
+        task = self.taskinfo_to_task( taskinfo )
+        self.data.append( task )
 
     def render_datafmt(self, datafmt):
         """
@@ -616,37 +620,85 @@ class TaskData( UserList ):
         logger.error('Corrupted Data: Unable to find task with ID: %s' % taskId)
         return False
 
-    def archive_tasks(self, taskIds):
+    def remove_tasks(self, taskIds):
         """
-        Archives tasks fro this :py:obj:`TaskData` object.
+        Removes tasks from this :py:obj:`TaskData` object.
+        (this is used when archiving tasks)
 
         Args:
             taskIds (list(str), optional): ``(ex: None, ['E7E47D40A54244B997A61F074738CCF7', ...] )``
                 A list of uuids of the tasks you'd like to archive.
+
+        Returns:
+
+            .. code-block:: python
+
+                [
+                    _taskinfo(
+                        uuid        = 'cb798ab368eb400fa4d0edd941c03536',
+                        text        = 'Make sure to do blah',
+                        section     = None,  # or the section name
+                        status      = 'todo',
+                        parent      = None
+                        parent_type = 'root', # 'root', 'section', 'task'
+
+                        isnew       = False,  # all tasks obtained from this method
+                                              # return False, because they exist in
+                                              # this TaskData() object.
+                    ),
+                    _taskinfo(...),
+                    ...
+                ]
+
         """
         # nothing to do
         if not taskIds:
             return
 
-        raise NotImplementedError('todo')
-
-
         # remove tasks from self.data
-        archived_tasks = {}
-        for i in range(len(self.data)):
-            task = self.data[i]
+        archived_tasks = []
+        if self.data:
+            for i in range(len(self.data)-1):
+                task = self.data[i]
 
-            if task['_id'] in taskIds:
+                if task['_id'] in taskIds:
 
+                    # remove from self.data
+                    archived_tasks.append( self.get_taskinfo(task['_id']) )
+                    self.data.pop(i)
 
-                # remove from self.data
-                archived_tasks[ task['_id'] ] = self.data.pop(i)
+        return archived_tasks
 
-
-
-    def archive_completed(self):
+    def remove_completed(self):
         """
-        Archives all completed tasks.
+        Removes all completed tasks.
+        (this is used when archiving tasks)
+
+        Returns:
+
+            .. code-block:: python
+
+                ## if completed tasks
+                [
+                    _taskinfo(
+                        uuid        = 'cb798ab368eb400fa4d0edd941c03536',
+                        text        = 'Make sure to do blah',
+                        section     = None,  # or the section name
+                        status      = 'todo',
+                        parent      = None
+                        parent_type = 'root', # 'root', 'section', 'task'
+
+                        isnew       = False,  # all tasks obtained from this method
+                                              # return False, because they exist in
+                                              # this TaskData() object.
+                    ),
+                    _taskinfo(...),
+                    ...
+                ]
+
+                ## if no completed tasks
+                []
+
         """
         completed_tasks = set()
         for task in self.data:
@@ -654,7 +706,47 @@ class TaskData( UserList ):
                 completed_tasks.add( task['_id'] )
 
         if completed_tasks:
-            self.archive_tasks( completed_tasks )
+            return self.remove_tasks( completed_tasks )
+        else:
+            return []
+
+
+    def taskinfo_to_task(self, taskinfo ):
+        """
+        Converts a taskinfo (namedtuple) object to a task
+        dictionary (as it appears in JSON file).
+
+        Args:
+            taskinfo (_taskinfo):
+                A :py:obj:`_taskinfo` object representing a task
+        """
+        new_task = {
+            'status': taskinfo.status,
+            'text'  : taskinfo.text,
+            '_id'   : taskinfo.uuid,
+        }
+
+        # finished
+        if taskinfo.status in ('skip','done'):
+            new_task['finished'] = True
+        else:
+            new_task['finished'] = False
+
+
+        # created timestamp
+        if taskinfo.isnew:
+            new_task['created'] = now.isoformat()
+
+
+        # parent info
+        if taskinfo.parent_type == 'root':
+            pass
+
+        elif taskinfo.parent_type == 'task':
+            new_task['parenttask'] = taskinfo.parent
+
+        elif taskinfo.parent_type == 'section':
+            new_task['section'] = taskinfo.parent
 
 
 

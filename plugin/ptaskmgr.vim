@@ -15,6 +15,19 @@ else
 endif
 
 
+"" Commands
+""
+
+function! PtaskArchiveCompleted()
+    py ptaskmgr.vim_plugin.archive_completed_tasks()
+endfunc
+command PtaskArchiveCompleted  call PtaskArchiveCompleted()
+
+
+
+"" AutoCmds
+""
+
 
     " on-read, replace buffer with RST
 autocmd BufRead      *.ptask  py ptaskmgr.vim_plugin.jsonfile_to_rst()
