@@ -192,13 +192,11 @@ little notes about tasks, that are highlighted differently.
 
 
 
-
 Project:
 ========
 
 Like git, ptaskmgr uses a directory to indicate both a project-root,
-and store completed task-data. Currently ptaskmgr has no configuration,
-but this is where it would be located if it was to required.
+and store completed task-data. 
 
 
 .. code-block:: python

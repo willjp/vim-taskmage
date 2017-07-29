@@ -24,12 +24,19 @@ function! PtaskArchiveCompleted()
 endfunc
 command PtaskArchiveCompleted  call PtaskArchiveCompleted()
 
+
 function! PtaskOpenCounterpart( open_command )
     execute 'py ptaskmgr.vim_plugin.open_counterpart( "'. a:open_command .'" )'
 endfunc
 command PtaskToggle call PtaskOpenCounterpart('edit')
 command PtaskSplit  call PtaskOpenCounterpart('split')
 command PtaskVSplit call PtaskOpenCounterpart('vsplit')
+
+
+function! PtaskCreateProject()
+    py ptaskmgr.vim_plugin.create_project()
+endfunc
+command PtaskCreateProject call PtaskCreateProject()
 
 
 

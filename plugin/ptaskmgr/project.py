@@ -64,20 +64,22 @@ def create_projectroot( dirpath ):
 
     This directory stores completed tasks, and any other info.
 
+
     Args:
-        dirpath (str): ``(ex: '/home/project/root' )``
+        dirpath (str): ``(ex: '/home/project/root', '/home/project/root/.ptaskmgr' )``
             The path to your projectroot.
+
     """
 
     dirpath = dirpath.replace('\\','/')
 
     # if dirpath includes the .ptaskmgr dir, remove
     lastdir = dirpath.split('/')[-1]
-    if lastdir != '.ptaskmgr':
+    if lastdir == '.ptaskmgr':
         dirpath = '/'.join( dirpath.split('/')[:-1] )
 
-    if not os.path.isdir( dirpath + '.ptaskmgr' ):
-        os.path.makedirs( dirpath + '.ptaskmgr' )
+    if not os.path.isdir( dirpath + '/.ptaskmgr' ):
+        os.makedirs( dirpath + '/.ptaskmgr' )
 
 
 

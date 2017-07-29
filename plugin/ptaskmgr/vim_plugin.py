@@ -19,7 +19,7 @@ import sys
 import os
 #package
 from ptaskmgr.parser  import TaskData
-from ptaskmgr.project import get_projectroot, create_projectroot
+from ptaskmgr         import project
 #external
 import vim
 import six
@@ -187,10 +187,10 @@ def archive_completed_tasks():
     fmt_json = TaskData.datafmt.json
 
     # get path to archived tasks
-    projectroot = get_projectroot( filepath )
-    if not projectroot:
-        raise RuntimeError( 'No project was found in parent '
-                            'hierarchy (.ptaskmgr directory)' )
+    projectroot = get_projectroot()
+    if not projectroot: # handle user-cancelled
+        return
+
     root2task_path    = filepath[ len(projectroot) : ]
     archivedtask_path = projectroot +'/.ptaskmgr'+ root2task_path
 
@@ -203,7 +203,6 @@ def archive_completed_tasks():
 
     # move tasks from vimbuf_taskdata to archived_taskdata
     removed_tasks = vimbuf_taskdata.remove_completed()
-    print( removed_tasks )
     for taskinfo in removed_tasks:
         archived_taskdata.add_taskinfo( taskinfo )
 
@@ -250,6 +249,74 @@ def open_counterpart( open_command='edit' ):
 
 # Fine Grain Controls
 # ===================
+
+def get_projectroot():
+    """
+    Obtains/Returns project.
+    If no project is found, prompts the user to
+    specify a project directory.
+
+    Returns:
+
+        The path to the existing project (creating if necessary)
+
+        .. code-block:: python
+
+            '/home/user/todos'  # the projectroot dir
+            False               # if cancelled by user
+
+    """
+
+    filepath = vim.current.buffer.name
+
+    # if projectroot exists, return
+    projectroot = project.get_projectroot( filepath )
+    if projectroot:
+        return projectroot
+
+    # if not exists, prompt user to create new projectroot
+    try:
+        vim.command('call inputsave()')
+        vim.command("let projectroot=input( 'Create New Ptask Project at:', '.', 'file' )")
+        vim.command('call inputrestore()')
+        projectroot = vim.eval('projectroot')
+    except( KeyboardInterrupt ):
+        print('Operation Cancelled By User')
+        return False
+
+    if not projectroot:
+        print( 'User Defined project is empty. Aborting.' )
+        return False
+
+    projectroot = os.path.abspath( projectroot )
+
+    if projectroot not in filepath:
+        raise RuntimeError(
+            'User Defined project is not a parent directory of current file'
+        )
+
+
+    # create/return the new projectroot
+    project.create_projectroot( projectroot )
+    return projectroot
+
+def create_project():
+    """
+    Interactive Vim Prompt to create a new PtaskMgr project
+    ( in any location )
+    """
+    vim.command('call inputsave()')
+    vim.command("let projectroot=input( 'Create New Ptask Project at:', '.', 'file' )")
+    vim.command('call inputrestore()')
+    projectroot = vim.eval('projectroot')
+
+    if not projectroot:
+        print('No project defined. aborting')
+        return
+
+    project.create_project( projectroot )
+
+
 
 def archive_selected():
     """
@@ -307,6 +374,9 @@ def find_counterpart():
         archived_taskpath = '{projectroot}/.ptaskmgr/{rel_taskpath}'.format(**locals())
 
         return archived_taskpath
+
+
+
 
 
 if __name__ == '__main__':

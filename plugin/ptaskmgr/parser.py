@@ -35,13 +35,7 @@ from .project import get_projectroot
 #external
 #internal
 
-#!TODO: Task Archiving is technically working BUT:
-#!
-#!        * completed child-tasks are being archived ignoring parent status
-#!        * completed tasks are being saved as NULL in the json object
-#!          instead of their dictionary object
-
-#!TODO: Save comments insead of just ignoring them
+#!TODO: multiline task comments
 
 #!TODO: do we really need both _taskdef AND _taskinfo (?)
 
@@ -105,12 +99,91 @@ class _TaskDataFmt( Enum ):
 
 
 class TaskData( UserList ):
+    """
+    An object representing a single *.ptask file's list of tasks
+    as a python list.
+
+
+    Example:
+
+        .. code-block:: python
+
+            [
+                {
+                    '_id':        '52EB34660CBE40EFA481452909BCD408',
+                    'status':     'todo',   # todo, done, skip, wip
+                    'created':    '2017-07-26T20:26:13.675941-04:00',
+                    'text':       'finish fixing ...',
+
+                    # optional keys
+                    'parenttask': 'E762BCA9CAA1477CB102E7DA3DE7E2B0',
+                    'section':    'home todos',
+                }
+            ]
+
+
+    Attributes:
+
+        datafmt (Enum):
+            Enum class that lists the accepted
+            types of TaskData formats.
+
+            * `data (list)`: The native-format of this TaskData object,
+                             equivalent to the raw JSON file (*.ptask),
+                             once parsed by this class.
+
+                             .. code-block:: python
+
+                                [
+                                  {
+                                    "status"   : "todo",
+                                    "text"     : "a",
+                                    "finished" : false,
+                                    "_id"      : "C176274F1CD741D2AB3FB3F2FAA05D06"
+                                  },
+                                  ...
+                                ]
+
+            * `rst (str)`:  A string in the ReStructuredText inspired format.
+                            This format is the view of the tasklist that is
+                            edited by the user.
+
+                            .. code-block:: ReStructuredText
+
+                                *{*36F8F60D60DD46698BE972213697D531*} clean kitchen
+                                    *{*329BB41F3A4446B3A171206BF63D2483*} clean stove
+                                    * clean fridge
+                                    * wash dishes
+
+                                Homework
+                                ========
+
+                                * Calculus: Chapter 11
+
+
+            * `json (str)`: A raw, unparsed string of JSON.
+
+                .. code-block:: json
+
+                    [
+                      {
+                        "status"   : "todo",
+                        "text"     : "a",
+                        "finished" : false,
+                        "_id"      : "C176274F1CD741D2AB3FB3F2FAA05D06"
+                      },
+                      ...
+                    ]
+
+
+
+            See also:
+                * :py:meth:`set_data`
+
+    """
     datafmt = _TaskDataFmt # enum with various data formats
     def __init__(self, taskdata=None, datafmt=None ):
         """
-        An object representing a single *.ptask file's list of tasks
-        as a python list.
-
         Args:
             taskdata (str, list, optional):
                 The data that you would like to use (parse)
@@ -119,83 +192,6 @@ class TaskData( UserList ):
 
             datafmt (ptaskmgr.TaskData.datafmt, optional):
                 Indicates the type of data `taskdata` is.
-
-
-        Example:
-
-            .. code-block:: python
-
-                [
-                    {
-                        '_id':        '52EB34660CBE40EFA481452909BCD408',
-                        'status':     'todo',   # todo, done, skip, wip
-                        'created':    '2017-07-26T20:26:13.675941-04:00',
-                        'text':       'finish fixing ...',
-
-                        # optional keys
-                        'parenttask': 'E762BCA9CAA1477CB102E7DA3DE7E2B0',
-                        'section':    'home todos',
-                    }
-                ]
-
-
-        Attributes:
-
-            datafmt (Enum):
-                Enum class that lists the accepted
-                types of TaskData formats.
-
-                * `data (list)`: The native-format of this TaskData object,
-                                 equivalent to the raw JSON file (*.ptask),
-                                 once parsed by this class.
-
-                                 .. code-block:: python
-
-                                    [
-                                      {
-                                        "status"   : "todo",
-                                        "text"     : "a",
-                                        "finished" : false,
-                                        "_id"      : "C176274F1CD741D2AB3FB3F2FAA05D06"
-                                      },
-                                      ...
-                                    ]
-
-                * `rst (str)`:  A string in the ReStructuredText inspired format.
-                                This format is the view of the tasklist that is
-                                edited by the user.
-
-                                .. code-block:: ReStructuredText
-
-                                    *{*36F8F60D60DD46698BE972213697D531*} clean kitchen
-                                        *{*329BB41F3A4446B3A171206BF63D2483*} clean stove
-                                        * clean fridge
-                                        * wash dishes
-
-                                    Homework
-                                    ========
-
-                                    * Calculus: Chapter 11
-
-
-                * `json (str)`: A raw, unparsed string of JSON.
-
-                    .. code-block:: json
-
-                        [
-                          {
-                            "status"   : "todo",
-                            "text"     : "a",
-                            "finished" : false,
-                            "_id"      : "C176274F1CD741D2AB3FB3F2FAA05D06"
-                          },
-                          ...
-                        ]
-
-
-
-                See also:
-                    * :py:meth:`set_data`
 
         """
         UserList.__init__(self)

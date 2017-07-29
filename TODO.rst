@@ -1,38 +1,12 @@
 
-* repeat-saving any tasks with indentation
-  changes indentation and gradually removes
-  tasks.
 
+* vim command to open taskfile readonly 
+  in raw task format (in new buffer)
 
-* above example changes indent of testing A
+* support for multiline task-comments
 
-    ::
-    
-        * testing
-        * testing 2
-        * testing 3
-            * testing A
-            * testing 2
-            * testing 3
-    
+* completion reports
 
-
-* above removes all indentation from testing 2/testing 3
-
-    ::
-    
-        * testing
-        * testing 2
-        * testing 3
-            * testing A
-            o testing 2
-            o testing 3
-    
-
-
-
-
-
-
+* detailed edit tasks ( using builtin configparser )
 
 
