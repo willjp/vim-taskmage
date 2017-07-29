@@ -1,5 +1,4 @@
 
-
 * vim command to open taskfile readonly 
   in raw task format (in new buffer)
 

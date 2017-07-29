@@ -37,26 +37,23 @@ from .project import get_projectroot
 
 #!TODO: multiline task comments
 
-#!TODO: do we really need both _taskdef AND _taskinfo (?)
-
-
 
 _taskinfo = namedtuple(
-    # while parsing, detailed info
-    # about a task.
+    # explicit info about a task
     'taskinfo', [
         'uuid',
         'text',
         'section',
         'status',
+        'created',
         'parent',
         'parent_type', # 'root', 'section', 'task'
         'isnew'
     ]
 )
 _taskdef = namedtuple(
-    # while parsing, info about
-    # a task-definition
+    # info obtained from a ReStructuredText task
+    # ( needs help from json file for full taskinfo )
     'taskdef', [
         'uuid',        # 8FE95847DF73449096393F90E4E61535
         'status',      # 'todo', 'done', ...
@@ -182,7 +179,7 @@ class TaskData( UserList ):
 
     """
     datafmt = _TaskDataFmt # enum with various data formats
-    def __init__(self, taskdata=None, datafmt=None ):
+    def __init__(self, taskdata=None, datafmt=None, datapath=None ):
         """
         Args:
             taskdata (str, list, optional):
@@ -193,18 +190,23 @@ class TaskData( UserList ):
             datafmt (ptaskmgr.TaskData.datafmt, optional):
                 Indicates the type of data `taskdata` is.
 
+            datapath (str, optional): ``(ex:  '/home/todo/file.ptask' )``
+                Path to a .ptask file (json) that (if exists)
+                contains additional information about tasks.
+
+                *used only by 'rst' datafmt*
         """
         UserList.__init__(self)
 
         # Load
-        if any([taskdata, datafmt]):
-            if not all([taskdata, datafmt]):
+        if any([taskdata, datafmt, datapath]):
+            if not all([x != None for x in (taskdata, datafmt)]):
                 raise TypeError(
                     'If either `taskdata` or `datafmt` arguments are provided, '
                     'they are both required.'
                 )
 
-            self.set_data( taskdata, datafmt )
+            self.set_data( taskdata, datafmt, datapath )
 
 
     def isinitialized(self):
@@ -224,7 +226,7 @@ class TaskData( UserList ):
         self.data           = []
 
 
-    def set_data(self, taskdata, datafmt ):
+    def set_data(self, taskdata, datafmt, datapath=None ):
         """
         Reads from a source, and updates the tasklist this object represents.
 
@@ -236,6 +238,12 @@ class TaskData( UserList ):
 
             datafmt (ptaskmgr.TaskData.datafmt):
                 Indicates the type of data `taskdata` is.
+
+            datapath (str, optional): ``(ex:  '/home/todo/file.ptask' )``
+                Path to a .ptask file (json) that (if exists)
+                contains additional information about tasks.
+
+                *used only by 'rst' datafmt*
 
 
         Side Effect:
@@ -268,7 +276,7 @@ class TaskData( UserList ):
             self._load_from_taskdata( taskdata )
 
         elif datafmt == TaskData.datafmt.rst:
-            self._load_from_rst( taskdata )
+            self._load_from_rst( taskdata, datapath )
 
         elif datafmt == TaskData.datafmt.json:
             self._load_from_json( taskdata )
@@ -299,14 +307,26 @@ class TaskData( UserList ):
 
         self._load_from_taskdata( taskdata )
 
-    def _load_from_rst(self, rst):
+    def _load_from_rst(self, rst, datapath):
         """
         Args:
             rst (str):
                 A string representing a full, multiline taskdata
                 JSON object represented in ReStructuredText format.
+
+            datapath (str, optional): ``(ex:  '/home/todo/file.ptask' )``
+                Path to a .ptask file (json) that (if exists)
+                contains additional information about tasks.
+
+                *used only by 'rst' datafmt*
         """
-        taskdata = _RstTaskParser( rst.split('\n') )
+        if not datapath:
+            raise TypeError(
+                'parsing Rst task format requires `datapath` argument'
+            )
+
+
+        taskdata = _RstTaskParser( rst.split('\n'), datapath )
         self._load_from_taskdata( taskdata )
 
 
@@ -585,6 +605,8 @@ class TaskData( UserList ):
                     parent      = None
                     parent_type = 'root', # 'root', 'section', 'task'
 
+                    created     = '2017-07-29T10:33:28.754000-00:00',
+
                     isnew       = False,  # all tasks obtained from this method
                                           # return False, because they exist in
                                           # this TaskData() object.
@@ -629,6 +651,7 @@ class TaskData( UserList ):
                     status      = task['status'],
                     parent      = parent,
                     parent_type = parent_type,
+                    created     = task['created'],
                     isnew       = False,
                 )
 
@@ -658,6 +681,8 @@ class TaskData( UserList ):
                         status      = 'todo',
                         parent      = None
                         parent_type = 'root', # 'root', 'section', 'task'
+
+                        created     = '2017-07-29T10:34:04.642887-00:00',
 
                         isnew       = False,  # all tasks obtained from this method
                                               # return False, because they exist in
@@ -814,22 +839,31 @@ class TaskData( UserList ):
                 A :py:obj:`_taskinfo` object representing a task
         """
 
+        now     = datetime.datetime.utcnow()
+        now_iso = now.isoformat()
         new_task = {
             'status': taskinfo.status,
             'text'  : taskinfo.text,
             '_id'   : taskinfo.uuid,
         }
 
+
         # finished
         if taskinfo.status in ('skip','done'):
-            new_task['finished'] = True
+            new_task['finished'] = now_iso
+            new_task['created']  = taskinfo.created
         else:
+            if taskinfo.created == None:
+                new_task['created'] = now_iso
+            else:
+                new_task['created'] = taskinfo.created
+
             new_task['finished'] = False
 
 
         # created timestamp
         if taskinfo.isnew:
-            new_task['created'] = now.isoformat()
+            new_task['created'] = now_iso
 
 
         # parent info
@@ -851,7 +885,7 @@ class _RstTaskParser( UserList ):
     Parses a ReStructuredText inspired todolist into
     a format that is compatible with :py:obj:`ptaskmgr.TaskData`
     """
-    def __init__(self, fileconts ):
+    def __init__(self, fileconts, datapath ):
         """
         Args:
             fileconts (collections.Iterable):
@@ -861,6 +895,18 @@ class _RstTaskParser( UserList ):
                 formatted taskfile.
         """
         UserList.__init__(self)
+
+
+        if os.path.isfile( datapath ):
+            with open( datapath, 'r' ) as fd:
+                self._saved_taskdata = TaskData(
+                    taskdata=fd.read(), datafmt=TaskData.datafmt.json,
+                )
+        else:
+            self._saved_taskdata = TaskData(
+                taskdata=[], datafmt=TaskData.datafmt.data
+            )
+
 
         now = datetime.datetime.utcnow()
 
@@ -874,7 +920,7 @@ class _RstTaskParser( UserList ):
 
             # finished
             if task.status in ('skip','done'):
-                new_task['finished'] = True
+                new_task['finished'] = now.isoformat()
             else:
                 new_task['finished'] = False
 
@@ -882,6 +928,9 @@ class _RstTaskParser( UserList ):
             # created timestamp
             if task.isnew:
                 new_task['created'] = now.isoformat()
+            else:
+                taskinfo = self._saved_taskdata.get_taskinfo( task.uuid )
+                new_task['created'] = taskinfo.created
 
 
             # parent info
@@ -1234,6 +1283,25 @@ class _RstTaskParser( UserList ):
         """
         Creates a :py:obj:`_taskinfo` object for the task,
         and appends it to the list `tasks`.
+
+
+        Args:
+            tasks ( list(_taskinfo) ):
+                A list of taskinfo objects. The new task
+                will be appended to this.
+
+            last_encountered (dict):
+                A dictionary storing the last occurrences
+                of various .ptask elements.
+
+                .. code-block:: ReStructuredText
+
+                    {
+                        'line':     '   * last line from file',
+                        'section':  'home',
+                        'indents':  [ _taskindent(), _taskindent(), ... ],
+                    }
+
         """
 
 
@@ -1290,6 +1358,13 @@ class _RstTaskParser( UserList ):
 
         # add to `tasks`
         if last_taskdef.text:
+
+            if last_taskdef.isnew:
+                created        = None
+            else:
+                saved_taskinfo = self._saved_taskdata.get_taskinfo( last_taskdef.uuid )
+                created        = saved_taskinfo.created
+
             tasks.append(
                 _taskinfo(
                     uuid        = last_taskdef.uuid,
@@ -1299,8 +1374,10 @@ class _RstTaskParser( UserList ):
                     parent      = parent,
                     parent_type = parent_type,
                     isnew       = last_taskdef.isnew,
+                    created     = created,
                 )
             )
+
         return tasks
 
     def _set_last_encountered_indentation(self, _uuid, indentation, last_encountered):

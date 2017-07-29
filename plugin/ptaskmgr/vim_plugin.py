@@ -122,7 +122,8 @@ def rst_to_json():
 
         new_taskdata = TaskData(
             taskdata = '\n'.join( conts ),
-            datafmt  = TaskData.datafmt.rst
+            datafmt  = TaskData.datafmt.rst,
+            datapath = filepath,
         )
 
         vim.current.buffer[:] = (
@@ -198,7 +199,7 @@ def archive_completed_tasks():
     # convert current vim buffer(rst) to json,
     # and obtain contents of archived taskfile
     conts = vim.current.buffer[:]
-    vimbuf_taskdata   = TaskData( '\n'.join(conts), fmt_rst )
+    vimbuf_taskdata   = TaskData( '\n'.join(conts), fmt_rst, filepath )
     archived_taskdata = TaskData( _read_jsonfile(archivedtask_path), fmt_json )
 
     # move tasks from vimbuf_taskdata to archived_taskdata
@@ -364,7 +365,7 @@ def find_counterpart():
         return taskpath
 
     else:
-        projectroot       = get_projectroot( filepath )
+        projectroot       = get_projectroot()
         if not projectroot:
             raise RuntimeError(
                 'current file is not within a ptaskmgr project'
