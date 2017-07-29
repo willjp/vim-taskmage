@@ -849,6 +849,7 @@ class TaskData( UserList ):
         return new_task
 
 
+
 class _RstTaskParser( UserList ):
     """
     Parses a ReStructuredText inspired todolist into

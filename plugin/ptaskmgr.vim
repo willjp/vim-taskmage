@@ -15,6 +15,7 @@ else
 endif
 
 
+
 "" Commands
 ""
 
@@ -23,11 +24,17 @@ function! PtaskArchiveCompleted()
 endfunc
 command PtaskArchiveCompleted  call PtaskArchiveCompleted()
 
+function! PtaskOpenCounterpart( open_command )
+    execute 'py ptaskmgr.vim_plugin.open_counterpart( "'. a:open_command .'" )'
+endfunc
+command PtaskToggle call PtaskOpenCounterpart('edit')
+command PtaskSplit  call PtaskOpenCounterpart('split')
+command PtaskVSplit call PtaskOpenCounterpart('vsplit')
+
 
 
 "" AutoCmds
 ""
-
 
     " on-read, replace buffer with RST
 autocmd BufRead      *.ptask  py ptaskmgr.vim_plugin.jsonfile_to_rst()

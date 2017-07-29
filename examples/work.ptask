@@ -1,7 +1,7 @@
 [
   {
     "status": "todo", 
-    "text": "d", 
+    "text": "d  # test", 
     "finished": false, 
     "_id": "6E0E7CA43460467BAC8D0324F193E7FF", 
     "section": "section"

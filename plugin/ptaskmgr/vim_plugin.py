@@ -147,15 +147,34 @@ def rst_to_json():
 
 def archive_completed_tasks():
     """
-    Archives provided taskIds (from opened *.ptask file in ReStructuredText format)
+    Archives all completed task-branches.
+    (from opened *.ptask file in ReStructuredText format)
     if their status is *complete*.
+
+
+    Example:
+
+        .. code-block:: ReStructuredText
+
+            ## a,b, and c will be archived
+            ## (entire task-branch completed)
+            x a
+               x b
+               x c
+
+
+            ## nothing will be archived
+            ## (task-branch is not entirely completed)
+            x a
+               x b
+               * c
 
 
     Args:
         taskIds ('FFC02020BC984711838327B888EFAD1C', '51DAD4BC86C54C07B8B5829ECFAE4B5E'):
 
     Returns:
-        A subset of the provided taskIds that were
+       A subset of the provided taskIds that were
         successfully archived.
 
         .. code-block:: python
@@ -199,6 +218,34 @@ def archive_completed_tasks():
     # reopen
     vim.command('edit "%s"' % filepath)
 
+def open_counterpart( open_command='edit' ):
+    """
+    If a task archive is opened in the current vim buffer,
+    creates/opens it's taskfile in the current buffer.
+
+    If a taskfile is opened in the current vim buffer,
+    creates/opens it's archive in the current buffer.
+
+    Args:
+        open_command (str, optional): ``(ex: 'edit', 'split', 'vsplit' )``
+            Optionally, you may provide the command used to
+            open the file.
+
+    """
+
+    taskfile_path = find_counterpart()
+
+    if open_command not in (
+        'e','edit',
+        's','split',
+        'vs','vsplit',
+    ):
+        raise RuntimeError(
+            'invalid `open_command` value: %s' % open_command
+        )
+    vim.command("{open_command} {taskfile_path}".format(**locals()) )
+
+
 
 
 # Fine Grain Controls
@@ -225,6 +272,41 @@ def get_tasks_under_cursor():
     or all tasks touched by visual-selection.
     """
 
+def find_counterpart():
+    """
+    If a task archive is opened in the current vim buffer, returns it's taskfile.
+    If a taskfile is opened in the current vim buffer, returns it's archive.
+
+    Return:
+
+        The path to the active taskfile, or the archived taskfile.
+
+        .. code-block:: python
+
+            '/path/to/.ptaskmgr/file.ptask'
+    """
+
+    filepath = vim.current.buffer.name
+
+    # archived taskdata
+    if '.ptaskmgr' in filepath:
+        projectroot  = filepath.split( '.ptaskmgr' )[0]
+        rel_taskpath = filepath[ len(projectroot) + len('/.ptaskmgr') : ]
+        taskpath     = projectroot + rel_taskpath
+
+        return taskpath
+
+    else:
+        projectroot       = get_projectroot( filepath )
+        if not projectroot:
+            raise RuntimeError(
+                'current file is not within a ptaskmgr project'
+            )
+
+        rel_taskpath      = filepath[ len(projectroot)+1 : ]
+        archived_taskpath = '{projectroot}/.ptaskmgr/{rel_taskpath}'.format(**locals())
+
+        return archived_taskpath
 
 
 if __name__ == '__main__':
