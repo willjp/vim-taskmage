@@ -30,7 +30,7 @@ else:
     from collections import UserString
     from collections import UserList
 #package
-from . import six
+from .        import six
 from .project import get_projectroot
 #external
 #internal
@@ -120,6 +120,25 @@ class TaskData( UserList ):
             datafmt (ptaskmgr.TaskData.datafmt, optional):
                 Indicates the type of data `taskdata` is.
 
+
+        Example:
+
+            .. code-block:: python
+
+                [
+                    {
+                        '_id':        '52EB34660CBE40EFA481452909BCD408',
+                        'status':     'todo',   # todo, done, skip, wip
+                        'created':    '2017-07-26T20:26:13.675941-04:00',
+                        'text':       'finish fixing ...',
+
+                        # optional keys
+                        'parenttask': 'E762BCA9CAA1477CB102E7DA3DE7E2B0',
+                        'section':    'home todos',
+                    }
+                ]
+
+
         Attributes:
 
             datafmt (Enum):
@@ -172,6 +191,7 @@ class TaskData( UserList ):
                           },
                           ...
                         ]
+
 
 
                 See also:
@@ -665,6 +685,7 @@ class TaskData( UserList ):
 
                     # remove from self.data
                     archived_tasks.append( self.get_taskinfo(task['_id']) )
+                    print( archived_tasks )
                     self.data.pop(i)
 
         return archived_tasks
@@ -700,11 +721,83 @@ class TaskData( UserList ):
                 []
 
         """
-        completed_tasks = set()
-        for task in self.data:
-            if task['status'] in ('skip','done'):
-                completed_tasks.add( task['_id'] )
+        # find all completed tasks, all of whose
+        # child tasks are also completed.
 
+        # get completed tasks
+        completed_tasks = set()
+
+
+        def task_branch_completed( taskid, tasks, children, _completed_tasks=None ):
+            """
+            returns ``True`` if task and all children
+            are complete.
+
+            Args:
+                taskid (str): ``(ex: '296482ed430c4cbf9d39afefb52fa3e3' )``
+
+                children (dict): ``(ex: {_id:set(childId,childId,...)} )``
+                    pass
+            """
+            if tasks[ taskid ]['status'] not in ('skip','done'):
+                return False
+
+            if not _completed_tasks:
+                _completed_tasks = set()
+
+            _completed_tasks.add( taskid )
+
+            if children[ taskid ]:
+                for childId in children:
+                    if not task_branch_completed( childId, tasks, children, _completed_tasks ):
+                        return False
+                    _completed_tasks.add( childid )
+
+            return _completed_tasks
+
+
+
+
+        # build dict of tasks,
+        # task-children,
+        # and set of toplevel tasks (section or root)
+        # ===========================================
+        toplvl_taskids  = set() # set([ _id, _id, ... ])
+        tasks           = {}    # ``{_id:{...}, _id:{...}}``   self.data made into a dict
+        children        = {}    # ``{_id:set([ parent_id, parent_id ]), _id:set(), ...}``
+
+
+        for task in self.data:
+            taskid = task['_id']
+            tasks[ taskid ] = task
+
+            if 'parenttask' not in task:
+                toplvl_taskids.add( taskid )
+
+                print( taskid )
+                if taskid not in children:
+                    children[ taskid ] = set()
+            else:
+                if taskid not in children:
+                    children[ taskid ] = set()
+                if task['parenttask'] not in children:
+                    children[ task['parenttask'] ] = set()
+
+                children[ task['parenttask'] ].add( taskid )
+
+
+
+        # only archive toplevel tasks,
+        # and only if all of their children
+        # are completed.
+        for taskid in toplvl_taskids:
+            completed = task_branch_completed( taskid, tasks, children )
+            if completed:
+                completed_tasks.update( completed )
+
+
+        # return tasks
+        # ============
         if completed_tasks:
             return self.remove_tasks( completed_tasks )
         else:
@@ -1229,6 +1322,40 @@ class _RstTaskParser( UserList ):
 
 
 if __name__ == '__main__':
+    ## python -m ptaskmgr.parser
+
     import os
     projdir   = '/'.join( os.path.realpath(__file__).split('/')[:-2] )
+
+
+    def test_remove_completed():
+        taskdata = [
+            {
+                '_id':     '9f0520b8f31d4bd4ad7b86348ecb7ac4',
+                'status':  'done',
+                'text':    'a',
+                'created': '2017-07-28T21:32:45.175813-04:00'
+            },
+            {
+                '_id':         '56909776a3dc4c17961ba3ea2e4a2d20',
+                'status':      'done',
+                'text':        'b',
+                'created':     '2017-07-28T21:35:05.125148-04:00',
+                'parenttask':  '9f0520b8f31d4bd4ad7b86348ecb7ac4',
+            }
+        ]
+        data = TaskData(
+            taskdata = taskdata,
+            datafmt  = TaskData.datafmt.data,
+        )
+
+        data.remove_completed()
+        print('hihihi')
+
+    def runtests():
+        test_remove_completed()
+
+    runtests()
+
+
 

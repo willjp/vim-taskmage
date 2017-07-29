@@ -1,14 +1,22 @@
 [
   {
-    "status": "todo", 
+    "status": "done", 
     "text": "abc", 
-    "finished": false, 
-    "_id": "4BE875B9FD5143E881A2EEDDACE7CBB3"
+    "finished": true, 
+    "_id": "249CD3FD7EB347579A5FD7FF93AC9007"
+  }, 
+  {
+    "status": "done", 
+    "text": "abc", 
+    "finished": true, 
+    "_id": "4BE875B9FD5143E881A2EEDDACE7CBB3", 
+    "parenttask": "249CD3FD7EB347579A5FD7FF93AC9007"
   }, 
   {
     "status": "todo", 
     "text": "def", 
     "finished": false, 
-    "_id": "EE47DA71B42D49D78E40BE4ED5E12027"
+    "_id": "EE47DA71B42D49D78E40BE4ED5E12027", 
+    "parenttask": "249CD3FD7EB347579A5FD7FF93AC9007"
   }
 ]
