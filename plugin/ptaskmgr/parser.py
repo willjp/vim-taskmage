@@ -1313,7 +1313,7 @@ class _RstTaskParser( UserList ):
             else:                          break
 
         if trailing_blanklines:
-            last_taskdef.text._replace( text=last_taskdef.text[ : -1 * trailing_blanklines ] )
+            last_taskdef._replace( text=last_taskdef.text[ : -1 * trailing_blanklines ] )
 
 
         # determine parent/parent_type (by indentation)
