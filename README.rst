@@ -1,7 +1,10 @@
 ptaskmgr
 ========
 
-A simple plaintext task manager, inspired by git and taskwarrior.
+
+A simple plaintext task manager, allowing you to structure your
+tasks into files and file-sections, and edit them using a syntax inspired
+by ReStructuredText. Inspired by git and taskwarrior.
 
 
 
@@ -14,11 +17,11 @@ A simple plaintext task manager, inspired by git and taskwarrior.
     =========
 
     * grocery shopping
-      * apples
-      * oranges
+      x apples
+      x oranges
       * sick supplies for Alex
         for while she isn't feeling well
-      * deodorant
+      - deodorant
         
     Home
     ====
@@ -38,11 +41,11 @@ A simple plaintext task manager, inspired by git and taskwarrior.
     =========
 
     *{*40429D679A504ED99F97D0D16067B2B3*} grocery shopping
-      *{*E061DCB183EF4C418E97DEE63332C1A0*} apples
-      *{*10A71C4E3FCE439A86F1F001BD6BE99D*} oranges
+      x{*E061DCB183EF4C418E97DEE63332C1A0*} apples
+      x{*10A71C4E3FCE439A86F1F001BD6BE99D*} oranges
       *{*C96A9133AFC448B2B295451757C5C5EC*} sick supplies for Alex
         for while she isn't feeling well
-      *{*EBFEBD42B4894431A3AA048D4AED02B1*} deodorant
+      -{*EBFEBD42B4894431A3AA048D4AED02B1*} deodorant
         
     ...
 
@@ -66,7 +69,7 @@ A simple plaintext task manager, inspired by git and taskwarrior.
         "created":    "2017-06-11T22:40:52.460849-04:00",
         "finished":   false,
         "text":       "apples",
-        "status":     "todo"
+        "status":     "done"
     },
 
     //
@@ -88,14 +91,53 @@ A simple plaintext task manager, inspired by git and taskwarrior.
 
 
 
-Requires:
-=========
+Usage:
+======
 
-python modules:
+.. code-block:: vim
 
-    * six_
+    " create a new taskfile
+    :e myfile.ptask      " alternatively from shell:   touch myfile.ptask
 
-.. _six: https://pypi.python.org/pypi/six
+
+
+Add tasks to the file
+
+.. code-block:: ReStructuredText
+
+
+    Fiona's wedding
+    ===============
+
+    * make beanbags for yard-game
+      * find sewing machine
+      * purchase fabric
+
+
+    Work
+    ====
+
+    * package ep100
+    * finish browser UI
+     
+
+
+.. code-block:: vim
+
+    " save the file (saved in JSON, reopens as Rst)
+    :w
+
+
+    " Over time, as you have collected several finished
+    " tasks, archive them (move them to 
+    " ``.ptaskmgr/{filename}.ptask``
+    :PtaskArchiveCompleted
+
+
+Personally, I store all of these in a git project, so that 
+I can easily sync tasks across all of my computers.
+
+
 
 
 Syntax:
