@@ -184,6 +184,7 @@ def archive_completed_tasks():
 
     # move tasks from vimbuf_taskdata to archived_taskdata
     removed_tasks = vimbuf_taskdata.remove_completed()
+    print( removed_tasks )
     for taskinfo in removed_tasks:
         archived_taskdata.add_taskinfo( taskinfo )
 

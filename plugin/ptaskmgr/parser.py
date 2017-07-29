@@ -323,6 +323,7 @@ class TaskData( UserList ):
             taskinfo (_taskinfo):
                 A :py:obj:`_taskinfo` object representing a task
         """
+
         task = self.taskinfo_to_task( taskinfo )
         self.data.append( task )
 
@@ -671,22 +672,26 @@ class TaskData( UserList ):
                 ]
 
         """
+
+
         # nothing to do
         if not taskIds:
             return
 
         # remove tasks from self.data
         archived_tasks = []
-        if self.data:
-            for i in range(len(self.data)-1):
-                task = self.data[i]
+        rm_count       = 0
+        taskdata       = list(self.data)
+        if taskdata:
+            for i in range(len(taskdata)):
+                task = taskdata[i]
 
                 if task['_id'] in taskIds:
 
                     # remove from self.data
                     archived_tasks.append( self.get_taskinfo(task['_id']) )
-                    print( archived_tasks )
-                    self.data.pop(i)
+                    self.data.pop(i - rm_count)
+                    rm_count += 1
 
         return archived_tasks
 
@@ -748,10 +753,10 @@ class TaskData( UserList ):
             _completed_tasks.add( taskid )
 
             if children[ taskid ]:
-                for childId in children:
+                for childId in children[ taskid ]:
                     if not task_branch_completed( childId, tasks, children, _completed_tasks ):
                         return False
-                    _completed_tasks.add( childid )
+                    _completed_tasks.add( childId )
 
             return _completed_tasks
 
@@ -774,7 +779,6 @@ class TaskData( UserList ):
             if 'parenttask' not in task:
                 toplvl_taskids.add( taskid )
 
-                print( taskid )
                 if taskid not in children:
                     children[ taskid ] = set()
             else:
@@ -813,6 +817,7 @@ class TaskData( UserList ):
             taskinfo (_taskinfo):
                 A :py:obj:`_taskinfo` object representing a task
         """
+
         new_task = {
             'status': taskinfo.status,
             'text'  : taskinfo.text,
@@ -841,6 +846,7 @@ class TaskData( UserList ):
         elif taskinfo.parent_type == 'section':
             new_task['section'] = taskinfo.parent
 
+        return new_task
 
 
 class _RstTaskParser( UserList ):
@@ -1342,15 +1348,21 @@ if __name__ == '__main__':
                 'text':        'b',
                 'created':     '2017-07-28T21:35:05.125148-04:00',
                 'parenttask':  '9f0520b8f31d4bd4ad7b86348ecb7ac4',
-            }
+            },
+            #{
+            #    '_id':         '0a022be074fe4d69bda952dd8690c0b9',
+            #    'status':      'todo',
+            #    'text':        'b',
+            #    'created':     '2017-07-28T21:35:05.125148-04:00',
+            #    'parenttask':  '9f0520b8f31d4bd4ad7b86348ecb7ac4',
+            #}
         ]
         data = TaskData(
             taskdata = taskdata,
             datafmt  = TaskData.datafmt.data,
         )
 
-        data.remove_completed()
-        print('hihihi')
+        print( data.remove_completed() )
 
     def runtests():
         test_remove_completed()
