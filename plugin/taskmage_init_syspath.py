@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """
-Name :          plugin/ptaskmgr_init_syspath.py
+Name :          plugin/taskmage_init_syspath.py
 Created :       Jun 25, 2017
 Author :        Will Pittman
 Contact :       willjpittman@gmail.com
 ________________________________________________________________________________
-Description :   adds `ptaskmgr` package to sys.path
+Description :   adds `taskmage` package to sys.path
 ________________________________________________________________________________
 """
 #builtin

@@ -1,4 +1,4 @@
-ptaskmgr
+TaskMage
 ========
 
 
@@ -97,7 +97,7 @@ Usage:
 .. code-block:: vim
 
     " create a new taskfile
-    :e myfile.ptask      " alternatively from shell:   touch myfile.ptask
+    :e myfile.mtask      " alternatively from shell:   touch myfile.mtask
 
 
 
@@ -130,7 +130,7 @@ Add tasks to the file
 
     " Over time, as you have collected several finished
     " tasks, archive them (move them to 
-    " ``.ptaskmgr/{filename}.ptask``
+    " ``.taskmage/{filename}.mtask``
     :PtaskArchiveCompleted
 
 
@@ -143,7 +143,7 @@ I can easily sync tasks across all of my computers.
 Syntax:
 =======
 
-Task-data is stored in json-formatted files assigned the extension ``.ptask``.
+Task-data is stored in json-formatted files assigned the extension ``.mtask``.
 With this plugin enabled, opening one of these files using vim parses that file,
 and replaces the loaded buffer with a ReStructuredText inspired task-list.
 
@@ -160,7 +160,7 @@ which contain special meaning:
 
 In order to create new tasks, simply add them to the file.
 Every time the file is saved, it is parsed/converted back to JSON,
-the ``.ptask`` file is updated, and the current ReStructuredText formatted
+the ``.mtask`` file is updated, and the current ReStructuredText formatted
 file is reloaded.
 
 
@@ -181,7 +181,7 @@ sections cannot be nested (sorry).
     =========
 
     * christmas shopping
-    * ptaskmgr documentation
+    * taskmage documentation
 
 
     Work
@@ -237,24 +237,24 @@ little notes about tasks, that are highlighted differently.
 Project:
 ========
 
-Like git, ptaskmgr uses a directory to indicate both a project-root,
+Like git, taskmage uses a directory to indicate both a project-root,
 and store completed task-data. 
 
 
 .. code-block:: python
 
-    /home/todo/.ptaskmgr/
+    /home/todo/.taskmage/
 
         completed/                # bulk-storage of completed tasks
 
             module_name/
-                section1.ptask
-                section2.ptask
-                section3.ptask
+                section1.mtask
+                section2.mtask
+                section3.mtask
                 ...
             module_name/
-                section1.ptask
-                section2.ptask
+                section1.mtask
+                section2.mtask
                 ...
 
 

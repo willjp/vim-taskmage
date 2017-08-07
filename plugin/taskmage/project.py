@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Name :          plugin/ptaskmgr/project.py
+Name :          plugin/taskmage/project.py
 Created :       Jul 09, 2017
 Author :        Will Pittman
 Contact :       willjpittman@gmail.com
@@ -35,7 +35,7 @@ def get_projectroot(cwd='.'):
 
         .. code-block:: python
 
-            '/path/to/project' ## (directory containing .ptaskmgr directory)
+            '/path/to/project' ## (directory containing .taskmage directory)
             False              ## if no project is found
 
     """
@@ -51,7 +51,7 @@ def get_projectroot(cwd='.'):
     dirpaths = cwd.split('/')
 
     while dirpaths:
-        testdir = '/'.join(dirpaths) +'/.ptaskmgr'
+        testdir = '/'.join(dirpaths) +'/.taskmage'
         if os.path.isdir( testdir ):
             return '/'.join(dirpaths)
         dirpaths = dirpaths[:-1]
@@ -66,20 +66,20 @@ def create_projectroot( dirpath ):
 
 
     Args:
-        dirpath (str): ``(ex: '/home/project/root', '/home/project/root/.ptaskmgr' )``
+        dirpath (str): ``(ex: '/home/project/root', '/home/project/root/.taskmage' )``
             The path to your projectroot.
 
     """
 
     dirpath = dirpath.replace('\\','/')
 
-    # if dirpath includes the .ptaskmgr dir, remove
+    # if dirpath includes the .taskmage dir, remove
     lastdir = dirpath.split('/')[-1]
-    if lastdir == '.ptaskmgr':
+    if lastdir == '.taskmage':
         dirpath = '/'.join( dirpath.split('/')[:-1] )
 
-    if not os.path.isdir( dirpath + '/.ptaskmgr' ):
-        os.makedirs( dirpath + '/.ptaskmgr' )
+    if not os.path.isdir( dirpath + '/.taskmage' ):
+        os.makedirs( dirpath + '/.taskmage' )
 
 
 

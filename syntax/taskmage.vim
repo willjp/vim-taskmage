@@ -1,5 +1,5 @@
 " Vim syntax file
-" Language:   ptaskmgr folds/syntax highlighting
+" Language:   taskmage folds/syntax highlighting
 " Maintainer: Will Pittman <willjpittman@gmail.com>
 " Website: 
 " Latest Revision: 2017-06-11
@@ -64,24 +64,24 @@ let s:comment_regex       = '#.*$'
 "       (will both be coloured the same, and appear the same in the vim file)
 "
 
-execute "syntax match ptaskmgr_uuid    '". s:uuid_regex          ."' conceal "
-execute "syntax match ptaskmgr_uuid    '". s:uuid_nostatus_regex ."' conceal cchar=E"
-execute "syntax match ptaskmgr_todo    '". s:todo_regex          ."'"
-execute "syntax match ptaskmgr_skip    '". s:skip_regex          ."'"
-execute "syntax match ptaskmgr_done    '". s:done_regex          ."'"
-execute "syntax match ptaskmgr_wip     '". s:wip_regex           ."'"
-execute "syntax match ptaskmgr_comment '". s:comment_regex       ."'"
+execute "syntax match taskmage_uuid    '". s:uuid_regex          ."' conceal "
+execute "syntax match taskmage_uuid    '". s:uuid_nostatus_regex ."' conceal cchar=E"
+execute "syntax match taskmage_todo    '". s:todo_regex          ."'"
+execute "syntax match taskmage_skip    '". s:skip_regex          ."'"
+execute "syntax match taskmage_done    '". s:done_regex          ."'"
+execute "syntax match taskmage_wip     '". s:wip_regex           ."'"
+execute "syntax match taskmage_comment '". s:comment_regex       ."'"
 
 
-execute ' highlight ptaskmgr_todo     ctermfg='. s:todo_colour     .' ctermbg=none cterm=bold'
-execute ' highlight ptaskmgr_skip     ctermfg='. s:skip_colour     .' ctermbg=none cterm=bold'
-execute ' highlight ptaskmgr_done     ctermfg='. s:done_colour     .' ctermbg=none cterm=bold'
-execute ' highlight ptaskmgr_wip      ctermfg='. s:wip_colour      .' ctermbg=none cterm=bold'
-execute ' highlight ptaskmgr_comment  ctermfg='. s:comment_colour  .' ctermbg=none '
+execute ' highlight taskmage_todo     ctermfg='. s:todo_colour     .' ctermbg=none cterm=bold'
+execute ' highlight taskmage_skip     ctermfg='. s:skip_colour     .' ctermbg=none cterm=bold'
+execute ' highlight taskmage_done     ctermfg='. s:done_colour     .' ctermbg=none cterm=bold'
+execute ' highlight taskmage_wip      ctermfg='. s:wip_colour      .' ctermbg=none cterm=bold'
+execute ' highlight taskmage_comment  ctermfg='. s:comment_colour  .' ctermbg=none '
 
 
 highlight Conceal ctermfg=221 ctermbg=095 cterm=bold
 
 
-let b:current_syntax = "ptaskmgr"
+let b:current_syntax = "taskmage"
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 """
-Name :          ptaskmgr.parser
+Name :          taskmage.parser
 Created :       Jun 11, 2017
 Author :        Will Pittman
 Contact :       willjpittman@gmail.com
 ________________________________________________________________________________
-Description :   parses a *.ptaskdata file (json) into a file to be edited
+Description :   parses a *.mtask file (json) into a file to be edited
                 by vim (and then back to json afterwards).
 ________________________________________________________________________________
 """
@@ -87,7 +87,7 @@ class _ParserHandled( Enum ):
 class _TaskDataFmt( Enum ):
     """
     Enum listing the various accepted input/output formats
-    of for :py:obj:`ptaskmgr.TaskData` .
+    of for :py:obj:`taskmage.TaskData` .
     """
     data = 1
     rst  = 2
@@ -97,7 +97,7 @@ class _TaskDataFmt( Enum ):
 
 class TaskData( UserList ):
     """
-    An object representing a single *.ptask file's list of tasks
+    An object representing a single *.mtask file's list of tasks
     as a python list.
 
 
@@ -126,7 +126,7 @@ class TaskData( UserList ):
             types of TaskData formats.
 
             * `data (list)`: The native-format of this TaskData object,
-                             equivalent to the raw JSON file (*.ptask),
+                             equivalent to the raw JSON file (*.mtask),
                              once parsed by this class.
 
                              .. code-block:: python
@@ -187,11 +187,11 @@ class TaskData( UserList ):
                 to intialize this :py:obj:`TaskData` object's
                 data.
 
-            datafmt (ptaskmgr.TaskData.datafmt, optional):
+            datafmt (taskmage.TaskData.datafmt, optional):
                 Indicates the type of data `taskdata` is.
 
-            datapath (str, optional): ``(ex:  '/home/todo/file.ptask' )``
-                Path to a .ptask file (json) that (if exists)
+            datapath (str, optional): ``(ex:  '/home/todo/file.mtask' )``
+                Path to a .mtask file (json) that (if exists)
                 contains additional information about tasks.
 
                 *used only by 'rst' datafmt*
@@ -236,11 +236,11 @@ class TaskData( UserList ):
                 to intialize this :py:obj:`TaskData` object's
                 data.
 
-            datafmt (ptaskmgr.TaskData.datafmt):
+            datafmt (taskmage.TaskData.datafmt):
                 Indicates the type of data `taskdata` is.
 
-            datapath (str, optional): ``(ex:  '/home/todo/file.ptask' )``
-                Path to a .ptask file (json) that (if exists)
+            datapath (str, optional): ``(ex:  '/home/todo/file.mtask' )``
+                Path to a .mtask file (json) that (if exists)
                 contains additional information about tasks.
 
                 *used only by 'rst' datafmt*
@@ -314,8 +314,8 @@ class TaskData( UserList ):
                 A string representing a full, multiline taskdata
                 JSON object represented in ReStructuredText format.
 
-            datapath (str, optional): ``(ex:  '/home/todo/file.ptask' )``
-                Path to a .ptask file (json) that (if exists)
+            datapath (str, optional): ``(ex:  '/home/todo/file.mtask' )``
+                Path to a .mtask file (json) that (if exists)
                 contains additional information about tasks.
 
                 *used only by 'rst' datafmt*
@@ -350,7 +350,7 @@ class TaskData( UserList ):
         it.
 
         Args:
-            datafmt (ptaskmgr.TaskData.datafmt):
+            datafmt (taskmage.TaskData.datafmt):
                 Indicates the type of data `taskdata` is.
 
         Returns:
@@ -499,7 +499,7 @@ class TaskData( UserList ):
         for taskId in hierarchy['toplevel_tasks']:
             rst_str = self._get_taskhier_branch_rst(
                 taskId    = taskId,
-                ptask_str = rst_str,
+                mtask_str = rst_str,
                 hierarchy = hierarchy,
             )
 
@@ -511,25 +511,25 @@ class TaskData( UserList ):
             for taskId in hierarchy['sections'][section]:
                 rst_str = self._get_taskhier_branch_rst(
                     taskId    = taskId,
-                    ptask_str = rst_str,
+                    mtask_str = rst_str,
                     hierarchy = hierarchy,
                 )
 
         return rst_str
 
-    def _get_taskhier_branch_rst(self, taskId, ptask_str, hierarchy, depth=0 ):
+    def _get_taskhier_branch_rst(self, taskId, mtask_str, hierarchy, depth=0 ):
         """
         Renders a task and all of it's entire child-task hierarchy
         in the ReStructuredText inspired format
-        (appending to the existing `ptask_str`, if provided).
+        (appending to the existing `mtask_str`, if provided).
 
 
         Args:
             taskId (str):
                 the uuid assigned to a particular task
 
-            ptask_str (str):
-                the string destined to be the *.ptask file so far.
+            mtask_str (str):
+                the string destined to be the *.mtask file so far.
                 (return value)
 
             hierarchy (dict):
@@ -550,7 +550,7 @@ class TaskData( UserList ):
 
         Returns:
 
-            A string destined to be a ptask file
+            A string destined to be a mtask file
             (ready for editing in vim)
 
             .. code-block:: python
@@ -572,20 +572,20 @@ class TaskData( UserList ):
         elif taskinfo.status  == 'skip': status = '-'
 
         # current task
-        ptask_str += ('    '*depth) + '%s{*%s*} %s\n' % (status, taskinfo.uuid, taskinfo.text)
+        mtask_str += ('    '*depth) + '%s{*%s*} %s\n' % (status, taskinfo.uuid, taskinfo.text)
 
 
         # recurse for subtasks
         if taskinfo.uuid in hierarchy['tasks']:
             for _taskId in hierarchy['tasks'][ taskinfo.uuid ]:
-                ptask_str = self._get_taskhier_branch_rst(
+                mtask_str = self._get_taskhier_branch_rst(
                     taskId    = _taskId,
-                    ptask_str = ptask_str,
+                    mtask_str = mtask_str,
                     hierarchy = hierarchy,
                     depth     = depth+1,
                 )
 
-        return ptask_str
+        return mtask_str
 
 
     def get_taskinfo(self, taskId):
@@ -888,7 +888,7 @@ class TaskData( UserList ):
 class _RstTaskParser( UserList ):
     """
     Parses a ReStructuredText inspired todolist into
-    a format that is compatible with :py:obj:`ptaskmgr.TaskData`
+    a format that is compatible with :py:obj:`taskmage.TaskData`
     """
     def __init__(self, fileconts, datapath ):
         """
@@ -1056,7 +1056,7 @@ class _RstTaskParser( UserList ):
     def _status_from_statuschar(self, status_char ):
         """
         Returns the text-status from the status-character
-        used in a ReStructuredText format ptask file.
+        used in a ReStructuredText format mtask file.
         """
         if status_char == 'o':
             return 'wip'
@@ -1113,7 +1113,7 @@ class _RstTaskParser( UserList ):
 
     def _handle_comment(self, line, last_encountered, last_taskdef):
         """
-        Non-Inline Comments are entirely ignored (not saved to the ptaskfile).
+        Non-Inline Comments are entirely ignored (not saved to the mtaskfile).
         A comment is any line where the first character is a '#'
 
         (as long as it is not a part of a section-header).
@@ -1243,7 +1243,7 @@ class _RstTaskParser( UserList ):
 
     def _handle_new_taskdef(self, line, last_encountered, last_taskdef ):
         """
-        Handles a task-definition that is not yet tracked in the ptaskfile.
+        Handles a task-definition that is not yet tracked in the mtaskfile.
         (has no uuid).
 
         Example:
@@ -1297,7 +1297,7 @@ class _RstTaskParser( UserList ):
 
             last_encountered (dict):
                 A dictionary storing the last occurrences
-                of various .ptask elements.
+                of various .mtask elements.
 
                 .. code-block:: ReStructuredText
 
@@ -1407,7 +1407,7 @@ class _RstTaskParser( UserList ):
 
 
 if __name__ == '__main__':
-    ## python -m ptaskmgr.parser
+    ## python -m taskmage.parser
 
     import os
     projdir   = '/'.join( os.path.realpath(__file__).split('/')[:-2] )

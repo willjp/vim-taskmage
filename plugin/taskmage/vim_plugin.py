@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Name :          ptaskmgr.py
+Name :          taskmage/vim_plugin.py
 Created :       Jun 25, 2017
 Author :        Will Pittman
 Contact :       willjpittman@gmail.com
@@ -18,8 +18,8 @@ import json
 import sys
 import os
 #package
-from ptaskmgr.parser  import TaskData
-from ptaskmgr         import project
+from taskmage.parser  import TaskData
+from taskmage         import project
 #external
 import vim
 import six
@@ -42,7 +42,7 @@ def _read_jsonfile( filepath ):
 
 def jsonfile_to_rst():
     """
-    Replaces a *.ptask file (JSON) opened in vim
+    Replaces a *.mtask file (JSON) opened in vim
     with a parsed, ReStructuredText-inspired task format.
 
 
@@ -87,21 +87,21 @@ def jsonfile_to_rst():
 
 
     vim.current.buffer[:] = rst_taskdata.split('\n')
-    vim.command('set ft=ptaskmgr')
+    vim.command('set ft=taskmage')
 
 def rst_to_json():
     """
-    Converts a ReStructuredText formatted *.ptask file in a vim-buffer
+    Converts a ReStructuredText formatted *.mtask file in a vim-buffer
     back to JSON (within the vim-buffer).
 
-    This runs whenever vim saves a *.ptask buffer. The file is temporarily
+    This runs whenever vim saves a *.mtask buffer. The file is temporarily
     converted back to JSON before save, then the saved-file is re-read
     and converted back to ReStructuredText so the user can continue
     editing tasks within vim.
 
     Side Effect:
 
-        Current buffer (ptask in ReStructuredText mode)
+        Current buffer (mtask in ReStructuredText mode)
         is parsed back into JSON within the current vim buffer.
 
     """
@@ -149,7 +149,7 @@ def rst_to_json():
 def archive_completed_tasks():
     """
     Archives all completed task-branches.
-    (from opened *.ptask file in ReStructuredText format)
+    (from opened *.mtask file in ReStructuredText format)
     if their status is *complete*.
 
 
@@ -193,7 +193,7 @@ def archive_completed_tasks():
         return
 
     root2task_path    = filepath[ len(projectroot) : ]
-    archivedtask_path = projectroot +'/.ptaskmgr'+ root2task_path
+    archivedtask_path = projectroot +'/.taskmage'+ root2task_path
 
 
     # convert current vim buffer(rst) to json,
@@ -351,15 +351,15 @@ def find_counterpart():
 
         .. code-block:: python
 
-            '/path/to/.ptaskmgr/file.ptask'
+            '/path/to/.taskmage/file.mtask'
     """
 
     filepath = vim.current.buffer.name
 
     # archived taskdata
-    if '.ptaskmgr' in filepath:
-        projectroot  = filepath.split( '.ptaskmgr' )[0]
-        rel_taskpath = filepath[ len(projectroot) + len('/.ptaskmgr') : ]
+    if '.taskmage' in filepath:
+        projectroot  = filepath.split( '.taskmage' )[0]
+        rel_taskpath = filepath[ len(projectroot) + len('/.taskmage') : ]
         taskpath     = projectroot + rel_taskpath
 
         return taskpath
@@ -368,11 +368,11 @@ def find_counterpart():
         projectroot       = get_projectroot()
         if not projectroot:
             raise RuntimeError(
-                'current file is not within a ptaskmgr project'
+                'current file is not within a taskmage project'
             )
 
         rel_taskpath      = filepath[ len(projectroot)+1 : ]
-        archived_taskpath = '{projectroot}/.ptaskmgr/{rel_taskpath}'.format(**locals())
+        archived_taskpath = '{projectroot}/.taskmage/{rel_taskpath}'.format(**locals())
 
         return archived_taskpath
 
