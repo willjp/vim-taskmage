@@ -621,6 +621,7 @@ class TaskData( UserList ):
                 'Cannot retrive a taskId if this object is not initialized with any taskdata.'
                 'Make sure to run `TaskData().set_data()` before using this method.'
             )
+        now     = datetime.datetime.utcnow()
 
         # find task from taskId
         # =====================
@@ -644,6 +645,10 @@ class TaskData( UserList ):
                 if section in task:
                     section = task['section']
 
+                created = now.isoformat()
+                if 'created' in task:
+                    created = task['created']
+
                 taskinfo = _taskinfo(
                     uuid        = taskId,
                     text        = task['text'],
@@ -651,7 +656,7 @@ class TaskData( UserList ):
                     status      = task['status'],
                     parent      = parent,
                     parent_type = parent_type,
-                    created     = task['created'],
+                    created     = created,
                     isnew       = False,
                 )
 
