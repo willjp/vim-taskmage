@@ -2,9 +2,10 @@ TaskMage
 ========
 
 
-A simple plaintext task manager, allowing you to structure your
-tasks into files and file-sections, and edit them using a syntax inspired
-by ReStructuredText. Inspired by git and taskwarrior.
+A simple plaintext task manager, allowing you to edit tasks in
+plaintext lists (quick to edit, no metadata clutter), and store metadata in 
+json files (for genrating reports, searching by date, etc). Inspired by git 
+and taskwarrior.
 
 
 
@@ -50,7 +51,7 @@ by ReStructuredText. Inspired by git and taskwarrior.
     ...
 
 
-**But for each task you have access to data like this:**
+**Tasks are saved as JSON objects - metadata is kept out of the way**
 
 .. code-block:: javascript
 
@@ -131,7 +132,7 @@ Add tasks to the file
     " Over time, as you have collected several finished
     " tasks, archive them (move them to 
     " ``.taskmage/{filename}.mtask``
-    :PtaskArchiveCompleted
+    :TaskMageArchiveCompleted
 
 
 Personally, I store all of these in a git project, so that 
