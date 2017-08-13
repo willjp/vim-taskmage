@@ -8,6 +8,8 @@ json files (for genrating reports, searching by date, etc). Inspired by git
 and taskwarrior.
 
 
+.. image:: ./media/screenshot.png
+
 
 
 **You Edit a file that looks like this:**
