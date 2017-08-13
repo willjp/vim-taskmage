@@ -1,0 +1,64 @@
+*taskmage.txt*    Work with plaintext tasklists, save with metadata to json files.
+
+Author:   Will Pittman
+License:  BSD
+Requires: vim compiled with python
+
+
+
+================================================================================
+INTRODUCTION                       *taskmage*
+================================================================================
+
+TaskMage is a simple plugin to create/manage tasklists. A TaskMage project
+lets you organize tasks into regular files, using a syntax inspired by 
+reStructuredText. When tasks are saved, metadata is added automatically, and
+the files are stored as JSON files. Completed tasks can be periodically
+archived using `:TaskMageArchiveCompleted`.
+
+
+History:~
+
+I spent a long time using TaskWarrior, and a long time reading up on TODO.txt,
+the project where it drew inspiration. Each project tries to solve complex
+task-management problems in different ways.
+
+todo.txt, at it's core lets you write tasks in plaintext. Metadata is also
+manually added to each task, in a format that is consistent, parsible, and
+syntax highlighted. My issue with todo.txt was that it was too much typing,
+and I found that the metadata got in the way of what I was trying to do.
+
+Taskwarrior tried to solve this issue by managing tasks through a commandline
+interface. You could have several views of your tasks (and create custom views)
+which allowed you to dynamically search for tasks, sort by various columns,
+add custom columns etc. TaskWarrior could also generate beautiful and motivating 
+charts/stats about the tasks you created/accomplished. Dependencies could be added between taskIds forming
+very complex dependency chains. This was where it fell apart for me, it took
+too long to add/manage dependencies. I found myself creating taskwarrior
+tasks, and then linking them to restructured-text files where I could more
+quickly manage subtasks. I also didn't like constantly having to type
+in the projectname to filter tasks by project, I wanted to manage tasks
+in folders, but keep a history and metadata like taskwarrior.
+
+This project is a bit of an experiment that attempts to merge the two 
+philosophies.
+
+*projsync.txt*    Work with git locally, and mirror changes to Network Shares on file-save.
+
+Author:   Will Pittman
+License:  BSD
+Requires: git, vim compiled with python
+
+
+
+================================================================================
+USAGE                              *taskmage-usage*
+================================================================================
+
+TODO
+
+
+
+
+
+
