@@ -23,6 +23,7 @@ import os
 import json
 import re
 import datetime
+import logging
 if sys.version_info[0] <= 2:
     from UserString  import UserString
     from UserList    import UserList
@@ -37,6 +38,7 @@ from .project import get_projectroot
 
 #!TODO: multiline task comments
 
+logger = logging.getLogger(__name__)
 
 _taskinfo = namedtuple(
     # explicit info about a task
