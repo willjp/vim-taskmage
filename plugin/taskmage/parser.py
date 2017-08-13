@@ -1370,6 +1370,10 @@ class _RstTaskParser( UserList ):
                 created        = None
             else:
                 saved_taskinfo = self._saved_taskdata.get_taskinfo( last_taskdef.uuid )
+                if not saved_taskinfo:
+                    raise RuntimeError(
+                        'Invalid Data: Unable to find task with Id: %s' % last_taskdef.uuid
+                    )
                 created        = saved_taskinfo.created
 
             tasks.append(
