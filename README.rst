@@ -99,6 +99,9 @@ Usage:
 
 .. code-block:: vim
 
+    " create a new taskmage project
+    :TaskMageCreateProject
+
     " create a new taskfile
     :e myfile.mtask      " alternatively from shell:   touch myfile.mtask
 
