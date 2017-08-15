@@ -4,10 +4,22 @@ Author:   Will Pittman
 License:  BSD
 Requires: vim compiled with python
 
+================================================================================
+CONTENTS                           *taskmage-contents*
+================================================================================
 
+    1.Introduction.....................taskmage-intro
+        1.1.History
+    2.Usage............................taskmage-usage
+        2.1.Creating Projects
+        2.2.Task Syntax
+        2.3.Task Comments
+        2.4.Task Sections
+        2.5.Archiving Tasks
+    3.Commands.........................taskmage-commands
 
 ================================================================================
-INTRODUCTION                       *taskmage*
+INTRODUCTION                       *taskmage-intro*
 ================================================================================
 
 TaskMage is a simple plugin to create/manage tasklists. A TaskMage project
@@ -43,22 +55,96 @@ in folders, but keep a history and metadata like taskwarrior.
 This project is a bit of an experiment that attempts to merge the two 
 philosophies.
 
-*projsync.txt*    Work with git locally, and mirror changes to Network Shares on file-save.
-
-Author:   Will Pittman
-License:  BSD
-Requires: git, vim compiled with python
-
-
 
 ================================================================================
 USAGE                              *taskmage-usage*
 ================================================================================
 
-TODO
+Creating Projects:~
+
+Open vim, and use the command `:TaskMageCreateProject` to create
+a new taskmage project. It will create the empty directory
+`.taskmage`, which is where archived tasks will be copied to.
+
+
+Task Syntax:~
+
+Once that is done, simply start editing any file with the suffix
+of `*.mtask`. Tasks are created in the form of *reStructuredText* lists. 
+When you are done, Simply save the file, and it will be stored as JSON.
+
+> * task 1
+> * task 2
+>    * subtask of 'task 2'
+>        * subtask of 'subtask of task 2'
 
 
 
+Different symbols are used to indicate different task-statuses.
+
+> `*` tasks that must be done 
+> `x` completed tasks
+> `o` tasks in progress
+> `-` skipped tasks
+
+
+> * task 2
+>    x completed subtask of 'task 2'
+>    - skipped subtask
+>    o in-progress subtask
+>    
+
+
+Task Comments:~
+
+Comments can be added to the end of tasks. 
+They will be highlighted differently. I use this
+to keep notes for myself.
+
+> - pickup toy for birthday    # Alex beat me to it
 
 
 
+Task Sections:~
+
+Tasks can be divided into sections for convenience. I use
+`universal-ctags`, and the `tagbar` vim plugin to help me
+more quickly navigate between sections.
+
+> * task 1
+>     * subtask 1
+> 
+> section
+> =======
+> * task 2
+>     * subtask 2
+
+
+
+Archiving Tasks:~
+
+As your task-files begin to fill up with completed tasks,
+you can clean completed-chains of tasks using the vim
+command `:TaskMageArchiveCompleted`. Tasks are not deleted,
+they are stored under the hidden directory `.taskmage/`.
+
+
+================================================================================
+COMMANDS                           *taskmage-commands*
+================================================================================
+
+`:TaskMageArchiveCompleted`
+    Archive fully completed task-chains.
+
+`:TaskMageCreateProject`
+    Create a new taskmage project.
+
+`:TaskMageToggle`
+`:TaskMageSplit`
+`:TaskMageVSplit`
+    Switches between the taskfile, and the
+    equivalent archive-taskfile.
+
+
+================================================================================
+vim:tw=78:et:ft=help:norl
