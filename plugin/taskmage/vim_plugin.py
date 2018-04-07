@@ -207,6 +207,9 @@ def archive_completed_tasks():
     for taskinfo in removed_tasks:
         archived_taskdata.add_taskinfo( taskinfo )
 
+    # create archive, if does not exist yet
+    if not os.path.isdir( os.path.dirname(archivedtask_path) ):
+        os.makedirs( os.path.dirname(archivedtask_path) )
 
     # write changes to vimbuffer/archived taskfiles
     with open( filepath, 'w' ) as fd:
