@@ -1,0 +1,15 @@
+
+* toplevel taskA
+* toplevel taskB
+    * sub-taskB 1
+    * sub-taskB 2
+
+header
+======
+
+* header taskA
+* header taskB
+  * sub-taskB 1
+  * sub-taskB 2
+* header taskC
+
