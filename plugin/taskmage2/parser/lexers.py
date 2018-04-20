@@ -45,7 +45,23 @@ class _Lexer( object ):
 
 
 class TaskList( _Lexer ):
-    pass
+    def __init__(self, fd):
+        self._current = None # the current token
+
+    def read_next(self):
+        pass
+
+    def next(self):
+        token         = self._current
+        self._current = None
+        return (token or self.read_next())
+
+    def peek(self):
+        return (self._current or self._current = self.read_next())
+
+    def eof(self):
+        return self.peek() is None
+
 
 class TaskDetails( _Lexer ):
     pass
