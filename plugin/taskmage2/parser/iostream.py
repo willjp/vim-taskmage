@@ -1,8 +1,18 @@
 
-import enum
+# instead of this, try using io.BufferedReader( fd )
+# or io.open( fd )
+
+
+
 
 class ReadStream( object ):
-    def __init__(self, fd):
+    def __init__(self, fd=None):
+        pass
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self):
         pass
 
     def next(self):
