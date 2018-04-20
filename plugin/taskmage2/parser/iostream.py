@@ -106,5 +106,36 @@ class VimBuffer( object ):
         return self.peek() is None
 
 
+class FileDescriptor( object ):
+    """
+    Abstracts a python file-descriptor so files can be read
+    one byte at a time. This is mostly for testing.
+    """
+    def __init__(self,fd):
+        self._fd  = fd
+        self.pos  = -1
+
+    def next(self, offset=0):
+        ch = self._peek(offset)
+        self.pos += offset + 1
+        return ch
+
+    def peek(self, offset=0):
+        orig_pos = self.pos
+        ch = self._peek(offset)
+        self.seek(orig_pos)
+        return ch
+
+    def _peek(self, offset=0):
+        pos      = self.pos + offset +1
+        self.seek(pos)
+        ch = self.read(1)
+
+        if ch == '':
+            return None
+        return ch
+
+    def eof(self):
+        return self.peek() is None
 
 
