@@ -21,6 +21,7 @@ from   __future__    import print_function
 import sys
 import os
 import abc
+import uuid
 #package
 #external
 #internal
@@ -29,7 +30,10 @@ import abc
 # TODO: Each lexer item must include details about it's indentation,
 # so that their parents can be determined.
 
-# TODO: task-lexer
+# TODO: task:
+#         * created-dt
+#         * finished False/dt
+#         * modified dt
 
 
 class _Lexer( object ):
@@ -107,7 +111,11 @@ class _Lexer( object ):
         If eof, returns None.
         Otherwise returns the next char without changing position.
         """
-        return (self._next or self._next = self.read_next())
+        if self._next:
+            return self._next
+        else:
+            self._next = self.read_next()
+        return self._next()
 
     def eof(self):
         return self.peek() is None
@@ -123,7 +131,7 @@ class _Lexer( object ):
         )
 
     def _is_alphanumeric(self, ch):
-        return re.match('[a-zA-Z0-9_]', ch):
+        return re.match('[a-zA-Z0-9_]', ch)
 
     def _get_line(self, offset=0):
         text   = ''
@@ -140,6 +148,12 @@ class _Lexer( object ):
 
 
 class TaskList( _Lexer ):
+    statuses = {
+        'x' : 'done',
+        '-' : 'skip',
+        'o' : 'wip',
+        '*' : 'todo',
+    }
     def __init__(self, fd):
         self._fd   = fd
         self._next = None # the next token
@@ -148,18 +162,22 @@ class TaskList( _Lexer ):
         """
         obtains next token without changing current position.
         """
-        if self.eof():
-            return None
 
         _id = uuid.uuid4().hex.upper() # define in case new item
         ch  = self._fd.peek()
+
+        # EOF
+        if ch is None:
+            return None
 
 
         if ch == ' ':
             indent = self._read_indent()
             self._fd.offset(indent)
 
+        # =====================
         # Header (section,file)
+        # =====================
         if ch == '{':
             (offset,_id) = self._read_id()
             self._fd.offset( offset )
@@ -167,12 +185,18 @@ class TaskList( _Lexer ):
         if self._is_alphanumeric(ch):
             return self._read_header(_id, indent)
 
+        # ====
         # Task
-        if ch in ('-','o','x','*'):
+        # ====
+        if ch in self.statuses:
+            status = self.statuses[ch]
+            self._fd.offset(1)
+
             if self._fd.peek(2) == '{': # ex: 'x {*0BE8D6CE9CB94AFB82037D2C367566C1*}'
                 (offset,_id) = self._read_id()
                 self._fd.offset(offset)
-            return self._read_task(_id, indent)
+
+            return self._read_task(status, _id, indent)
 
         self._parser_exception('Unexpected Character: {}'.format(ch) )
 
@@ -242,6 +266,11 @@ class TaskList( _Lexer ):
 
         parent = self._get_parent(indent)
 
+        self._fd.offset( sum(
+            len(title)+1,
+            len(underline)+1,
+        ))
+
         # file
         if title[:6] == 'file::':
             return {
@@ -262,14 +291,30 @@ class TaskList( _Lexer ):
                 'data'   : {},
             }
 
-    def _read_task(self, _id, indent):
+    def _read_task(self, status, _id, indent):
         """
 
         Example:
 
+            By this stage, the status, and id will have been parsed.
+            This method is responsible for identifying:
+
+                * file (if one)
+                * parent
+                * status-name
+                * metadata
+
             .. code-block:: python
 
-                abc
+                #
+                # status     id (optional)              name
+                #  /            |                        |
+                # /             |                        |
+
+                * {*42D4C5B8B83547468DB9D9BC738AE587*} todo task
+                o {*1EE4C290F1CC4FA1B33FD1DBABF512B3*} wip task
+                x {*1EE4C290F1CC4FA1B33FD1DBABF512B3*} finished task
+                - {*F46AD99478AE480081DA356201E0229E*} skipped task
 
         Returns:
 
@@ -289,9 +334,62 @@ class TaskList( _Lexer ):
                 }
 
         """
-        # parent is obtained by checking backwards in the list
+        offset  = 0
+        newline = False
+        name    = ''
+
         parent = self._get_parent(indent)
-        pass
+
+        task = {
+            '_id': _id,
+            'type': 'task',
+            'name': '',
+            'data': {
+                'status':   status,
+                'created':  None,
+                'finished': False,
+                'modified': datetime.datetime.utcnow(),
+            }
+        }
+
+        while True:
+            ch = self._fd.peek(offset)
+
+            # EOL encountered
+            if ch == None:
+                self._fd.offset(offset)
+                task['name'] = name
+                return task
+
+            # parse indentation of newline
+            if newline:
+                _indent = self._read_indent()
+
+                # newline is the start of something else
+                # *NOT* a continuation of this task
+                if any([
+                    _indent < indent,
+                    ch in self.statuses,
+                ]):
+                    self._fd.offset(offset)
+                    name = name.strip()
+                    task['name'] = name
+                    return task
+
+                # newline is a continuation of task.
+                # continute reading - at least until end of line
+                newline = False
+                offset += len(_indent)
+
+            if ch == '\n':
+                newline = True
+                offset += 1
+                name   += ch
+                name    = name.strip()
+            else:
+                offset += 1
+                name   += ch
+
 
     def _read_id(self):
         """
@@ -353,10 +451,21 @@ class Mtask( _Lexer ):
 
 if __name__ == '__main__':
     from taskmage2.parser import iostream
+    import os
 
     def ex_tasklist():
-        with open( '../../../examples/new_tasks.tasklist', 'rb') as fd:
+        _scriptdir = os.path.abspath(os.path.dirname(__file__))
+        path       = os.path.abspath('{}/../../../examples/new_tasks.tasklist'.format(_scriptdir))
+        with open( path, 'rb') as fd:
             lexer = TaskList( iostream.FileDescriptor(fd) )
+
+            lexer.next()
+            #while True:
+            #    token = lexer.read_next()
+            #    if token == None:
+            #        print(token)
+            #    else:
+            #        break
 
     ex_tasklist()
 
