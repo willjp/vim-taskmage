@@ -1,5 +1,6 @@
 
 * toplevel taskA
+  multiline
 * toplevel taskB
     * sub-taskB 1
     * sub-taskB 2

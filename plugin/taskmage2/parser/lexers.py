@@ -140,15 +140,15 @@ class _Lexer(object):
     def _get_line(self, offset=0):
         text = ''
         while True:
-            ch = self._buf.peek(offset)
+            ch = self._fd.peek(offset)
 
             if ch is None:
-                return
+                return None
             elif ch == '\n':
-                break
+                return text
             else:
                 text += ch
-        return text
+            offset += 1
 
 
 class TaskList(_Lexer):
@@ -175,9 +175,26 @@ class TaskList(_Lexer):
         if ch is None:
             return None
 
+        offset = 0
+        indent = 0
+
+
+        # =============
+        # Handle Indent
+        # =============
         if ch == ' ':
             indent = self._read_indent()
-            self._fd.offset(indent)
+            self._fd.offset(offset+indent)
+            offset = 0
+            ch = self._fd.peek(offset)
+
+        # ===============================================
+        # Newline (outside of taskdef, ignore & continue)
+        # ===============================================
+        if ch == '\n':
+            self._fd.next(offset)
+            return self.read_next()
+
 
         # =====================
         # Header (section,file)
@@ -197,15 +214,15 @@ class TaskList(_Lexer):
             self._fd.offset(1)
 
             # ex: 'x {*0BE8D6CE9CB94AFB82037D2C367566C1*}'
-            if self._fd.peek(2) == '{':
+            if self._fd.peek(1) == '{':
                 (offset, _id) = self._read_id()
                 self._fd.offset(offset)
 
             return self._read_task(status, _id, indent)
 
-        self._parser_exception('Unexpected Character: {}'.format(ch))
+        self._parser_exception('Unexpected Character: {}'.format(repr(ch)))
 
-    def _read_indent(self):
+    def _read_indent(self, offset=0):
         """
         Returns an integer representing how many spaces
         the current line is indented.
@@ -218,7 +235,7 @@ class TaskList(_Lexer):
                 0   # if not indented
         """
         indent = 0
-        while self._fd.peek() == ' ':
+        while self._fd.peek(offset+indent) == ' ':
             indent += 1
         return indent
 
@@ -261,7 +278,7 @@ class TaskList(_Lexer):
         title = self._get_line()
         underline = self._get_line(len(title) + 1)  # +1 for \n
 
-        if len(title) <= len(underline):
+        if len(title) < len(underline):
             self._parser_exception(
                 ('title and underline do not match \n'
                  '{}\n'
@@ -271,10 +288,10 @@ class TaskList(_Lexer):
 
         parent = self._get_parent(indent)
 
-        self._fd.offset(sum(
+        self._fd.offset(sum([
             len(title) + 1,
             len(underline) + 1,
-        ))
+        ]))
 
         # file
         if title[:6] == 'file::':
@@ -368,13 +385,14 @@ class TaskList(_Lexer):
 
             # parse indentation of newline
             if newline:
-                _indent = self._read_indent()
+                _indent = self._read_indent(offset)
+                ch_after_indent = self._fd.peek(offset+_indent)
 
                 # newline is the start of something else
                 # *NOT* a continuation of this task
                 if any([
                     _indent < indent,
-                    ch in self.statuses,
+                    ch_after_indent in self.statuses,
                 ]):
                     self._fd.offset(offset)
                     name = name.strip()
@@ -384,16 +402,15 @@ class TaskList(_Lexer):
                 # newline is a continuation of task.
                 # continute reading - at least until end of line
                 newline = False
-                offset += len(_indent)
+                if _indent:
+                    offset += _indent -1 # so later offset+=1 still works
 
             if ch == '\n':
                 newline = True
-                offset += 1
-                name += ch
-                name = name.strip()
-            else:
-                offset += 1
-                name += ch
+                name    = name.strip()
+            name += ch
+            offset += 1
+
 
     def _read_id(self):
         """
@@ -437,7 +454,7 @@ class TaskList(_Lexer):
                     break
 
         _id = _id[2:-2]
-        return _id
+        return id_info(_id, offset)
 
     def _get_parent(self, indent):
         return None
@@ -463,12 +480,9 @@ if __name__ == '__main__':
         with open(path, 'rb') as fd:
             lexer = TaskList(iostream.FileDescriptor(fd))
 
-            lexer.next()
-            # while True:
-            #    token = lexer.read_next()
-            #    if token == None:
-            #        print(token)
-            #    else:
-            #        break
+            token = ''
+            while token is not None:
+               token = lexer.read_next()
+               print(token)
 
     ex_tasklist()

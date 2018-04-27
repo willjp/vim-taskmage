@@ -1,7 +1,24 @@
-
-# instead of this, try using io.BufferedReader( fd )
-# or io.open( fd )
+#!/usr/bin/env python
+"""
+Name :          taskmage2.parser.iostream.py
+Created :       Apr 27, 2018
+Author :        Will Pittman
+Contact :       willjpittman@gmail.com
+________________________________________________________________________________
+Description :   Classes to abstract reading from file, stream, etc. to
+                facilitate writing parsers.
+________________________________________________________________________________
+"""
+# builtin
+from   __future__    import unicode_literals
+from   __future__    import absolute_import
+from   __future__    import division
+from   __future__    import print_function
 from collections import namedtuple
+# package
+# external
+# internal
+
 
 
 class VimBuffer(object):
@@ -101,7 +118,10 @@ class VimBuffer(object):
 
             offset -= 1
 
-        return ch_info(line, col, ch)
+        return ch_info(line, col, ch.decode())
+
+    def offset(self, offset):
+        self.next(offset-1)
 
     def eof(self):
         return self.peek() is None
@@ -118,24 +138,35 @@ class FileDescriptor(object):
         self.pos = -1
 
     def next(self, offset=0):
-        ch = self._peek(offset)
+        ch = self._peek(offset+1)
         self.pos += offset + 1
         return ch
 
     def peek(self, offset=0):
         orig_pos = self.pos
-        ch = self._peek(offset)
-        self.seek(orig_pos)
+        if orig_pos < 0:
+            orig_pos = 0
+        ch = self._peek(offset+1)
+        self._fd.seek(orig_pos)
         return ch
 
     def _peek(self, offset=0):
-        pos = self.pos + offset + 1
-        self.seek(pos)
-        ch = self.read(1)
+        pos = self.pos + offset
+        self._fd.seek(pos)
+        ch = self._fd.read(1).decode()
 
         if ch == '':
             return None
         return ch
+
+    def offset(self, offset):
+        """
+        Move the current file-position by an offset.
+
+        Args:
+            offset (int): the number of characters to offset the position by.
+        """
+        self.next(offset-1)
 
     def eof(self):
         return self.peek() is None
