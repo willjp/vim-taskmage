@@ -1,10 +1,10 @@
-from collections import namedtuple, OrderedDict
+from collections import OrderedDict
 import enum
 
 
-class TaskStatus( enum.Enum ):
+class TaskStatus(enum.Enum):
     todo = 'todo'
-    wip  = 'wip'
+    wip = 'wip'
     done = 'done'
     skip = 'skip'
 
@@ -31,12 +31,13 @@ class Node(object):
 
 
     """
+
     def __init__(self, _id, ntype, name, data=None, children=None):
-        self.name     = name
-        self.children = [] # list of nodes
-        self.__id     = _id
-        self.__type   = ntype
-        self.__data   = getattr( NodeData, ntype )
+        self.name = name
+        self.children = []  # list of nodes
+        self.__id = _id
+        self.__type = ntype
+        self.__data = getattr(NodeData, ntype)
 
         if data:
             self.__data = data
@@ -62,28 +63,28 @@ class Node(object):
         return self.__data
 
     @id.setter
-    def id(self,id):
+    def id(self, id):
         raise AttributeError('Not allowed to set `id`')
 
     @type.setter
-    def type(self,type):
+    def type(self, type):
         raise AttributeError('Not allowed to set `type`')
 
     @data.setter
-    def data(self,data):
-       if not isinstance( data, type(self.__data) ):
-           raise TypeError(
-               (
-               'Expected `data` to be of type: "{}".\n'
-               'Received: "{}"'
-               ).format( getattr(NodeData,ntype), type(data) )
-           )
-       self.__data = data
+    def data(self, data):
+        if not isinstance(data, type(self.__data)):
+            raise TypeError(
+                (
+                    'Expected `data` to be of type: "{}".\n'
+                    'Received: "{}"'
+                ).format(getattr(NodeData, self.__type), type(data))
+            )
+        self.__data = data
 
 
 class _namedtuple(tuple):
     def __new__(cls, data):
-        if not isinstance(cls._attrs,tuple):
+        if not isinstance(cls._attrs, tuple):
             raise RuntimeError(
                 'Each `_namedtuple` must have a `cls._attrs` attribute '
                 'with a list of arguments in order'
@@ -98,22 +99,22 @@ class _namedtuple(tuple):
         return '{}({})'.format(
             self.__class__.__name__,
             ', '.join(
-                ['{}={}'.format(self._attrs[i],self[i]) for i in range(len(self._attrs))]
+                ['{}={}'.format(self._attrs[i], self[i]) for i in range(len(self._attrs))]
             )
         )
 
     def __getattr__(self, attr):
         if attr not in self._attrs:
             raise AttributeError('Attribute "{}" does not exist on object {}'.format(attr, self.__class__.__name__))
-        return self[ self._attrs.index(attr) ]
+        return self[self._attrs.index(attr)]
 
     def _asdict(self):
         d = OrderedDict()
         for i in range(len(self._attrs)):
-            d[ self._attrs[i] ] = self[i]
+            d[self._attrs[i]] = self[i]
         return d
 
-    def copy(self,*args,**kwds):
+    def copy(self, *args, **kwds):
         """
         Create a duplicate object of this type,
         optionally modifying it's arguments in the new
@@ -135,21 +136,22 @@ class _namedtuple(tuple):
                 >>> task(status='wip', finished=True)
 
         """
-        new_kwds  = list(self._asdict().items())
+        new_kwds = list(self._asdict().items())
 
         if args:
-            new_kwds = new_kwds[ len(args) : ]
+            new_kwds = new_kwds[len(args):]
 
         new_kwds = OrderedDict(new_kwds)
         if kwds:
             new_kwds.update(kwds)
 
-        return type(self)( *args, **new_kwds )
+        return type(self)(*args, **new_kwds)
 
 
 class NodeData(object):
     class file(_namedtuple):
         _attrs = tuple()
+
         def __new__(cls):
             return _namedtuple.__new__(cls, tuple())
 
@@ -158,15 +160,17 @@ class NodeData(object):
 
     class section(_namedtuple):
         _attrs = tuple()
+
         def __new__(cls):
             return _namedtuple.__new__(cls, tuple())
 
     class task(_namedtuple):
-        _attrs = ('status','created','finished','modified')
+        _attrs = ('status', 'created', 'finished', 'modified')
+
         def __new__(cls, status, created=None, finished=False, modified=None):
             # TODO: VALIDATE!!!
-            return _namedtuple.__new__(cls, (status,created,finished,modified))
-            #return super(task,cls).__new__(cls, (status,created,finished,modified))
+            return _namedtuple.__new__(cls, (status, created, finished, modified))
+            # return super(task,cls).__new__(cls, (status,created,finished,modified))
 
     def update(self, data, *args, **kwds):
         """
@@ -177,18 +181,16 @@ class NodeData(object):
         .. note::
             THIS WILL NO LONGER WORK!!! REQUIRES A NAMEDTUPLE
         """
-        new_kwds  = list(data._asdict())
+        new_kwds = list(data._asdict())
 
         if args:
-            new_kwds = new_kwds[ len(args) : ]
+            new_kwds = new_kwds[len(args):]
 
         if kwds:
             new_kwds.update(kwds)
 
-        return type(data)( *args, collections.OrderedDict(new_kwds) )
-
+        return type(data)(*args, OrderedDict(new_kwds))
 
 
 if __name__ == '__main__':
     pass
-

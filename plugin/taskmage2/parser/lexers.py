@@ -13,18 +13,21 @@ Description :   Lexers for all of the various datatypes tasks can
                 tokens, which can be used in ``parser.parser.Parser()``
 ________________________________________________________________________________
 """
-#builtin
+# builtin
 from   __future__    import unicode_literals
 from   __future__    import absolute_import
 from   __future__    import division
 from   __future__    import print_function
-import sys
+from   collections   import namedtuple
 import os
 import abc
 import uuid
-#package
-#external
-#internal
+import re
+import datetime
+# package
+# external
+# internal
+from taskmage2 import exceptions_
 
 
 # TODO: Each lexer item must include details about it's indentation,
@@ -36,7 +39,7 @@ import uuid
 #         * modified dt
 
 
-class _Lexer( object ):
+class _Lexer(object):
     """
     Base class for all lexers. Reads a particular datatype,
     and returns a list of tokens, suitable for use with
@@ -90,6 +93,7 @@ class _Lexer( object ):
 
     """
     __metaclass__ = abc.ABCMeta
+
     def read_next(self):
         raise NotImplemented(
             '`_Lexer` must be subclassed, and this method should be implemented \n'
@@ -101,7 +105,7 @@ class _Lexer( object ):
         stores next token in self._next,
         returns previously set next.
         """
-        token      = self._next
+        token = self._next
         self._next = None
         return (token or self.read_next())
 
@@ -125,8 +129,8 @@ class _Lexer( object ):
             msg = ''
 
         # TODO: line and col in error.
-        raise _exceptions.ParserError(
-            #'ln:{} col:{} -- {}'.format(self._ln,self._col, msg)
+        raise exceptions_.ParserError(
+            # 'ln:{} col:{} -- {}'.format(self._ln,self._col, msg)
             msg
         )
 
@@ -134,42 +138,42 @@ class _Lexer( object ):
         return re.match('[a-zA-Z0-9_]', ch)
 
     def _get_line(self, offset=0):
-        text   = ''
+        text = ''
         while True:
             ch = self._buf.peek(offset)
 
-            if ch == None:
+            if ch is None:
                 return
             elif ch == '\n':
                 break
             else:
                 text += ch
-        return line
+        return text
 
 
-class TaskList( _Lexer ):
+class TaskList(_Lexer):
     statuses = {
-        'x' : 'done',
-        '-' : 'skip',
-        'o' : 'wip',
-        '*' : 'todo',
+        'x': 'done',
+        '-': 'skip',
+        'o': 'wip',
+        '*': 'todo',
     }
+
     def __init__(self, fd):
-        self._fd   = fd
-        self._next = None # the next token
+        self._fd = fd
+        self._next = None  # the next token
 
     def read_next(self):
         """
         obtains next token without changing current position.
         """
 
-        _id = uuid.uuid4().hex.upper() # define in case new item
-        ch  = self._fd.peek()
+        _id = uuid.uuid4().hex.upper()  # define in case new item
+        ch = self._fd.peek()
 
         # EOF
         if ch is None:
             return None
-
 
         if ch == ' ':
             indent = self._read_indent()
@@ -179,8 +183,8 @@ class TaskList( _Lexer ):
         # Header (section,file)
         # =====================
         if ch == '{':
-            (offset,_id) = self._read_id()
-            self._fd.offset( offset )
+            (offset, _id) = self._read_id()
+            self._fd.offset(offset)
 
         if self._is_alphanumeric(ch):
             return self._read_header(_id, indent)
@@ -192,13 +196,14 @@ class TaskList( _Lexer ):
             status = self.statuses[ch]
             self._fd.offset(1)
 
-            if self._fd.peek(2) == '{': # ex: 'x {*0BE8D6CE9CB94AFB82037D2C367566C1*}'
-                (offset,_id) = self._read_id()
+            # ex: 'x {*0BE8D6CE9CB94AFB82037D2C367566C1*}'
+            if self._fd.peek(2) == '{':
+                (offset, _id) = self._read_id()
                 self._fd.offset(offset)
 
             return self._read_task(status, _id, indent)
 
-        self._parser_exception('Unexpected Character: {}'.format(ch) )
+        self._parser_exception('Unexpected Character: {}'.format(ch))
 
     def _read_indent(self):
         """
@@ -214,7 +219,7 @@ class TaskList( _Lexer ):
         """
         indent = 0
         while self._fd.peek() == ' ':
-            indent +=1
+            indent += 1
         return indent
 
     def _read_header(self, _id, indent):
@@ -253,42 +258,42 @@ class TaskList( _Lexer ):
                 }
 
         """
-        title     = self._get_line()
-        underline = self._get_line( len(title) +1 ) # +1 for \n
+        title = self._get_line()
+        underline = self._get_line(len(title) + 1)  # +1 for \n
 
         if len(title) <= len(underline):
             self._parser_exception(
-                ( 'title and underline do not match \n'
-                '{}\n'
-                '{}\n'
-                ).format(title,underline)
+                ('title and underline do not match \n'
+                 '{}\n'
+                 '{}\n'
+                 ).format(title, underline)
             )
 
         parent = self._get_parent(indent)
 
-        self._fd.offset( sum(
-            len(title)+1,
-            len(underline)+1,
+        self._fd.offset(sum(
+            len(title) + 1,
+            len(underline) + 1,
         ))
 
         # file
         if title[:6] == 'file::':
             return {
-                '_id'    : _id,
-                'type'   : 'file',
-                'name'   : title[6:],
-                'parent' : parent,
-                'data'   : {},
+                '_id': _id,
+                'type': 'file',
+                'name': title[6:],
+                'parent': parent,
+                'data': {},
             }
 
         # section
         else:
             return {
-                '_id'    : _id,
-                'type'   : 'section',
-                'name'   : title.strip(),
-                'parent' : parent,
-                'data'   : {},
+                '_id': _id,
+                'type': 'section',
+                'name': title.strip(),
+                'parent': parent,
+                'data': {},
             }
 
     def _read_task(self, status, _id, indent):
@@ -334,9 +339,9 @@ class TaskList( _Lexer ):
                 }
 
         """
-        offset  = 0
+        offset = 0
         newline = False
-        name    = ''
+        name = ''
 
         parent = self._get_parent(indent)
 
@@ -345,8 +350,8 @@ class TaskList( _Lexer ):
             'type': 'task',
             'name': '',
             'data': {
-                'status':   status,
-                'created':  None,
+                'status': status,
+                'created': None,
                 'finished': False,
                 'modified': datetime.datetime.utcnow(),
             }
@@ -356,7 +361,7 @@ class TaskList( _Lexer ):
             ch = self._fd.peek(offset)
 
             # EOL encountered
-            if ch == None:
+            if ch is None:
                 self._fd.offset(offset)
                 task['name'] = name
                 return task
@@ -384,12 +389,11 @@ class TaskList( _Lexer ):
             if ch == '\n':
                 newline = True
                 offset += 1
-                name   += ch
-                name    = name.strip()
+                name += ch
+                name = name.strip()
             else:
                 offset += 1
-                name   += ch
-
+                name += ch
 
     def _read_id(self):
         """
@@ -403,20 +407,21 @@ class TaskList( _Lexer ):
                 id_info(id='1308166D07DA42909972BBF0D08952DE', offset=36)
 
         """
-        id_info = namedtuple('id_info',['id','offset'])
-        offset  = 0
+        id_info = namedtuple('id_info', ['id', 'offset'])
+        offset = 0
 
         # get id
-        _id      = ''
+        _id = ''
+        ch = ''
         id_start = False
-        while ch != None:
-            ch      = self._fd.peek(offset)
+        while ch is not None:
+            ch = self._fd.peek(offset)
 
             # ignore everything up until the id
             if not id_start:
                 if ch == '{':
                     id_start = True
-                    id_def   = '{'
+                    id_def = '{'
 
             # define the id
             else:
@@ -425,7 +430,6 @@ class TaskList( _Lexer ):
 
                 elif id_def[-1] == '*' and ch != '}':
                     self._parser_exception('invalid ID end')
-
 
                 # end of id
                 id_def += ch
@@ -439,28 +443,28 @@ class TaskList( _Lexer ):
         return None
 
 
-class TaskDetails( _Lexer ):
+class TaskDetails(_Lexer):
     def __init__(self, fd):
         raise NotImplementedError('todo')
 
 
-class Mtask( _Lexer ):
+class Mtask(_Lexer):
     def __init__(self, fd):
         raise NotImplementedError('todo')
 
 
 if __name__ == '__main__':
     from taskmage2.parser import iostream
-    import os
 
     def ex_tasklist():
         _scriptdir = os.path.abspath(os.path.dirname(__file__))
-        path       = os.path.abspath('{}/../../../examples/new_tasks.tasklist'.format(_scriptdir))
-        with open( path, 'rb') as fd:
-            lexer = TaskList( iostream.FileDescriptor(fd) )
+        path = os.path.abspath(
+            '{}/../../../examples/new_tasks.tasklist'.format(_scriptdir))
+        with open(path, 'rb') as fd:
+            lexer = TaskList(iostream.FileDescriptor(fd))
 
             lexer.next()
-            #while True:
+            # while True:
             #    token = lexer.read_next()
             #    if token == None:
             #        print(token)
@@ -468,4 +472,3 @@ if __name__ == '__main__':
             #        break
 
     ex_tasklist()
-

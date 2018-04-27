@@ -4,21 +4,22 @@
 from collections import namedtuple
 
 
-class VimBuffer( object ):
+class VimBuffer(object):
     """
     Abstracts vim python buffer object, so can read it as if it were raw-bytes.
-    Adds functionality like `peek` , so can read ahead without changing the current
-    position in the file.
+    Adds functionality like `peek` , so can read ahead without changing the
+    current position in the file.
     """
+
     def __init__(self, buf):
         """
         Args:
             buf (vim.api.buffer.Buffer):
                 A vim buffer. For example: ``vim.current.buffer`` .
         """
-        self._buf  = buf
-        self.line  = -1
-        self.col   = -1
+        self._buf = buf
+        self.line = -1
+        self.col = -1
 
     def next(self, offset=0):
         """
@@ -37,7 +38,7 @@ class VimBuffer( object ):
             return None
         else:
             self.line = ch_info.line
-            self.col  = ch_info.col
+            self.col = ch_info.col
             return ch_info.char
 
     def peek(self, offset=0):
@@ -69,51 +70,52 @@ class VimBuffer( object ):
                 ch_info(line=1,col=5,char='b')  ## character info
                 None                            ## if reached EOF
         """
-        ch_info = namedtuple('ch_info',['line','col','char'])
+        ch_info = namedtuple('ch_info', ['line', 'col', 'char'])
 
-        ch   = None
-        col  = self.col
+        ch = None
+        col = self.col
         line = self.line
 
         # calculate offset
         while offset >= 0:
             if line < 0:
                 line = 0
-                col  = 0
-                ch   = self._buf[line][col]
-
-            elif col < (len(self._buf[line]) -1):
-                col+=1
+                col = 0
                 ch = self._buf[line][col]
 
-            elif col == (len(self._buf[line]) -1):
-                col+=1
+            elif col < (len(self._buf[line]) - 1):
+                col += 1
+                ch = self._buf[line][col]
+
+            elif col == (len(self._buf[line]) - 1):
+                col += 1
                 ch = '\n'
 
-            elif line < (len(self._buf) -1):
-                line +=1
-                col   = 0
-                ch    = self._buf[line][col]
+            elif line < (len(self._buf) - 1):
+                line += 1
+                col = 0
+                ch = self._buf[line][col]
 
             else:
-                return None # EOF
+                return None  # EOF
 
-            offset -=1
+            offset -= 1
 
-        return ch_info(line,col,ch)
+        return ch_info(line, col, ch)
 
     def eof(self):
         return self.peek() is None
 
 
-class FileDescriptor( object ):
+class FileDescriptor(object):
     """
     Abstracts a python file-descriptor so files can be read
     one byte at a time. This is mostly for testing.
     """
-    def __init__(self,fd):
-        self._fd  = fd
-        self.pos  = -1
+
+    def __init__(self, fd):
+        self._fd = fd
+        self.pos = -1
 
     def next(self, offset=0):
         ch = self._peek(offset)
@@ -127,7 +129,7 @@ class FileDescriptor( object ):
         return ch
 
     def _peek(self, offset=0):
-        pos      = self.pos + offset +1
+        pos = self.pos + offset + 1
         self.seek(pos)
         ch = self.read(1)
 
@@ -137,5 +139,3 @@ class FileDescriptor( object ):
 
     def eof(self):
         return self.peek() is None
-
-
