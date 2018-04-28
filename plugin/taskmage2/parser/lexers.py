@@ -24,6 +24,7 @@ import abc
 import uuid
 import re
 import datetime
+import json
 # package
 # external
 # internal
@@ -155,6 +156,28 @@ class _Lexer(object):
 
 
 class TaskList(_Lexer):
+    """
+    Lexer for the TaskList format (that appears within vim).
+
+    Example:
+
+        Example of a ``TaskList`` format file.
+
+        .. code-block:: ReStructuredText
+
+            * {*768D3CDC543044488462C9CE6B823404*} saved task
+                * new task
+                o started task
+                - skipped task
+                x finished task
+                    * another subtask
+
+            home
+            ====
+
+            * clean kitchen
+
+    """
     statuses = {
         'x': 'done',
         '-': 'skip',
@@ -533,7 +556,70 @@ class TaskDetails(_Lexer):
 
 
 class Mtask(_Lexer):
+    """
+    Lexer for  ``*.mtask``  files (JSON).
+
+    Example:
+
+        Example of an *.mtask file (stored in the same format as the Lexer object).
+
+        .. code-block:: python
+
+            [
+                {'_id':'...', 'type':'task', 'name':'do something', 'parent':..., 'indent':0, 'data':{...}},
+                {'_id':'...', 'type':'task', 'name':'do something', 'parent':..., 'indent':0, 'data':{...}},
+                ...
+            ]
+
+    """
     def __init__(self, fd):
+        _Lexer.__init__(self,fd)
+        self._rawdata = [] # the data in raw JSON
+        self._index = 0
+        self._read()
+
+    def _read(self):
+        data = self._fd.read()
+        if not data:
+            self._rawdata = []
+        else:
+            self._rawdata = json.loads( data )
+
+    def read_next(self):
+        token = self._read_next()
+        self.data.append( token )
+        return token
+
+    def _read_next(self):
+        if self._index >= len(self._rawdata):
+            return None
+
+        index = self._index
+        self._index += 1
+
+        if 'type' in self._rawdata[index]:
+            dtype = self._rawdata[index]['type']
+            if dtype == 'task':
+                return self._read_task(self, index)
+            elif dtype == 'section':
+                return self._read_section(self, index)
+            elif dtype == 'file':
+                return self._read_filedef(self, index)
+            else:
+                self._parser_exception((
+                    'Invalid token in mtaskfile: \n'
+                    '    missing dictionary key "task" \n'
+                    '{}'
+                    ).format(repr(self._rawdata[index]))
+                )
+
+    def _read_task(self, index):
+        raise NotImplementedError('todo')
+
+    def _read_section(self, index):
+        raise NotImplementedError('todo')
+
+    def _read_filedef(self, index):
         raise NotImplementedError('todo')
 
 
@@ -543,7 +629,8 @@ if __name__ == '__main__':
     def ex_tasklist():
         _scriptdir = os.path.abspath(os.path.dirname(__file__))
         path = os.path.abspath(
-            '{}/../../../examples/new_tasks.tasklist'.format(_scriptdir))
+            '{}/../../../examples/example.tasklist'.format(_scriptdir)
+        )
         with open(path, 'rb') as fd:
             lexer = TaskList(iostream.FileDescriptor(fd))
 
