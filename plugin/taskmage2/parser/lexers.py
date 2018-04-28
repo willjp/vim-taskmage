@@ -30,9 +30,6 @@ import datetime
 from taskmage2 import exceptions_
 
 
-# TODO: Each lexer item must include details about it's indentation,
-# so that their parents can be determined.
-
 # TODO: task:
 #         * created-dt
 #         * finished False/dt
@@ -54,6 +51,7 @@ class _Lexer(object):
                 'type'   : 'task',
                 'name'   : 'do something',
                 'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
+                'indent' : 0,
                 'data'   : {
                     'status' : 'todo',
                     'created':  datetime(...),
@@ -67,6 +65,7 @@ class _Lexer(object):
                 'type'   : 'section',
                 'name'   : 'home',
                 'parent' : '33e7d20ebf7241ae9d11cdca62dbd349', # or None
+                'indent' : 0,
                 'data'   : {}
             }
 
@@ -75,6 +74,7 @@ class _Lexer(object):
                 'type'   : 'file',
                 'name'   : 'misc/todo.mtask',
                 'parent' : None,  # always
+                'indent' : 0,
                 'data'   : {}
             }
 
@@ -84,15 +84,18 @@ class _Lexer(object):
         .. code-block:: python
 
             [
-                {'_id':..., 'type':'file',    'name':'todo/misc.mtask', 'parent':None, 'data':{}},
-                {'_id':..., 'type':'section', 'name':'kitchen',         'parent':...,  'data':{}},
-                {'_id':..., 'type':'task',    'name':'wash dishes',     'parent':...,  'data':{...}},
-                {'_id':..., 'type':'task',    'name':'grocery list',    'parent':...,  'data':{...}},
+                {'_id':..., 'type':'file',    'name':'todo/misc.mtask', 'indent':0, 'parent':None, 'data':{}},
+                {'_id':..., 'type':'section', 'name':'kitchen',         'indent':0, 'parent':...,  'data':{}},
+                {'_id':..., 'type':'task',    'name':'wash dishes',     'indent':0, 'parent':...,  'data':{...}},
+                {'_id':..., 'type':'task',    'name':'grocery list',    'indent':0, 'parent':...,  'data':{...}},
                 ...
             ]
 
     """
     __metaclass__ = abc.ABCMeta
+    def __init__(self, fd):
+        self._fd  = fd
+        self.data = []
 
     def read_next(self):
         raise NotImplemented(
@@ -160,12 +163,50 @@ class TaskList(_Lexer):
     }
 
     def __init__(self, fd):
-        self._fd = fd
         self._next = None  # the next token
+        _Lexer.__init__(self,fd)
+
+    def read(self):
+        """
+        Lexes the entire file-descriptor into a list of tokens.
+        """
+        while token:
+            token = self.read_next()
+        return self.data
 
     def read_next(self):
         """
-        obtains next token without changing current position.
+        Obtains next token, saves to ``self.data`` , and returns it.
+
+        Returns:
+
+            A single token. See :py:obj:`_Lexer` for a list of all
+            tokens.
+
+            .. code-block:: python
+
+                {
+                    '_id'    : 'a09e314015b34846a05114ce3bee9675'
+                    'type'   : 'task',
+                    'name'   : 'do something',
+                    'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
+                    'indent' : 0,
+                    'data'   : {
+                        'status' : 'todo',
+                        'created':  datetime(...),
+                        'finished': datetime(...),
+                        'modified': datetime(...),
+                    }
+                }
+        """
+        token = self._read_next()
+        if token:
+            self.data.append(token)
+        return token
+
+    def _read_next(self):
+        """
+        Obtains next token.
         """
 
         _id = uuid.uuid4().hex.upper()  # define in case new item
@@ -300,6 +341,7 @@ class TaskList(_Lexer):
                 'type': 'file',
                 'name': title[6:],
                 'parent': parent,
+                'indent': indent,
                 'data': {},
             }
 
@@ -310,6 +352,7 @@ class TaskList(_Lexer):
                 'type': 'section',
                 'name': title.strip(),
                 'parent': parent,
+                'indent': indent,
                 'data': {},
             }
 
@@ -366,12 +409,14 @@ class TaskList(_Lexer):
             '_id': _id,
             'type': 'task',
             'name': '',
+            'indent': indent,
+            'parent': parent,
             'data': {
                 'status': status,
                 'created': None,
                 'finished': False,
-                'modified': datetime.datetime.utcnow(),
-            }
+                'modified': None,    # utcnow() if changed only
+            },
         }
 
         while True:
@@ -380,7 +425,7 @@ class TaskList(_Lexer):
             # EOL encountered
             if ch is None:
                 self._fd.offset(offset)
-                task['name'] = name
+                task['name'] = name.strip()
                 return task
 
             # parse indentation of newline
@@ -395,8 +440,7 @@ class TaskList(_Lexer):
                     ch_after_indent in self.statuses,
                 ]):
                     self._fd.offset(offset)
-                    name = name.strip()
-                    task['name'] = name
+                    task['name'] = name.strip()
                     return task
 
                 # newline is a continuation of task.
@@ -410,7 +454,6 @@ class TaskList(_Lexer):
                 name    = name.strip()
             name += ch
             offset += 1
-
 
     def _read_id(self):
         """
@@ -457,6 +500,30 @@ class TaskList(_Lexer):
         return id_info(_id, offset)
 
     def _get_parent(self, indent):
+        """
+        Finds the nearest parent of a token with the provided `indent`.
+
+        Searches previously encountered tokens (section, task, ...)
+        for a token with a smaller indent than `indent`.
+
+        Args:
+            indent (int): The number of characters a token is indented.
+
+        Returns:
+
+            .. code-block:: python
+
+                'f2e2dc9f37d24709a5eede3b3499be3f' # the id of the parent
+                None                               # if item has no parents
+
+        """
+
+        if indent == 0:
+            return None
+
+        for token in reversed(self.data):
+            if token['indent'] < indent:
+                return token['_id']
         return None
 
 
