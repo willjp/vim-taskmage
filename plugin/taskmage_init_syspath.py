@@ -8,20 +8,19 @@ ________________________________________________________________________________
 Description :   adds `taskmage` package to sys.path
 ________________________________________________________________________________
 """
-#builtin
+# builtin
 from   __future__    import unicode_literals
 from   __future__    import absolute_import
 from   __future__    import division
 from   __future__    import print_function
 import sys
-#package
-#external
+# package
+# external
 import vim
-#internal
+# internal
 
 
 filedir = vim.eval('s:scriptroot')
 
 if filedir not in sys.path:
-    sys.path.append( filedir )
-
+    sys.path.append(filedir)

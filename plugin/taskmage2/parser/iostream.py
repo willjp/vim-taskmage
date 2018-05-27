@@ -20,7 +20,6 @@ from collections import namedtuple
 # internal
 
 
-
 class VimBuffer(object):
     """
     Abstracts vim python buffer object, so can read it as if it were raw-bytes.
@@ -118,10 +117,12 @@ class VimBuffer(object):
 
             offset -= 1
 
-        return ch_info(line, col, ch.decode())
+        if hasattr(ch, 'decode'):
+            ch = ch.decode()
+        return ch_info(line, col, ch)
 
     def offset(self, offset):
-        self.next(offset-1)
+        self.next(offset - 1)
 
     def eof(self):
         return self.peek() is None
@@ -138,7 +139,7 @@ class FileDescriptor(object):
         self.pos = -1
 
     def next(self, offset=0):
-        ch = self._peek(offset+1)
+        ch = self._peek(offset + 1)
         self.pos += offset + 1
         return ch
 
@@ -146,14 +147,17 @@ class FileDescriptor(object):
         orig_pos = self.pos
         if orig_pos < 0:
             orig_pos = 0
-        ch = self._peek(offset+1)
+        ch = self._peek(offset + 1)
         self._fd.seek(orig_pos)
         return ch
 
     def _peek(self, offset=0):
         pos = self.pos + offset
         self._fd.seek(pos)
-        ch = self._fd.read(1).decode()
+        ch = self._fd.read(1)
+
+        if hasattr(ch, 'decode'):
+            ch = ch.decode()
 
         if ch == '':
             return None
@@ -166,7 +170,7 @@ class FileDescriptor(object):
         Args:
             offset (int): the number of characters to offset the position by.
         """
-        self.next(offset-1)
+        self.next(offset - 1)
 
     def eof(self):
         return self.peek() is None

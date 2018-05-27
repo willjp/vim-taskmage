@@ -636,7 +636,7 @@ if __name__ == '__main__':
 
             token = ''
             while token is not None:
-               token = lexer.read_next()
-               print(token)
+                token = lexer.read_next()
+                print(token)
 
     ex_tasklist()
