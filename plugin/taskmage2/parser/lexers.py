@@ -253,8 +253,8 @@ class TaskList(_Lexer):
         if ch == ' ':
             indent = self._read_indent()
             self._fd.offset(offset+indent)
+            ch = self._fd.peek()
             offset = 0
-            ch = self._fd.peek(offset)
 
         # ===============================================
         # Newline (outside of taskdef, ignore & continue)
@@ -269,11 +269,13 @@ class TaskList(_Lexer):
         # =====================
         if ch == '{':
             (offset, _id) = self._read_id()
-            self._fd.offset(offset)
+            self._fd.offset(offset+1)
+            ch = self._fd.peek()
+            offset = 0
+            return self._read_header(_id, indent)
 
-        if self._is_alphanumeric(ch):
-            if self._is_header(indent, offset):
-                return self._read_header(_id, indent)
+        if self._is_header(indent, offset):
+            return self._read_header(_id, indent)
 
         # ====
         # Task
@@ -359,7 +361,10 @@ class TaskList(_Lexer):
                  ).format(title, underline)
             )
 
-        parent = self._get_parent(indent)
+        # TODO: parent-headers are only tracked based on the
+        #       characters that they use, not by indentation.
+        #       this is going to be tricky...
+        parent = None
 
         self._fd.offset(sum([
             len(title) + 1,
@@ -492,21 +497,22 @@ class TaskList(_Lexer):
         handles an Id definition (and optional whitespace) ``   {*7FBAD5A946974A7DBB57DD6495F5DE1C*}``
         and returns just the UUID: ``7FBAD5A946974A7DBB57DD6495F5DE1C`` .
 
-        Returns:ho
+        Returns:
 
             .. code-block:: python
 
-                id_info(id='1308166D07DA42909972BBF0D08952DE', offset=36)
+                id_info(offset=36, id='1308166D07DA42909972BBF0D08952DE')
 
         """
-        id_info = namedtuple('id_info', ['id', 'offset'])
-        offset = 0
+        id_info = namedtuple('id_info', ['offset', 'id'])
+        offset = -1
 
         # get id
         _id = ''
         ch = ''
         id_start = False
         while ch is not None:
+            offset += 1
             ch = self._fd.peek(offset)
 
             # ignore everything up until the id
@@ -520,6 +526,9 @@ class TaskList(_Lexer):
                 if id_def[-1] == '{' and ch != '*':
                     self._parser_exception('invalid ID start')
 
+                elif id_def[:2] == '{*':
+                    pass
+
                 elif id_def[-1] == '*' and ch != '}':
                     self._parser_exception('invalid ID end')
 
@@ -528,8 +537,8 @@ class TaskList(_Lexer):
                 if ch == '}':
                     break
 
-        _id = _id[2:-2]
-        return id_info(_id, offset)
+        _id = id_def[2:-2]
+        return id_info(offset, _id)
 
     def _is_header(self, indent, offset):
 
