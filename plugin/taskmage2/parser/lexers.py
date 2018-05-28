@@ -289,7 +289,7 @@ class TaskList(_Lexer):
 
             return self._read_task(status, _id, indent)
 
-        self._parser_exception('Unexpected Character: {}'.format(repr(ch)))
+        self._parser_exception('Unexpected Character: {}\nline: {}'.format(repr(ch), self._get_line()))
 
     def _read_indent(self, offset=0):
         """
@@ -446,7 +446,7 @@ class TaskList(_Lexer):
             'data': {
                 'status': status,
                 'created': None,
-                'finished': False,
+                'finished': bool(status == 'done'),
                 'modified': None,    # utcnow() if changed only
             },
         }
@@ -542,7 +542,7 @@ class TaskList(_Lexer):
         # ex:   title
         #       ======
         underline = self._get_line(offset + len(title) + 1)  # +1 for \n
-        if title > underline:
+        if len(title) > len(underline):
             return False
 
         # underlines must be made of the same character
