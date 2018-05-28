@@ -142,6 +142,10 @@ class _Lexer(object):
         return re.match('[a-zA-Z0-9_]', ch)
 
     def _get_line(self, offset=0):
+        """
+        Read until the end of the line (returns text)
+        or the end of the file (returns None).
+        """
         text = ''
         while True:
             ch = self._fd.peek(offset)
@@ -268,7 +272,8 @@ class TaskList(_Lexer):
             self._fd.offset(offset)
 
         if self._is_alphanumeric(ch):
-            return self._read_header(_id, indent)
+            if self._is_header(indent, offset):
+                return self._read_header(_id, indent)
 
         # ====
         # Task
@@ -340,6 +345,10 @@ class TaskList(_Lexer):
 
         """
         title = self._get_line()
+
+        if title is None:
+            raise RuntimeError('Expected a title. Received: "{}"'.format(title))
+
         underline = self._get_line(len(title) + 1)  # +1 for \n
 
         if len(title) < len(underline):
@@ -521,6 +530,31 @@ class TaskList(_Lexer):
 
         _id = _id[2:-2]
         return id_info(_id, offset)
+
+    def _is_header(self, indent, offset):
+
+        title = self._get_line(offset)
+
+        if title is None:
+            return False
+
+        # underlines must be at least as long as title
+        # ex:   title
+        #       ======
+        underline = self._get_line(offset + len(title) + 1)  # +1 for \n
+        if title > underline:
+            return False
+
+        # underlines must be made of the same character
+        # ex: '======='
+        uline_ch = underline[0]
+        for ch in underline:
+            if not underline:
+                continue
+            if ch != uline_ch:
+                return False
+
+        return True
 
     def _get_parent(self, indent):
         """
