@@ -551,6 +551,10 @@ class TaskList(_Lexer):
         # ex:   title
         #       ======
         underline = self._get_line(offset + len(title) + 1)  # +1 for \n
+
+        if underline is None:
+            return False
+
         if len(title) > len(underline):
             return False
 

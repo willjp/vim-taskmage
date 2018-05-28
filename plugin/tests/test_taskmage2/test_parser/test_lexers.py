@@ -223,3 +223,23 @@ class Test_TaskList:
 
         print(testname)
         assert output == expected
+
+
+
+    @pytest.mark.parametrize(
+        '    testname, conts, expected', [
+            (   'header task',
+                (
+                    'home\n'
+                    '====\n'
+                    '* taskA\n'
+                ),
+                [ defaultsection(), defaulttask({'parent':_uuid}) ]
+            ),
+    ])
+    def test_headertasks(self, testname, conts, expected, uid):
+        with mock.patch.object( uuid, 'uuid4', return_value=uid):
+            output = tasklist(conts)
+
+        print(testname)
+        assert output == expected
