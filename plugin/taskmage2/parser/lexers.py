@@ -440,7 +440,7 @@ class TaskList(_Lexer):
         newline = False
         name = ''
 
-        parent = self._get_parent(indent)
+        parent = self._get_task_parent(indent)
 
         task = {
             '_id': _id,
@@ -569,7 +569,7 @@ class TaskList(_Lexer):
 
         return True
 
-    def _get_parent(self, indent):
+    def _get_task_parent(self, indent):
         """
         Finds the nearest parent of a token with the provided `indent`.
 
@@ -589,8 +589,16 @@ class TaskList(_Lexer):
         """
 
         if indent == 0:
+            # return the nearest section-header if one
+            # occurs before task
+            for token in reversed(self.data):
+                if token['type'] == 'section':
+                    return token['_id']
+            # otherwise return None
             return None
 
+        # if the task is indented, return the nearest
+        # less-indented taskid
         for token in reversed(self.data):
             if token['indent'] < indent:
                 return token['_id']
