@@ -165,14 +165,17 @@ class Test_TaskList:
                 ),
                 [ defaultsection() ]
             ),
+            ('file lv1',
+                'file::path/home.mtask\n'
+                '=====================\n',
+                [ defaultsection({'type': 'file', 'name': 'path/home.mtask'}) ]
+            ),
             ('header lv2', # NOT IMPLEMENTED YET!
-                (
-                    'home\n'
-                    '====\n'
-                    '\n'
-                    'kitchen\n'
-                    '-------\n'
-                ),
+                'home\n'
+                '====\n'
+                '\n'
+                'kitchen\n'
+                '-------\n',
                 [
                     defaultsection(),
                     defaultsection({'name':'kitchen', 'parent':_uuid})
