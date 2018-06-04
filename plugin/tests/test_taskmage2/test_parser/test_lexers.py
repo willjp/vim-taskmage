@@ -143,6 +143,11 @@ class Test_TaskList:
                 '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n',
                 [defaulttask(), defaulttask({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': _uuid})]
             ),
+            ('toplevel headerid',
+                '{*C5ED1030425A436DABE94E0FCCCE76D6*} home\n'
+                '====\n',
+                [defaultsection({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6'})]
+            ),
     ])
     def test_ids(self, testname, conts, expected, uid):
         with mock.patch.object( uuid, 'uuid4', return_value=uid):
