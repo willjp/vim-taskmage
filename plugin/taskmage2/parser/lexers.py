@@ -269,9 +269,9 @@ class TaskList(_Lexer):
         # =====================
         if ch == '{':
             (offset, _id) = self._read_id()
-            self._fd.offset(offset+1)
-            ch = self._fd.peek()
+            self._fd.offset(offset)
             offset = 0
+            ch = self._fd.peek()
             return self._read_header(_id, indent)
 
         if self._is_header(indent, offset):
@@ -535,6 +535,7 @@ class TaskList(_Lexer):
                 # end of id
                 id_def += ch
                 if ch == '}':
+                    offset += 1
                     break
 
         _id = id_def[2:-2]

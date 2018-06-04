@@ -26,7 +26,8 @@ from taskmage2.parser import lexers, iostream
 
 _uuid = 'F04A9556B4114BCFB7B072D727E430A6'
 _defaulttask = {
-    '_id':  _uuid,
+    # an empty, but syntactically correct task
+    '_id': _uuid,
     'type': 'task',
     'name': 'taskA',
     'indent': 0,
@@ -34,6 +35,7 @@ _defaulttask = {
     'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
 }
 _defaultsection = {
+    # an empty, but syntactically correct section
     '_id': _uuid,
     'type': 'section',
     'name': 'home',
@@ -54,6 +56,7 @@ def uid():
 # Utils
 # =====
 
+
 def tasklist(contents):
     fd = six.StringIO()
     fd.write(contents)
@@ -68,6 +71,7 @@ def tasklist(contents):
             _tasklist.append(token)
 
     return _tasklist
+
 
 def defaulttask(changes=None):
     """
@@ -85,6 +89,7 @@ def defaulttask(changes=None):
 
     return taskcopy
 
+
 def defaultsection(changes=None):
     headercopy = copy.deepcopy(_defaultsection)
 
@@ -98,24 +103,25 @@ def defaultsection(changes=None):
 # Tests
 # =====
 
+
 class Test_TaskList:
     @pytest.mark.parametrize(
         '    testname, conts, expected', [
-            (   'todo',
+            ('status:todo',
                 '* taskA',
                 [ defaulttask() ]
             ),
-            (   'status:done',
+            ('status:done',
                 'x taskA',
                  [ defaulttask({'data':{'status': 'done', 'finished': True}}) ]
             ),
-            (   'status:skip',
+            ('status:skip',
                 '- taskA',
-             [ defaulttask({'data':{'status':'skip'}}) ]
+                [ defaulttask({'data':{'status':'skip'}}) ]
             ),
-            (   'status:wip',
+            ('status:wip',
                 'o taskA',
-             [ defaulttask({'data':{'status':'wip'}}) ]
+                [ defaulttask({'data':{'status':'wip'}}) ]
             ),
     ])
     def test_status(self, testname, conts, expected, uid):
@@ -125,30 +131,36 @@ class Test_TaskList:
         print(testname)
         assert output == expected
 
-    #@pytest.mark.parametrize(
-    #    '    testname, conts, expected', [
-    #        (   'toplevel taskid',
-    #            '* {*C5ED1030425A436DABE94E0FCCCE76D6*} taskA',
-    #            [defaulttask({'_id':'C5ED1030425A436DABE94E0FCCCE76D6'})]
-    #        ),
-    #])
-    #def test_ids(self, testname, conts, expected, uid):
-    #    with mock.patch.object( uuid, 'uuid4', return_value=uid):
-    #        output = tasklist(conts)
+    @pytest.mark.parametrize(
+        '    testname, conts, expected', [
 
-    #    print(testname)
-    #    assert output == expected
+            ('toplevel taskid',
+                '* {*C5ED1030425A436DABE94E0FCCCE76D6*} taskA',
+                [defaulttask({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6'})]
+            ),
+            ('subtask taskid',
+                '* taskA\n'
+                '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n',
+                [defaulttask(), defaulttask({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': _uuid})]
+            ),
+    ])
+    def test_ids(self, testname, conts, expected, uid):
+        with mock.patch.object( uuid, 'uuid4', return_value=uid):
+            output = tasklist(conts)
+
+        print(testname)
+        assert output == expected
 
     @pytest.mark.parametrize(
         '    testname, conts, expected', [
-            (   'header lv1',
+            ('header lv1',
                 (
                     'home\n'
                     '====\n'
                 ),
                 [ defaultsection() ]
             ),
-            (   'header lv2', # NOT IMPLEMENTED YET!
+            ('header lv2', # NOT IMPLEMENTED YET!
                 (
                     'home\n'
                     '====\n'
@@ -161,7 +173,7 @@ class Test_TaskList:
                     defaultsection({'name':'kitchen', 'parent':_uuid})
                 ]
             ),
-            (   'header id',
+            ('header id',
                 (
                     '{*3576C361D7834C80B3F48E93902B0AE4*}home\n'
                     '====\n'
@@ -178,18 +190,19 @@ class Test_TaskList:
 
     @pytest.mark.parametrize(
         '    testname, conts, expected', [
-            (   'multiline',
+
+            ('multiline',
                  '* taskA\n    continued',
                  [defaulttask({'name': 'taskA\n continued'})]
             ),
-            (   'subtask 1x',
+            ('subtask 1x',
                  '* taskA\n    * subtaskA',
                  [
                      defaulttask(),
                      defaulttask({'name': 'subtaskA', 'indent':4, 'parent':_uuid})
                  ]
             ),
-            (   'subtask 2x',
+            ('subtask 2x',
                  (
                     '* taskA\n'
                     '    * subtaskA\n'
@@ -212,7 +225,7 @@ class Test_TaskList:
 
     @pytest.mark.parametrize(
         '    testname, conts, expected', [
-            (   'indent',
+            ('indent',
                 '    * taskA',
                 [ defaulttask({'indent':4}) ]
             ),
@@ -228,7 +241,7 @@ class Test_TaskList:
 
     @pytest.mark.parametrize(
         '    testname, conts, expected', [
-            (   'header task',
+            ('header task',
                 (
                     'home\n'
                     '====\n'
