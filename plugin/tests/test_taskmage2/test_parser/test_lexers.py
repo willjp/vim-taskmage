@@ -17,7 +17,7 @@ from   __future__    import print_function
 import uuid
 import json
 # package
-from taskmage2.testutils import tasklist, mtask, defaulttask, defaultsection, _uuid
+from taskmage2.testutils import lexers, tokens, core
 # external
 import pytest
 import mock
@@ -26,7 +26,7 @@ import mock
 
 @pytest.fixture
 def uid():
-    return uuid.UUID(_uuid)
+    return uuid.UUID(core.uuid)
 
 
 class Test_TaskList:
@@ -34,24 +34,24 @@ class Test_TaskList:
         '    testname, conts, expected', [
             ('status:todo',
                 '* taskA',
-                [ defaulttask() ]
+                [ tokens.task() ]
             ),
             ('status:done',
                 'x taskA',
-                 [ defaulttask({'data':{'status': 'done', 'finished': True}}) ]
+                 [ tokens.task({'data':{'status': 'done', 'finished': True}}) ]
             ),
             ('status:skip',
                 '- taskA',
-                [ defaulttask({'data':{'status':'skip'}}) ]
+                [ tokens.task({'data':{'status':'skip'}}) ]
             ),
             ('status:wip',
                 'o taskA',
-                [ defaulttask({'data':{'status':'wip'}}) ]
+                [ tokens.task({'data':{'status':'wip'}}) ]
             ),
     ])
     def test_status(self, testname, conts, expected, uid):
-        with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = tasklist(conts)
+        with mock.patch.object(uuid, 'uuid4', return_value=uid):
+            output = lexers.tasklist(conts)
 
         print(testname)
         assert output == expected
@@ -61,32 +61,32 @@ class Test_TaskList:
 
             ('toplevel taskid',
                 '* {*C5ED1030425A436DABE94E0FCCCE76D6*} taskA',
-                [defaulttask({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6'})]
+                [tokens.task({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6'})]
             ),
             ('subtask taskid',
                 '* taskA\n'
                 '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n',
-                [defaulttask(), defaulttask({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': _uuid})]
+                [tokens.task(), tokens.task({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': core.uuid})]
             ),
             ('subtask taskid 2x',
                 '* taskA\n'
                 '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n'
                 '    * {*AAAAAAA0425A436DABE94E0FCCCE76D6*} subtaskB\n',
                 [
-                    defaulttask(),
-                    defaulttask({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': _uuid}),
-                    defaulttask({'_id': 'AAAAAAA0425A436DABE94E0FCCCE76D6', 'name': 'subtaskB', 'indent': 4, 'parent': _uuid}),
+                    tokens.task(),
+                    tokens.task({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': core.uuid}),
+                    tokens.task({'_id': 'AAAAAAA0425A436DABE94E0FCCCE76D6', 'name': 'subtaskB', 'indent': 4, 'parent': core.uuid}),
                 ],
             ),
             ('toplevel headerid',
                 '{*C5ED1030425A436DABE94E0FCCCE76D6*} home\n'
                 '====\n',
-                [defaultsection({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6'})]
+                [tokens.section({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6'})]
             ),
     ])
     def test_ids(self, testname, conts, expected, uid):
         with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = tasklist(conts)
+            output = lexers.tasklist(conts)
 
         print(testname)
         assert output == expected
@@ -98,12 +98,12 @@ class Test_TaskList:
                     'home\n'
                     '====\n'
                 ),
-                [ defaultsection() ]
+                [ tokens.section() ]
             ),
             ('file lv1',
                 'file::path/home.mtask\n'
                 '=====================\n',
-                [ defaultsection({'type': 'file', 'name': 'path/home.mtask'}) ]
+                [ tokens.section({'type': 'file', 'name': 'path/home.mtask'}) ]
             ),
             ('header lv2', # NOT IMPLEMENTED YET!
                 'home\n'
@@ -112,14 +112,14 @@ class Test_TaskList:
                 'kitchen\n'
                 '-------\n',
                 [
-                    defaultsection(),
-                    defaultsection({'name':'kitchen', 'indent':1, 'parent':_uuid})
+                    tokens.section(),
+                    tokens.section({'name':'kitchen', 'indent':1, 'parent':core.uuid})
                 ]
             ),
     ])
     def test_sections(self, testname, conts, expected, uid):
         with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = tasklist(conts)
+            output = lexers.tasklist(conts)
 
         print(testname)
         assert output == expected
@@ -129,13 +129,13 @@ class Test_TaskList:
 
             ('multiline',
                  '* taskA\n    continued',
-                 [defaulttask({'name': 'taskA\n continued'})]
+                 [tokens.task({'name': 'taskA\n continued'})]
             ),
             ('subtask 1x',
                  '* taskA\n    * subtaskA',
                  [
-                     defaulttask(),
-                     defaulttask({'name': 'subtaskA', 'indent':4, 'parent':_uuid})
+                     tokens.task(),
+                     tokens.task({'name': 'subtaskA', 'indent':4, 'parent':core.uuid})
                  ]
             ),
             ('subtask 2x',
@@ -145,16 +145,16 @@ class Test_TaskList:
                     '    * subtaskB\n'
                  ),
                  [
-                     defaulttask(),
-                     defaulttask({'name': 'subtaskA', 'indent':4, 'parent':_uuid}),
-                     defaulttask({'name': 'subtaskB', 'indent':4, 'parent':_uuid}),
+                     tokens.task(),
+                     tokens.task({'name': 'subtaskA', 'indent':4, 'parent':core.uuid}),
+                     tokens.task({'name': 'subtaskB', 'indent':4, 'parent':core.uuid}),
                  ],
             )
         ]
     )
     def test_subtasks(self, testname, conts, expected, uid):
         with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = tasklist(conts)
+            output = lexers.tasklist(conts)
 
         print(testname)
         assert output == expected
@@ -163,12 +163,12 @@ class Test_TaskList:
         '    testname, conts, expected', [
             ('indent',
                 '    * taskA',
-                [ defaulttask({'indent':4}) ]
+                [ tokens.task({'indent':4}) ]
             ),
     ])
     def test_indent(self, testname, conts, expected, uid):
-        with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = tasklist(conts)
+        with mock.patch.object(uuid, 'uuid4', return_value=uid):
+            output = lexers.tasklist(conts)
 
         print(testname)
         assert output == expected
@@ -183,12 +183,12 @@ class Test_TaskList:
                     '====\n'
                     '* taskA\n'
                 ),
-                [ defaultsection(), defaulttask({'parent':_uuid}) ]
+                [ tokens.section(), tokens.task({'parent':core.uuid}) ]
             ),
     ])
     def test_headertasks(self, testname, conts, expected, uid):
         with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = tasklist(conts)
+            output = lexers.tasklist(conts)
 
         print(testname)
         assert output == expected
@@ -198,21 +198,21 @@ class Test_Mtask:
     @pytest.mark.parametrize(
         '    testname, conts, expected', [
             ('task',
-                json.dumps([defaulttask()]),
-                [defaulttask()],
+                json.dumps([tokens.task()]),
+                [tokens.task()],
             ),
             ('section',
-                json.dumps([defaultsection()]),
-                [defaultsection()],
+                json.dumps([tokens.section()]),
+                [tokens.section()],
             ),
             ('filedef',
-                 json.dumps([defaultsection({'type':'file'})]),
-                 [defaultsection({'type':'file'})],
+                 json.dumps([tokens.file()]),
+                 [tokens.file()],
             ),
         ]
     )
     def test_working(self, testname, conts, expected):
-        output = mtask(conts)
+        output = lexers.mtask(conts)
 
         print(testname)
         assert output == expected
