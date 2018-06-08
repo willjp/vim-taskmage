@@ -95,7 +95,7 @@ class _Lexer(object):
 
     """
     __metaclass__ = abc.ABCMeta
-    def __init__(self, iostream):
+    def __init__(self):
         """
         Constructor.
 
@@ -103,7 +103,6 @@ class _Lexer(object):
             iostream (iostream.IOStream):
                 Special Parser File-Descriptor
         """
-        self._iostream  = iostream  # file-desriptor to the file being parsed.
         self.data = []  # list of token dictionaries, as they appear.
 
     def read_next(self):
@@ -181,8 +180,9 @@ class TaskList(_Lexer):
     }
 
     def __init__(self, iostream):
+        super(TaskList, self).__init__()
         self._next = None  # the next token
-        _Lexer.__init__(self, iostream)
+        self._iostream  = iostream  # file-desriptor to the file being parsed.
 
     def read(self):
         """
@@ -598,7 +598,8 @@ class TaskList(_Lexer):
 
 
 class TaskDetails(_Lexer):
-    def __init__(self, fd):
+    def __init__(self, iostream):
+        self._iostream  = iostream  # file-desriptor to the file being parsed.
         raise NotImplementedError('todo')
 
 
@@ -633,7 +634,7 @@ class Mtask(_Lexer):
                 fd:
                     A python file-descriptor (as returned by ``open`` )
         """
-        _Lexer.__init__(self,fd)
+        super(Mtask, self).__init__()
         self._fd = fd
         self._rawdata = []  # the JSON file data, serialized into a python list
         self._index = 0     # current place in of self._rawdata[]
