@@ -20,6 +20,7 @@ from   __future__    import division
 from   __future__    import print_function
 from   collections   import namedtuple
 import os
+import json
 import abc
 import uuid
 import re
@@ -94,9 +95,16 @@ class _Lexer(object):
 
     """
     __metaclass__ = abc.ABCMeta
-    def __init__(self, fd):
-        self._fd  = fd
-        self.data = []
+    def __init__(self, iostream):
+        """
+        Constructor.
+
+        Args:
+            iostream (iostream.IOStream):
+                Special Parser File-Descriptor
+        """
+        self._iostream  = iostream  # file-desriptor to the file being parsed.
+        self.data = []  # list of token dictionaries, as they appear.
 
     def read_next(self):
         raise NotImplemented(
@@ -141,23 +149,6 @@ class _Lexer(object):
     def _is_alphanumeric(self, ch):
         return re.match('[a-zA-Z0-9_]', ch)
 
-    def _get_line(self, offset=0):
-        """
-        Read until the end of the line (returns text)
-        or the end of the file (returns None).
-        """
-        text = ''
-        while True:
-            ch = self._fd.peek(offset)
-
-            if ch is None:
-                return None
-            elif ch == '\n':
-                return text
-            else:
-                text += ch
-            offset += 1
-
 
 class TaskList(_Lexer):
     """
@@ -189,9 +180,9 @@ class TaskList(_Lexer):
         '*': 'todo',
     }
 
-    def __init__(self, fd):
+    def __init__(self, iostream):
         self._next = None  # the next token
-        _Lexer.__init__(self,fd)
+        _Lexer.__init__(self, iostream)
 
     def read(self):
         """
@@ -237,7 +228,7 @@ class TaskList(_Lexer):
         """
 
         _id = uuid.uuid4().hex.upper()  # define in case new item
-        ch = self._fd.peek()
+        ch = self._iostream.peek()
 
         # EOF
         if ch is None:
@@ -252,15 +243,15 @@ class TaskList(_Lexer):
         # =============
         if ch == ' ':
             indent = self._read_indent()
-            self._fd.offset(offset+indent)
-            ch = self._fd.peek()
+            self._iostream.offset(offset+indent)
+            ch = self._iostream.peek()
             offset = 0
 
         # ===============================================
         # Newline (outside of taskdef, ignore & continue)
         # ===============================================
         if ch == '\n':
-            self._fd.next(offset)
+            self._iostream.next(offset)
             return self.read_next()
 
 
@@ -269,9 +260,9 @@ class TaskList(_Lexer):
         # =====================
         if ch == '{':
             (offset, _id) = self._read_id()
-            self._fd.offset(offset)
+            self._iostream.offset(offset)
             offset = 0
-            ch = self._fd.peek()
+            ch = self._iostream.peek()
             return self._read_header(_id, indent)
 
         if self._is_header(indent, offset):
@@ -282,16 +273,16 @@ class TaskList(_Lexer):
         # ====
         if ch in self.statuses:
             status = self.statuses[ch]
-            self._fd.offset(1)
+            self._iostream.offset(1)
 
             # ex: 'x {*0BE8D6CE9CB94AFB82037D2C367566C1*}'
-            if self._fd.peek(1) == '{':
+            if self._iostream.peek(1) == '{':
                 (offset, _id) = self._read_id()
-                self._fd.offset(offset)
+                self._iostream.offset(offset)
 
             return self._read_task(status, _id, indent)
 
-        self._parser_exception('Unexpected Character: {}\nline: {}'.format(repr(ch), self._get_line()))
+        self._parser_exception('Unexpected Character: {}\nline: {}'.format(repr(ch), self._iostream.peek_line()))
 
     def _read_indent(self, offset=0):
         """
@@ -306,7 +297,7 @@ class TaskList(_Lexer):
                 0   # if not indented
         """
         indent = 0
-        while self._fd.peek(offset+indent) == ' ':
+        while self._iostream.peek(offset+indent) == ' ':
             indent += 1
         return indent
 
@@ -346,12 +337,12 @@ class TaskList(_Lexer):
                 }
 
         """
-        title = self._get_line()
+        title = self._iostream.peek_line()
 
         if title is None:
             raise RuntimeError('Expected a title. Received: "{}"'.format(title))
 
-        underline = self._get_line(len(title) + 1)  # +1 for \n
+        underline = self._iostream.peek_line(len(title) + 1)  # +1 for \n
 
         if len(title) < len(underline):
             self._parser_exception(
@@ -366,7 +357,7 @@ class TaskList(_Lexer):
         #       this is going to be tricky...
         parent = None
 
-        self._fd.offset(sum([
+        self._iostream.offset(sum([
             len(title) + 1,
             len(underline) + 1,
         ]))
@@ -457,18 +448,18 @@ class TaskList(_Lexer):
         }
 
         while True:
-            ch = self._fd.peek(offset)
+            ch = self._iostream.peek(offset)
 
             # EOL encountered
             if ch is None:
-                self._fd.offset(offset)
+                self._iostream.offset(offset)
                 task['name'] = name.strip()
                 return task
 
             # parse indentation of newline
             if newline:
                 _indent = self._read_indent(offset)
-                ch_after_indent = self._fd.peek(offset+_indent)
+                ch_after_indent = self._iostream.peek(offset+_indent)
 
                 # newline is the start of something else
                 # *NOT* a continuation of this task
@@ -476,7 +467,7 @@ class TaskList(_Lexer):
                     _indent < indent,
                     ch_after_indent in self.statuses,
                 ]):
-                    self._fd.offset(offset)
+                    self._iostream.offset(offset)
                     task['name'] = name.strip()
                     return task
 
@@ -513,7 +504,7 @@ class TaskList(_Lexer):
         id_start = False
         while ch is not None:
             offset += 1
-            ch = self._fd.peek(offset)
+            ch = self._iostream.peek(offset)
 
             # ignore everything up until the id
             if not id_start:
@@ -543,7 +534,7 @@ class TaskList(_Lexer):
 
     def _is_header(self, indent, offset):
 
-        title = self._get_line(offset)
+        title = self._iostream.peek_line(offset)
 
         if title is None:
             return False
@@ -551,7 +542,7 @@ class TaskList(_Lexer):
         # underlines must be at least as long as title
         # ex:   title
         #       ======
-        underline = self._get_line(offset + len(title) + 1)  # +1 for \n
+        underline = self._iostream.peek_line(offset + len(title) + 1)  # +1 for \n
 
         if underline is None:
             return False
@@ -628,10 +619,24 @@ class Mtask(_Lexer):
             ]
 
     """
+    statuses = {
+        'done',
+        'skip',
+        'wip',
+        'todo',
+    }
     def __init__(self, fd):
+        """
+        Constructor:
+
+            Args:
+                fd:
+                    A python file-descriptor (as returned by ``open`` )
+        """
         _Lexer.__init__(self,fd)
-        self._rawdata = [] # the data in raw JSON
-        self._index = 0
+        self._fd = fd
+        self._rawdata = []  # the JSON file data, serialized into a python list
+        self._index = 0     # current place in of self._rawdata[]
         self._read()
 
     def _read(self):
@@ -647,6 +652,10 @@ class Mtask(_Lexer):
         return token
 
     def _read_next(self):
+        """
+        Reads the JSON object (serialized into python), validates,
+        and makes any more required type changes.
+        """
         if self._index >= len(self._rawdata):
             return None
 
@@ -670,13 +679,98 @@ class Mtask(_Lexer):
                 )
 
     def _read_task(self, index):
-        raise NotImplementedError('todo')
+        dtype = self._rawdata[index]
+
+        self._validate_keys(
+            index=index,
+            data=dtype,
+            reqd_keys={'_id', 'type', 'name', 'parent', 'indent', 'data'},
+            desc='task',
+        )
+
+        self._validate_keys(
+            index=index,
+            data=dtype['data'],
+            reqd_keys={'status', 'created', 'finished', 'modified'},
+            desc='task',
+        )
+
+        if dtype['data']['status'] not in self.statuses:
+            self._parser_exception('Invalid status: {}'.format(dtype['data']['status']))
+
+        # TODO: test dates
+
+        return dtype
 
     def _read_section(self, index):
-        raise NotImplementedError('todo')
+        dtype = self._rawdata[index]
+
+        self._validate_keys(
+            index=index,
+            data=dtype,
+            reqd_keys={'_id', 'type', 'name', 'parent', 'indent', 'data'},
+            desc='task',
+        )
+
+        self._validate_keys(
+            index=index,
+            data=dtype['data'],
+            reqd_keys=set(),
+            desc='task',
+        )
+
+        return dtype
 
     def _read_filedef(self, index):
-        raise NotImplementedError('todo')
+        dtype = self._rawdata[index]
+
+        self._validate_keys(
+            index=index,
+            data=dtype,
+            reqd_keys={'_id', 'type', 'name', 'parent', 'indent', 'data'},
+            desc='task',
+        )
+
+        self._validate_keys(
+            index=index,
+            data=dtype['data'],
+            reqd_keys=set(),
+            desc='task',
+        )
+
+        return dtype
+
+    def _validate_keys(self, index, data, reqd_keys, desc):
+        """
+        Args:
+            index (int):
+                The current location in list.
+
+            data (dict):
+                The dictionary we are validating
+
+            reqd_keys (list)
+        """
+        missing_keys = set(data.keys()) - set(reqd_keys)
+        extra_keys = set(reqd_keys) - set(data.keys())
+
+        if missing_keys:
+            self._parser_exception((
+                    'Token at index {} is formatted improperly: \n'
+                    '{}\n'
+                    'missing keys: {}\n'
+                    'received: {}\n'
+                ).format(index, desc, data, missing_keys, data)
+            )
+
+        if extra_keys:
+            self._parser_exception((
+                    'Task at index {} is formatted improperly: \n'
+                    '{}\n'
+                    'missing keys: {}\n'
+                    'received: {}\n'
+                ).format(index, desc, data, missing_keys, data)
+            )
 
 
 if __name__ == '__main__':

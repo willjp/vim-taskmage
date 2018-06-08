@@ -16,6 +16,7 @@ from   __future__    import division
 from   __future__    import print_function
 import uuid
 import copy
+import json
 # package
 # external
 import pytest
@@ -48,6 +49,7 @@ _defaultsection = {
 # Fixtures
 # ========
 
+
 @pytest.fixture
 def uid():
     return uuid.UUID(_uuid)
@@ -56,21 +58,39 @@ def uid():
 # Utils
 # =====
 
-
-def tasklist(contents):
+def _lexer(contents, cls):
     fd = six.StringIO()
     fd.write(contents)
     iofd = iostream.FileDescriptor(fd)
 
-    lexer = lexers.TaskList(iofd)
-    _tasklist = []
+    lexer = cls(iofd)
+    _lexertokens = []
     token = ''
     while token is not None:
         token = lexer.read_next()
         if token is not None:
-            _tasklist.append(token)
+            _lexertokens.append(token)
 
-    return _tasklist
+    return _lexertokens
+
+
+def tasklist(contents):
+    return _lexer(contents, lexers.TaskList)
+
+
+def mtask(contents):
+    fd = six.StringIO()
+    fd.write(contents)
+
+    lexer = lexers.Mtask(fd)
+    _lexertokens = []
+    token = ''
+    while token is not None:
+        token = lexer.read_next()
+        if token is not None:
+            _lexertokens.append(token)
+
+    return _lexertokens
 
 
 def defaulttask(changes=None):
@@ -143,6 +163,16 @@ class Test_TaskList:
                 '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n',
                 [defaulttask(), defaulttask({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': _uuid})]
             ),
+            ('subtask taskid 2x',
+                '* taskA\n'
+                '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n'
+                '    * {*AAAAAAA0425A436DABE94E0FCCCE76D6*} subtaskB\n',
+                [
+                    defaulttask(),
+                    defaulttask({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': _uuid}),
+                    defaulttask({'_id': 'AAAAAAA0425A436DABE94E0FCCCE76D6', 'name': 'subtaskB', 'indent': 4, 'parent': _uuid}),
+                ],
+            ),
             ('toplevel headerid',
                 '{*C5ED1030425A436DABE94E0FCCCE76D6*} home\n'
                 '====\n',
@@ -181,13 +211,6 @@ class Test_TaskList:
                     defaultsection({'name':'kitchen', 'parent':_uuid})
                 ]
             ),
-            ('header id',
-                (
-                    '{*3576C361D7834C80B3F48E93902B0AE4*}home\n'
-                    '====\n'
-                ),
-                [ defaultsection({'_id':'3576C361D7834C80B3F48E93902B0AE4'}) ],
-            ),
     ])
     def test_sections(self, testname, conts, expected, uid):
         with mock.patch.object( uuid, 'uuid4', return_value=uid):
@@ -197,7 +220,7 @@ class Test_TaskList:
         assert output == expected
 
     @pytest.mark.parametrize(
-        '    testname, conts, expected', [
+            'testname, conts, expected', [
 
             ('multiline',
                  '* taskA\n    continued',
@@ -261,6 +284,22 @@ class Test_TaskList:
     def test_headertasks(self, testname, conts, expected, uid):
         with mock.patch.object( uuid, 'uuid4', return_value=uid):
             output = tasklist(conts)
+
+        print(testname)
+        assert output == expected
+
+
+class Test_Mtask:
+    @pytest.mark.parametrize(
+        '    testname, conts, expected', [
+            ('regular task',
+                json.dumps([defaulttask()]),
+                [defaulttask()],
+            ),
+        ]
+    )
+    def test_task(self, testname, conts, expected):
+        output = mtask(conts)
 
         print(testname)
         assert output == expected

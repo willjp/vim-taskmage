@@ -15,12 +15,47 @@ from   __future__    import absolute_import
 from   __future__    import division
 from   __future__    import print_function
 from collections import namedtuple
+import abc
 # package
 # external
 # internal
 
+class IOStream(object):
+    """
+    Base Interface for iostream objects.
+    """
+    __metaclass__ = abc.ABCMeta
+    def next(self, offset=0):
+        raise NotImplemented()
 
-class VimBuffer(object):
+    def peek(self, offset=0):
+        raise NotImplemented()
+
+    def peek_line(self, offset=0):
+        """
+        Read until the end of the line (returns text)
+        or the end of the file (returns None).
+        """
+        text = ''
+        while True:
+            ch = self.peek(offset)
+
+            if ch is None:
+                return None
+            elif ch == '\n':
+                return text
+            else:
+                text += ch
+            offset += 1
+
+    def offset(self, offset):
+        raise NotImplemented()
+
+    def eof(self):
+        raise NotImplemented()
+
+
+class VimBuffer(IOStream):
     """
     Abstracts vim python buffer object, so can read it as if it were raw-bytes.
     Adds functionality like `peek` , so can read ahead without changing the
@@ -33,6 +68,7 @@ class VimBuffer(object):
             buf (vim.api.buffer.Buffer):
                 A vim buffer. For example: ``vim.current.buffer`` .
         """
+        super(VimBuffer, self).__init__()
         self._buf = buf
         self.line = -1
         self.col = -1
@@ -128,13 +164,14 @@ class VimBuffer(object):
         return self.peek() is None
 
 
-class FileDescriptor(object):
+class FileDescriptor(IOStream):
     """
     Abstracts a python file-descriptor so files can be read
     one byte at a time. This is mostly for testing.
     """
 
     def __init__(self, fd):
+        super(FileDescriptor, self).__init__()
         self._fd = fd
         self.pos = -1
 
