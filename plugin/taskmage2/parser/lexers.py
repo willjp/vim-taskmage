@@ -637,7 +637,7 @@ class Mtask(_Lexer):
         super(Mtask, self).__init__()
         self._fd = fd
         self._rawdata = []  # the JSON file data, serialized into a python list
-        self._index = 0     # current place in of self._rawdata[]
+        self._index = -1    # current place in of self._rawdata[]
         self._read()
 
     def _read(self):
@@ -649,7 +649,8 @@ class Mtask(_Lexer):
 
     def read_next(self):
         token = self._read_next()
-        self.data.append( token )
+        if token:
+            self.data.append( token )
         return token
 
     def _read_next(self):
@@ -657,26 +658,26 @@ class Mtask(_Lexer):
         Reads the JSON object (serialized into python), validates,
         and makes any more required type changes.
         """
+        self._index += 1
+        index = self._index
+
         if self._index >= len(self._rawdata):
             return None
-
-        index = self._index
-        self._index += 1
 
         if 'type' in self._rawdata[index]:
             dtype = self._rawdata[index]['type']
             if dtype == 'task':
-                return self._read_task(self, index)
+                return self._read_task(index)
             elif dtype == 'section':
-                return self._read_section(self, index)
+                return self._read_section(index)
             elif dtype == 'file':
-                return self._read_filedef(self, index)
+                return self._read_filedef(index)
             else:
                 self._parser_exception((
-                    'Invalid token in mtaskfile: \n'
-                    '    missing dictionary key "task" \n'
-                    '{}'
-                    ).format(repr(self._rawdata[index]))
+                    'Invalid entry in mtaskfile: \n'
+                    'key "type" has unexpected value: "{}"\n'
+                    '{}\n'
+                    ).format(self._rawdata[index]['type'], repr(self._rawdata[index]))
                 )
 
     def _read_task(self, index):

@@ -81,6 +81,7 @@ def tasklist(contents):
 def mtask(contents):
     fd = six.StringIO()
     fd.write(contents)
+    fd.seek(0)
 
     lexer = lexers.Mtask(fd)
     _lexertokens = []
@@ -292,13 +293,21 @@ class Test_TaskList:
 class Test_Mtask:
     @pytest.mark.parametrize(
         '    testname, conts, expected', [
-            ('regular task',
+            ('task',
                 json.dumps([defaulttask()]),
                 [defaulttask()],
             ),
+            ('section',
+                json.dumps([defaultsection()]),
+                [defaultsection()],
+            ),
+            ('filedef',
+                 json.dumps([defaultsection({'type':'file'})]),
+                 [defaultsection({'type':'file'})],
+            ),
         ]
     )
-    def test_task(self, testname, conts, expected):
+    def test_working(self, testname, conts, expected):
         output = mtask(conts)
 
         print(testname)
