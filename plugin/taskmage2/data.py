@@ -33,6 +33,19 @@ class Node(object):
     """
 
     def __init__(self, _id, ntype, name, data=None, children=None):
+        """
+        Constructor.
+
+        .. note::
+            AST Nodes don't care about the level of indent, or the parent.
+            All they are concerned with is the type, name, data, and if
+            it has any children. Indents will be assigned in their native
+            format if applicable.
+        """
+
+        if children is None:
+            children = []
+
         self.name = name
         self.children = []  # list of nodes
         self.__id = _id
@@ -61,14 +74,6 @@ class Node(object):
     @property
     def data(self):
         return self.__data
-
-    @id.setter
-    def id(self, id):
-        raise AttributeError('Not allowed to set `id`')
-
-    @type.setter
-    def type(self, type):
-        raise AttributeError('Not allowed to set `type`')
 
     @data.setter
     def data(self, data):
