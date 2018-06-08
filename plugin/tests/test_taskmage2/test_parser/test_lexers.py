@@ -209,7 +209,7 @@ class Test_TaskList:
                 '-------\n',
                 [
                     defaultsection(),
-                    defaultsection({'name':'kitchen', 'parent':_uuid})
+                    defaultsection({'name':'kitchen', 'indent':1, 'parent':_uuid})
                 ]
             ),
     ])

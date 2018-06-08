@@ -182,7 +182,14 @@ class TaskList(_Lexer):
     def __init__(self, iostream):
         super(TaskList, self).__init__()
         self._next = None  # the next token
-        self._iostream  = iostream  # file-desriptor to the file being parsed.
+        self._iostream  = iostream   # file-descriptor abstracted into an iostream.IOStream
+
+        self._headerchar_order = []  # underline character used for each level of
+                                     # header indent. ex: ['=', '-', '.'] if
+                                     # header lv1 is underlined with '==='
+                                     # header lv2 is underlined with '---'
+                                     # header lv3 is underlined with '...'
+                                     # ...etc
 
     def read(self):
         """
@@ -355,7 +362,8 @@ class TaskList(_Lexer):
         # TODO: parent-headers are only tracked based on the
         #       characters that they use, not by indentation.
         #       this is going to be tricky...
-        parent = None
+        import pdb; pdb.set_trace()
+        (indent, parent) = self._get_header_hierinfo(underline[0])
 
         self._iostream.offset(sum([
             len(title) + 1,
@@ -590,11 +598,54 @@ class TaskList(_Lexer):
             return None
 
         # if the task is indented, return the nearest
-        # less-indented taskid
+        # less-indented tokenid. Note that this might
+        # be a task, section, or file.
         for token in reversed(self.data):
             if token['indent'] < indent:
                 return token['_id']
         return None
+
+    def _get_header_hierinfo(self, underline_char):
+        """
+        Returns:
+
+            A tuble with the indent (header-level), and parent header.
+
+            .. code-block:: python
+
+                (indent=1, parent='dd9eabde5f054c7c8557b408e9d81887')
+                (indent=0, parent=None)
+        """
+
+        _returnval = namedtuple('header_hierinfo', ['indent', 'parent'])
+
+        if not self._headerchar_order:
+            self._headerchar_order.append(underline_char)
+            indent = 0
+        elif underline_char in self._headerchar_order:
+            indent = self._headerchar_order.index(underline_char)
+        else:
+            self._headerchar_order.append(underline_char)
+            indent = len(self._headerchar_order) - 1
+
+        if indent == 0:
+            return _returnval(indent=0, parent=None)
+
+        # find the nearest header or file with a lower
+        # level of indentation.
+        for token in reversed(self.data):
+            if all([
+                token['indent'] < indent,
+                token['type'] in ('section', 'file')
+            ]):
+                return _returnval(indent=indent, parent=token['_id'])
+
+        self._parser_exception(
+            (
+                'Header underline character "{}" indicates it is a \n'
+                'header-level of "{}", but no headers above it were found. \n'
+            ).format(underline_char, indent)
+        )
 
 
 class TaskDetails(_Lexer):
