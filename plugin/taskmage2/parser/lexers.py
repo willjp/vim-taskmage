@@ -24,7 +24,6 @@ import json
 import abc
 import uuid
 import re
-import datetime
 import json
 # package
 # external
@@ -53,7 +52,7 @@ class _Lexer(object):
                 'type'   : 'task',
                 'name'   : 'do something',
                 'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
-                'indent' : 0,
+                'indent' : 0,  # number of spaces task is indented
                 'data'   : {
                     'status' : 'todo',
                     'created':  datetime(...),
@@ -67,7 +66,7 @@ class _Lexer(object):
                 'type'   : 'section',
                 'name'   : 'home',
                 'parent' : '33e7d20ebf7241ae9d11cdca62dbd349', # or None
-                'indent' : 0,
+                'indent' : 0,  # incremented by 1 for each new header-level
                 'data'   : {}
             }
 
@@ -76,7 +75,7 @@ class _Lexer(object):
                 'type'   : 'file',
                 'name'   : 'misc/todo.mtask',
                 'parent' : None,  # always
-                'indent' : 0,
+                'indent' : 0,  # incremented by 1 for each new header-level
                 'data'   : {}
             }
 
@@ -195,7 +194,7 @@ class TaskList(_Lexer):
         """
         Lexes the entire file-descriptor into a list of tokens.
         """
-        while token:
+        while token is not None:
             token = self.read_next()
         return self.data
 
@@ -359,10 +358,6 @@ class TaskList(_Lexer):
                  ).format(title, underline)
             )
 
-        # TODO: parent-headers are only tracked based on the
-        #       characters that they use, not by indentation.
-        #       this is going to be tricky...
-        import pdb; pdb.set_trace()
         (indent, parent) = self._get_header_hierinfo(underline[0])
 
         self._iostream.offset(sum([
