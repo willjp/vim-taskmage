@@ -49,8 +49,8 @@ class Parser(object):
         # create dictionary of id:node
         allnodes = {}  # {id:node}
         for token in self.__lexer.data:
-            allnodes[token['id']] = data.Node(
-                id=token['_id'],
+            allnodes[token['_id']] = data.Node(
+                _id=token['_id'],
                 ntype=token['type'],
                 name=token['name'],
                 data=token['data'],

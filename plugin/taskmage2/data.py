@@ -47,7 +47,7 @@ class Node(object):
             children = []
 
         self.name = name
-        self.children = []  # list of nodes
+        self.children = children  # list of nodes
         self.__id = _id
         self.__type = ntype
         self.__data = getattr(NodeData, ntype)
@@ -56,12 +56,26 @@ class Node(object):
             self.__data = data
 
     def __repr__(self):
-        'Node(id={}, type={}, name={}, data={})'.format(
+        return 'Node(id={}, type={}, name={}, data={})'.format(
             self.__id,
             self.__type,
             self.name,
             self.data,
         )
+
+    def __eq__(self, obj):
+        if not isinstance(obj, Node):
+            raise TypeError('Invalid comparison')
+
+        for attr in ('name', 'children', 'id', 'type', 'data'):
+            if getattr(self, attr) != getattr(obj, attr):
+                return False
+        return True
+
+    def __ne__(self, obj):
+        if self.__eq__(obj):
+            return False
+        return True
 
     @property
     def id(self):
