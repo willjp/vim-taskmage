@@ -102,6 +102,27 @@ class Node(object):
 
 
 class _namedtuple(tuple):
+    """
+    A class prototype for custom namdetuples.
+
+    The attribute :py:attr:`_attrs` determines the
+    namdetuple properties.
+
+    Example:
+
+        .. code-block:: python
+
+            class TaskData(_namedtuple):
+                _attrs = ('status', 'created')
+
+            status = TaskData(status='done', created=datetime.datetime(..))
+            print(status.status)
+            >>> 'done'
+
+            print(status.created)
+            >>> datetime.datetime(...)
+
+    """
     def __new__(cls, data):
         if not isinstance(cls._attrs, tuple):
             raise RuntimeError(
@@ -168,6 +189,22 @@ class _namedtuple(tuple):
 
 
 class NodeData(object):
+    """
+    This object is the interface for :py:attr:`taskmage2.data.Node.data` ,
+    it exposes namedtuples for each nodetype, and allows them to be updated.
+
+    Attributes:
+
+        file (taskmage2.data._namedtuple):
+            namedtuple class, for storing ``file`` Node data.
+
+        section (taskmage2.data._namedtuple):
+            namedtuple class, for storing ``section`` Node data.
+
+        task (taskmage2.data._namedtuple):
+            namedtuple class, for storing ``task`` Node data.
+
+    """
     class file(_namedtuple):
         _attrs = tuple()
 

@@ -29,6 +29,7 @@ import json
 # external
 # internal
 from taskmage2 import exceptions_
+from taskmage2.parser import fmtdata
 
 
 # TODO: task:
@@ -171,12 +172,7 @@ class TaskList(_Lexer):
             * clean kitchen
 
     """
-    statuses = {
-        'x': 'done',
-        '-': 'skip',
-        'o': 'wip',
-        '*': 'todo',
-    }
+    statuses = fmtdata.TaskList.statuses
 
     def __init__(self, iostream):
         super(TaskList, self).__init__()
