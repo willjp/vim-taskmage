@@ -1,7 +1,6 @@
 TaskMage
 ========
 
-
 A simple plaintext task manager, allowing you to edit tasks in
 plaintext lists (quick to edit, no metadata clutter), and store metadata in 
 json files (for genrating reports, searching by date, etc). Inspired by git 
