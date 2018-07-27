@@ -21,12 +21,15 @@ import mock
 
 
 class Test_TaskList(object):
-    assert False
+    def test_working(self):
+        assert False
 
 
 class Test_TaskDetails(object):
-    assert False
+    def test_working(self):
+        assert False
 
 
 class Test_Mtask(object):
-    assert False
+    def test_working(self):
+        assert False

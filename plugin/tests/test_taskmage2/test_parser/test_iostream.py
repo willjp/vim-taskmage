@@ -21,8 +21,10 @@ import mock
 
 
 class Test_VimBuffer(object):
-    assert False
+    def test_working(self):
+        assert False
 
 
 class Test_FileDescriptor(object):
-    assert False
+    def test_working(self):
+        assert False
