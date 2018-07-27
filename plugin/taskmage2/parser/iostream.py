@@ -60,6 +60,14 @@ class VimBuffer(IOStream):
     Abstracts vim python buffer object, so can read it as if it were raw-bytes.
     Adds functionality like `peek` , so can read ahead without changing the
     current position in the file.
+
+    Example:
+
+        .. code-block:: python
+
+            stream = VimBuffer(vim.current.buffer)
+            vimbuf = VimBuffer(stream)
+
     """
 
     def __init__(self, buf):
@@ -168,6 +176,14 @@ class FileDescriptor(IOStream):
     """
     Abstracts a python file-descriptor so files can be read
     one byte at a time. This is mostly for testing.
+
+    Example:
+
+        .. code-block:: python
+
+            with open('/path/todo.tasklist', 'rb') as fd:
+                filedesc = FileDescriptor(fd)
+
     """
 
     def __init__(self, fd):

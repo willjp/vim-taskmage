@@ -194,6 +194,7 @@ class TaskList(_Lexer):
         """
         Lexes the entire file-descriptor into a list of tokens.
         """
+        token = self.read_next()
         while token is not None:
             token = self.read_next()
         return self.data

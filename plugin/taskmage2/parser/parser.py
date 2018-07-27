@@ -14,6 +14,7 @@ from   __future__    import unicode_literals
 from   __future__    import absolute_import
 from   __future__    import division
 from   __future__    import print_function
+import os
 # package
 # external
 # internal
@@ -24,6 +25,19 @@ class Parser(object):
     """
     The parser transforms the tokens collected in the Lexer
     into a AST tree of Nodes.
+
+    Example:
+
+        .. code-block:: python
+
+            from taskmage2.parser import lexers, iostream
+
+            with open('/path/file.tasklist', 'rb') as fd:
+                lexer = lexers.TaskList(iostream.FileDescriptor(fd))
+                parser = Parser(lexer)
+                parser.parse()
+                >>> [Node(..), Node(..), ..]
+
     """
     def __init__(self, lexer):
         self.__lexer = lexer
@@ -68,3 +82,16 @@ class Parser(object):
                 AST.append(node)
 
         return AST
+
+
+if __name__ == '__main__':
+    from taskmage2.parser import lexers, iostream
+
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    for i in range(3):
+        dirname = os.path.dirname(dirname)
+
+    with open('{}/examples/example.tasklist'.format(dirname), 'rb') as fd:
+        lexer = lexers.TaskList(iostream.FileDescriptor(fd))
+        parser = Parser(lexer)
+        print(parser.parse())

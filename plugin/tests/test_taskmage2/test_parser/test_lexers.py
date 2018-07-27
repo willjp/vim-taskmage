@@ -105,7 +105,7 @@ class Test_TaskList:
                 '=====================\n',
                 [ tokens.section({'type': 'file', 'name': 'path/home.mtask'}) ]
             ),
-            ('header lv2', # NOT IMPLEMENTED YET!
+            ('header lv2',
                 'home\n'
                 '====\n'
                 '\n'
