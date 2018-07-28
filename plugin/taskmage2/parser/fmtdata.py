@@ -11,7 +11,8 @@ class TaskList(object):
         '=', '-', '`', ':', '.', "'", '"', '~', '^', '_', '+'
     ]
 
-    def statuschar(self, status):
+    @classmethod
+    def statuschar(cls, status):
         """
         Returns a status-char from a status.
 
@@ -22,13 +23,14 @@ class TaskList(object):
                 '*'
 
         """
-        for char in self.statuses:
-            if self.statuses[char] == status:
+        for char in cls.statuses:
+            if cls.statuses[char] == status:
                 return char
 
         raise KeyError('status does not exist: "{}"'.format(status))
 
-    def status(self, char):
+    @classmethod
+    def status(cls, char):
         """
         Returns a status from a statuschar
 
@@ -39,4 +41,4 @@ class TaskList(object):
                 'done'
 
         """
-        return self.statuses[char]
+        return cls.statuses[char]

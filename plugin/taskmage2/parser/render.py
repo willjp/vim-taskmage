@@ -14,6 +14,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+import os
 # package
 from taskmage2.parser import fmtdata
 # external
@@ -83,7 +84,7 @@ class TaskList(_Renderer):
         for node in ast:
             render = self._render_node(render, node, indent=0)
 
-        return rendered
+        return render
 
     def _render_node(self, render, node, indent=0):
         """
@@ -103,22 +104,22 @@ class TaskList(_Renderer):
                 ]
 
         """
-        node_renderer_map = dict(
+        node_renderer_map = {
             'file':     self._render_fileheader,
             'section':  self._render_sectionheader,
-            'task':     self._render_taskheader,
-        )
+            'task':     self._render_task,
+        }
         if node.type not in node_renderer_map:
             raise NotImplementedError(
                 'unexpected nodetype: {}'.format(repr(node))
             )
         render.extend(
-            node_renderer_map[node](node, indent)
+            node_renderer_map[node.type](node, indent)
         )
 
         for child in node.children:
             render.extend(
-                self._render_node(child, indent=indent+1)
+                self._render_node(render, child, indent=indent+1)
             )
 
         return render
@@ -206,10 +207,10 @@ class TaskList(_Renderer):
 
         fmtdata.TaskList.statuschar(node.data['status'])
 
-        data['status_char'] = fmtdata.TaskList.status(node.data.status)
+        data['status_char'] = fmtdata.TaskList.statuschar(node.data['status'])
 
         if node.id:
-            data['id_str'] = ''.join([node.status, '{*', node.id, '*}', ' '])
+            data['id_str'] = ''.join(['{*', node.id, '*}', ' '])
 
         return ['{status_char} {id_str}{name}'.format(**data)]
 
@@ -218,6 +219,22 @@ class TaskDetails(_Renderer):
     def __init__(self, parser):
         pass
 
+
 class Mtask(_Renderer):
     def __init__(self, parser):
         pass
+
+
+if __name__ == '__main__':
+    from taskmage2.parser import lexers, iostream, parser
+
+    dirname = os.path.dirname(os.path.abspath(__file__))
+    for i in range(3):
+        dirname = os.path.dirname(dirname)
+
+    with open('{}/examples/example.tasklist'.format(dirname), 'rb') as fd:
+        lexer = lexers.TaskList(iostream.FileDescriptor(fd))
+        parser_ = parser.Parser(lexer)
+        renderer = TaskList(parser_)
+        for line in renderer.render():
+            print(line)
