@@ -71,9 +71,9 @@ class TaskList(_Renderer):
             .. code-block:: python
 
                 [
-                    'line1',
-                    'line2',
-                    'line3',
+                    '* task1',
+                    '    * subtask1',
+                    '* task2',
                     ...
                 ]
 
@@ -241,6 +241,83 @@ class TaskDetails(_Renderer):
 
 class Mtask(_Renderer):
     def __init__(self, parser):
+        super(TaskList, self).__init__(parser)
+
+    def render(self):
+        """
+        Renders the parser's Abstract-Syntax-Tree.
+
+        Returns:
+
+            .. code-block:: python
+
+                [
+                    'line1',
+                    'line2',
+                    'line3',
+                    ...
+                ]
+
+        """
+        ast = self.parser.parse()
+        render = []
+
+        for node in ast:
+            render = self._render_node(render, node, indent=0)
+
+        return render
+
+    def _render_node(self, render, node, indent=0):
+        """
+        Recursively renders a node, until all children have been descended
+        into.
+
+        Returns:
+            The current render.
+
+            .. code-block:: python
+
+                [
+                    {'_id':..., 'type':'file',    'name':'todo/misc.mtask', 'indent':0, 'parent':None, 'data':{}},
+                    {'_id':..., 'type':'section', 'name':'kitchen',         'indent':0, 'parent':...,  'data':{}},
+                    {'_id':..., 'type':'task',    'name':'wash dishes',     'indent':0, 'parent':...,  'data':{...}},
+                    {'_id':..., 'type':'task',    'name':'grocery list',    'indent':0, 'parent':...,  'data':{...}},
+                    ...
+                ]
+
+        """
+        node_renderer_map = {
+            'file':     self._render_fileheader,
+            'section':  self._render_sectionheader,
+            'task':     self._render_task,
+        }
+        if node.type not in node_renderer_map:
+            raise NotImplementedError(
+                'unexpected nodetype: {}'.format(repr(node))
+            )
+        render.extend(
+            node_renderer_map[node.type](node, indent)
+        )
+
+        for child in node.children:
+            render = self._render_node(render, child, indent=indent+1)
+
+        return render
+
+    def _render_fileheader(self, render, node, indent=0):
+        """
+        Returns:
+
+            .. code-block:: python
+
+
+        """
+        pass
+
+    def _render_sectionheader(self, render, node, indent=0):
+        pass
+
+    def _render_task(self, render, node, indent=0):
         pass
 
 

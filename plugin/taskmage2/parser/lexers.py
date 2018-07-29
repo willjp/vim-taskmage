@@ -688,12 +688,12 @@ class Mtask(_Lexer):
         if not data:
             self._rawdata = []
         else:
-            self._rawdata = json.loads( data )
+            self._rawdata = json.loads(data)
 
     def read_next(self):
         token = self._read_next()
         if token:
-            self.data.append( token )
+            self.data.append(token)
         return token
 
     def _read_next(self):
@@ -743,7 +743,7 @@ class Mtask(_Lexer):
         if dtype['data']['status'] not in self.statuses:
             self._parser_exception('Invalid status: {}'.format(dtype['data']['status']))
 
-        # TODO: test dates
+        # TODO: PARSE DATES FROM ISOFORMAT INTO DATETIME
 
         return dtype
 
@@ -822,6 +822,13 @@ if __name__ == '__main__':
     from taskmage2.parser import iostream
 
     def ex_tasklist():
+        print(
+            '\n'
+            '========\n'
+            'TaskList\n'
+            '========\n'
+        )
+
         _scriptdir = os.path.abspath(os.path.dirname(__file__))
         path = os.path.abspath(
             '{}/../../../examples/example.tasklist'.format(_scriptdir)
@@ -834,4 +841,24 @@ if __name__ == '__main__':
                 token = lexer.read_next()
                 print(token)
 
+    def ex_mtask():
+        print(
+            '\n'
+            '=====\n'
+            'Mtask\n'
+            '=====\n'
+        )
+        _scriptdir = os.path.abspath(os.path.dirname(__file__))
+        path = os.path.abspath(
+            '{}/../../../examples/example.mtask_'.format(_scriptdir)
+        )
+        with open(path, 'r') as fd:
+            lexer = Mtask(fd)
+
+            token = ''
+            while token is not None:
+                token = lexer.read_next()
+                print(token)
+
     ex_tasklist()
+    ex_mtask()

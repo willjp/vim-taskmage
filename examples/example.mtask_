@@ -1,0 +1,87 @@
+[
+    {
+        "_id":  "5E2EEB413C6C43DFB0700CC6324D1739",
+        "type": "task",
+        "name": "taskA",
+        "indent": 0,
+        "parent": null,
+        "data": {"status": "todo", "created": null, "finished": false, "modified": null}
+    },
+    {
+        "_id":  "5E2EEB413C6C43DFB0700CC6324D1739",
+        "type": "task",
+        "name": "subtask of task",
+        "indent": 1,
+        "parent": "5E2EEB413C6C43DFB0700CC6324D1739",
+        "data": {"status": "todo", "created": null, "finished": false, "modified": null}
+    },
+    
+    {
+        "_id":  "5E2EEB413C6C43DFB0700CC6324D1739",
+        "type": "task",
+        "name": "todo task",
+        "indent": 0,
+        "parent": null,
+        "data": {"status": "todo", "created": null, "finished": false, "modified": null}
+    },
+    {
+        "_id":  "5E2EEB413C6C43DFB0700CC6324D1739",
+        "type": "task",
+        "name": "skipped task",
+        "indent": 0,
+        "parent": null,
+        "data": {"status": "skip", "created": null, "finished": false, "modified": null}
+    },
+    {
+        "_id":  "5E2EEB413C6C43DFB0700CC6324D1739",
+        "type": "task",
+        "name": "current task",
+        "indent": 0,
+        "parent": null,
+        "data": {"status": "wip", "created": null, "finished": false, "modified": null}
+    },
+    {
+        "_id":  "5E2EEB413C6C43DFB0700CC6324D1739",
+        "type": "task",
+        "name": "finished task",
+        "indent": 0,
+        "parent": null,
+        "data": {"status": "done", "created": null, "finished": false, "modified": null}
+    },
+
+    
+    {
+        "_id":  "268401C6439D4C3D8966012E4A70BB26",
+        "type": "file",
+        "name": "path/home.mtask",
+        "indent": 0,
+        "parent": null,
+        "data": {}
+    },
+    {
+        "_id":  "DBDC91FC044F401CBEE12EBB44185BD4",
+        "type": "task",
+        "name": "subtask of file",
+        "indent": 0,
+        "parent": "268401C6439D4C3D8966012E4A70BB26",
+        "data": {"status": "todo", "created": null, "finished": false, "modified": null}
+    },
+    
+    
+    {
+        "_id":  "293006024526476D9B524CD610ADF165",
+        "type": "section",
+        "name": "home",
+        "indent": 0,
+        "parent": null,
+        "data": {}
+    },
+    {
+        "_id":  "3A951358A75B4772B04C5BA656B2472D",
+        "type": "task",
+        "name": "subtask of section",
+        "indent": 0,
+        "parent": "293006024526476D9B524CD610ADF165",
+        "data": {"status": "todo", "created": null, "finished": false, "modified": null}
+    }
+]
