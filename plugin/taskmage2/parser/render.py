@@ -118,9 +118,7 @@ class TaskList(_Renderer):
         )
 
         for child in node.children:
-            render.extend(
-                self._render_node(render, child, indent=indent+1)
-            )
+            render = self._render_node(render, child, indent=indent+1)
 
         return render
 
@@ -134,13 +132,17 @@ class TaskList(_Renderer):
             .. code-block:: python
 
                 [
+                    '',
                     'file::home/misc.task',
                     '====================',
+                    '',
                 ]
 
                 [
+                    '',
                     '{*A8347624443342C1AA3A959622521E23*}file::home/misc.task',
                     '========================================================',
+                    '',
                 ]
 
         """
@@ -151,8 +153,10 @@ class TaskList(_Renderer):
             header_title = ''.join(['{*', node.id, '*}'])
 
         return [
+            '',
             header_title,
             char * len(header_title),
+            '',
         ]
 
     def _render_sectionheader(self, node, indent=0):
@@ -164,13 +168,17 @@ class TaskList(_Renderer):
             .. code-block:: python
 
                 [
+                    '',
                     'kitchen tasks',
                     '=============',
+                    '',
                 ]
 
                 [
+                    '',
                     '{*CE1AFBD934064E298ABFDA94AE58D838*} admin tasks',
                     '================================================',
+                    '',
                 ]
 
         """
@@ -183,8 +191,10 @@ class TaskList(_Renderer):
         header_title += node.name
 
         return [
+            '',
             header_title,
             char * len(header_title),
+            '',
         ]
 
     def _render_task(self, node, indent=0):
@@ -202,6 +212,7 @@ class TaskList(_Renderer):
         data = {
             'status_char':  '',
             'id_str':       '',
+            'indent_spc':   '',
             'name':         node.name,
         }
 
@@ -212,7 +223,15 @@ class TaskList(_Renderer):
         if node.id:
             data['id_str'] = ''.join(['{*', node.id, '*}', ' '])
 
-        return ['{status_char} {id_str}{name}'.format(**data)]
+        data['indent_spc'] = ' ' * (4 * indent)
+
+        lines = node.name.split('\n')
+
+        returns = ['{indent_spc}{status_char} {id_str} '.format(**data) + lines[0]]
+        for i in range(1, len(lines)):
+            returns.append('{}  {}'.format(data['indent_spc'], lines[i]))
+
+        return returns
 
 
 class TaskDetails(_Renderer):
