@@ -24,9 +24,9 @@ import json
 import abc
 import uuid
 import re
-import json
 # package
 # external
+import dateutil.parser
 # internal
 from taskmage2 import exceptions_
 from taskmage2.parser import fmtdata
@@ -743,7 +743,11 @@ class Mtask(_Lexer):
         if dtype['data']['status'] not in self.statuses:
             self._parser_exception('Invalid status: {}'.format(dtype['data']['status']))
 
-        # TODO: PARSE DATES FROM ISOFORMAT INTO DATETIME
+        # parse date into
+        for key in ('created', 'finished', 'modified'):
+            if dtype['data'][key]:
+                isodate = dtype['data'][key]
+                dtype['data'][key] = dateutil.parser.parse(isodate)
 
         return dtype
 
