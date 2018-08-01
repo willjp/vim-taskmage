@@ -241,7 +241,7 @@ class TaskDetails(_Renderer):
 
 class Mtask(_Renderer):
     def __init__(self, parser):
-        super(TaskList, self).__init__(parser)
+        super(Mtask, self).__init__(parser)
 
     def render(self):
         """
@@ -295,14 +295,24 @@ class Mtask(_Renderer):
             raise NotImplementedError(
                 'unexpected nodetype: {}'.format(repr(node))
             )
-        render.extend(
-            node_renderer_map[node.type](node, indent)
+        render.append(
+            node_renderer_map[node.type](render, node, indent)
         )
 
         for child in node.children:
-            render = self._render_node(render, child, indent=indent+1)
+            render = self._render_node(render, child, indent=indent + 1)
 
         return render
+
+    def _get_parent(self, render, node, indent):
+        if indent == 0:
+            return None
+
+        for i in reversed(range(len(render))):
+            if render[i]['indent'] < indent:
+                return render[i]['_id']
+
+        raise RuntimeError('could not find parent')
 
     def _render_fileheader(self, render, node, indent=0):
         """
@@ -312,13 +322,53 @@ class Mtask(_Renderer):
 
 
         """
-        pass
+
+        return {
+            '_id': node.id,
+            'type': node.type,
+            'name': node.name,
+            'indent': indent,
+            'parent': self._get_parent(render, node, indent),
+            'data': {},
+        }
 
     def _render_sectionheader(self, render, node, indent=0):
-        pass
+        return {
+            '_id': node.id,
+            'type': node.type,
+            'name': node.name,
+            'indent': indent,
+            'parent': self._get_parent(render, node, indent),
+            'data': {},
+        }
 
     def _render_task(self, render, node, indent=0):
-        pass
+        created = None
+        finished = None
+        modified = None
+
+        if node.data['created']:
+            created = node.data['created'].isoformat()
+
+        if node.data['finished']:
+            finished = node.data['finished'].isoformat()
+
+        if node.data['modified']:
+            modified = node.data['modified'].isoformat()
+
+        return {
+            '_id': node.id,
+            'type': node.type,
+            'name': node.name,
+            'indent': indent,
+            'parent': self._get_parent(render, node, indent),
+            'data': {
+                'status': node.data['status'],
+                'created': created,
+                'finished': finished,
+                'modified': modified,
+            },
+        }
 
 
 if __name__ == '__main__':
@@ -328,9 +378,31 @@ if __name__ == '__main__':
     for i in range(3):
         dirname = os.path.dirname(dirname)
 
-    with open('{}/examples/example.tasklist'.format(dirname), 'rb') as fd:
-        lexer = lexers.TaskList(iostream.FileDescriptor(fd))
-        parser_ = parser.Parser(lexer)
-        renderer = TaskList(parser_)
-        for line in renderer.render():
-            print(line)
+    def ex_tasklist():
+        print('========')
+        print('Tasklist')
+        print('========')
+        print()
+
+        with open('{}/examples/example.tasklist'.format(dirname), 'rb') as fd:
+            lexer = lexers.TaskList(iostream.FileDescriptor(fd))
+            parser_ = parser.Parser(lexer)
+            renderer = TaskList(parser_)
+            for line in renderer.render():
+                print(line)
+
+    def ex_mtask():
+        print('=====')
+        print('Mtask')
+        print('=====')
+        print()
+
+        with open('{}/examples/example.mtask_'.format(dirname), 'rb') as fd:
+            lexer = lexers.Mtask(fd)
+            parser_ = parser.Parser(lexer)
+            renderer = Mtask(parser_)
+            for line in renderer.render():
+                print(line)
+
+    ex_tasklist()
+    ex_mtask()

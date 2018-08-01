@@ -683,6 +683,12 @@ class Mtask(_Lexer):
         self._index = -1    # current place in of self._rawdata[]
         self._read()
 
+    def read(self):
+        token = ''
+        while token is not None:
+            token = self.read_next()
+        return self.data
+
     def _read(self):
         data = self._fd.read()
         if not data:
