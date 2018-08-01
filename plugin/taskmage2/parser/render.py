@@ -15,15 +15,21 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 import os
+import abc
 # package
 from taskmage2.parser import fmtdata
 # external
 # internal
 
 
-class _Renderer(object):
+class Renderer(object):
+    """
+    Abstract-Base-class for all renderers. Mostly for type-checks.
+    """
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self, parser):
-        super(_Renderer, self).__init__()
+        super(Renderer, self).__init__()
         self._parser = parser
 
     @property
@@ -34,7 +40,7 @@ class _Renderer(object):
         raise NotImplementedError
 
 
-class TaskList(_Renderer):
+class TaskList(Renderer):
     """
     Renders a :py:obj:`taskmage2.parser.Parser` object into the
     tasklist format.
@@ -234,12 +240,12 @@ class TaskList(_Renderer):
         return returns
 
 
-class TaskDetails(_Renderer):
+class TaskDetails(Renderer):
     def __init__(self, parser):
         pass
 
 
-class Mtask(_Renderer):
+class Mtask(Renderer):
     def __init__(self, parser):
         super(Mtask, self).__init__(parser)
 
