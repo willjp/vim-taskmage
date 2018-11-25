@@ -9,77 +9,148 @@ Description :   tests parser.
 ________________________________________________________________________________
 """
 # builtin
-from   __future__    import unicode_literals
-from   __future__    import absolute_import
-from   __future__    import division
-from   __future__    import print_function
+from  __future__ import absolute_import, division, print_function
+import pprint
 # package
-from taskmage2.testutils import lexers, nodes, tokens, core
 from taskmage2.parser import parser
+from taskmage2 import data
 # external
 import pytest
 import mock
 # internal
 
 
-def build_parser(lexer_contents):
-    """
-    Produce a parser object, whose data is set
-    to `lexer_contents`
-    """
-    lexer = mock.Mock()
-    lexer.data = lexer_contents
-
-    _parser = parser.Parser(lexer)
-    _parser.lexer = lexer
-    return _parser
-
-
 class Test_Parser:
-    @pytest.mark.parametrize(
-        'testname, lexer_contents, expected', [
-        ('default task',
-            [tokens.task()],
-            [nodes.task()],
-        ),
-        ('default section',
-            [tokens.section()],
-            [nodes.section()],
-        ),
-        ('default file',
-            [tokens.file()],
-            [nodes.file()],
-        ),
-    ])
-    def test_defaults(self, testname, lexer_contents, expected):
-        parserobj = build_parser(lexer_contents)
-        ast = parserobj.parse()
-        print(testname)
-        assert ast == expected
+    """ The parser converts a lexed format into nodes.
+    """
+    def test_task(self):
+        parsed = self.parser([{
+            # an empty, but syntactically correct task
+            '_id': '6ed88ae2e7d94d2c88249a954782fc46',
+            'type': 'task',
+            'name': 'taskA',
+            'indent': 0,
+            'parent': None,
+            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+        }])
+        assert parsed == [
+            data.Node(
+                _id='6ed88ae2e7d94d2c88249a954782fc46',
+                ntype='task',
+                name='taskA',
+                data={'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                children=None,
+            )
+        ]
 
-    @pytest.mark.parametrize(
-        'testname, lexer_conts, expected', [
-        ('subtask',
-            [tokens.task(), tokens.task({'_id': '59fd4a25ab6f40c3959c99ecc876f3bb', 'indent': 4, 'parent': core.uuid})],
-            [nodes.task( children=[nodes.task(_id='59fd4a25ab6f40c3959c99ecc876f3bb')] )],
-        ),
-        ('sub, subtask',
-            [
-                tokens.task(),
-                tokens.task({'_id': '59fd4a25ab6f40c3959c99ecc876f3bb', 'indent': 4, 'parent': core.uuid}),
-                tokens.task({'_id': '7ef3a697df094a7b902bd670b47492d4', 'indent': 8, 'parent': '59fd4a25ab6f40c3959c99ecc876f3bb'}),
-            ],
-            [
-                nodes.task( children=[
-                    nodes.task(_id='59fd4a25ab6f40c3959c99ecc876f3bb', children=[
-                        nodes.task(_id='7ef3a697df094a7b902bd670b47492d4')
-                    ])
-                ])
-            ],
-         ),
-    ])
-    def test_hierarchy(self, testname, lexer_conts, expected):
-        parserobj = build_parser(lexer_conts)
-        ast = parserobj.parse()
-        print(testname)
-        assert ast == expected
+    def test_section(self):
+        parsed = self.parser([{
+            '_id': 'e19cb28f203e476686f2fb5f2f0faae6',
+            'type': 'section',
+            'name': 'home',
+            'indent': 0,
+            'parent': None,
+            'data': {},
+        }])
+        assert parsed == [
+            data.Node(
+                _id='e19cb28f203e476686f2fb5f2f0faae6',
+                ntype='section',
+                name='home',
+                data={},
+                children=None,
+            )
+        ]
+
+    def test_file(self):
+        parsed = self.parser([{
+            '_id': '805c36f82cd74de5b44edff2b07bc125',
+            'type': 'file',
+            'name': 'path/home.mtask',
+            'indent': 0,
+            'parent': None,
+            'data': {},
+        }])
+        assert parsed == [
+            data.Node(
+                _id='805c36f82cd74de5b44edff2b07bc125',
+                ntype='file',
+                name='path/home.mtask',
+                data={},
+                children=None,
+            )
+        ]
+
+    def test_subtask(self):
+        parsed = self.parser([
+            {
+                '_id': '6ed88ae2e7d94d2c88249a954782fc46',
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            },
+            {
+                '_id': '032012b832f546d7bdc13a08ade41ba0',
+                'type': 'task',
+                'name': 'subtaskA',
+                'indent': 4,
+                'parent': '6ed88ae2e7d94d2c88249a954782fc46',
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            },
+        ])
+        expected = [
+            data.Node(
+                _id='6ed88ae2e7d94d2c88249a954782fc46',
+                ntype='task',
+                name='taskA',
+                data={'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                children=[
+                    data.Node(
+                        _id='032012b832f546d7bdc13a08ade41ba0',
+                        ntype='task',
+                        name='subtaskA',
+                        data={'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                        children=None,
+                    ),
+                ]
+            )
+        ]
+        assert parsed == expected
+
+    def parser(self, lexed_list):
+        """
+        Produce a parser object, whose data is set
+        to `lexer_contents`
+
+        Args:
+            lexed_list (list):
+
+                 .. code-block:: python
+                    [
+                        {
+                            '_id'    : 'a09e314015b34846a05114ce3bee9675'
+                            'type'   : 'task',
+                            'name'   : 'do something',
+                            'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
+                            'indent' : 0,  # number of spaces task is indented
+                            'data'   : {
+                                'status' : 'todo',
+                                'created':  datetime(...),
+                                'finished': datetime(...),
+                                'modified': datetime(...),
+                            }
+                        }
+                        ...
+                    ]
+
+        """
+        # each lexer is a IterableUserDict,
+        # `data` is it's value.
+        lexer = mock.Mock()
+        lexer.data = lexed_list
+
+        _parser = parser.Parser(lexer)
+        _parser.lexer = lexer
+        return _parser.parse()

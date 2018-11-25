@@ -184,8 +184,30 @@ class TaskList(_Lexer):
         # ...etc
 
     def read(self):
-        """
-        Lexes the entire file-descriptor into a list of tokens.
+        """ Lexes the entire file-descriptor into a list of tokens.
+
+        Returns:
+            list: a list of dictionaries (each representing a token)
+
+                .. code-block:: python
+
+                    [
+                        {
+                            '_id'    : 'a09e314015b34846a05114ce3bee9675'
+                            'type'   : 'task',
+                            'name'   : 'do something',
+                            'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
+                            'indent' : 0,  # number of spaces task is indented
+                            'data'   : {
+                                'status' : 'todo',
+                                'created':  datetime(...),
+                                'finished': datetime(...),
+                                'modified': datetime(...),
+                            }
+                        }
+                        ...
+                    ]
+
         """
         token = self.read_next()
         while token is not None:

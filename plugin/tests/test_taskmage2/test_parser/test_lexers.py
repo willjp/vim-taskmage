@@ -15,8 +15,6 @@ import uuid
 import json
 # package
 from taskmage2.testutils import core
-from taskmage2.testutils import lexers as lexers_dummy
-from taskmage2.testutils import tokens as tokens_dummy
 from taskmage2.parser import iostream, lexers
 import six
 # external

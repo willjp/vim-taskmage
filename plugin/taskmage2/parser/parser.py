@@ -40,6 +40,12 @@ class Parser(object):
 
     """
     def __init__(self, lexer):
+        """ Constructor.
+
+        Args:
+            lexer (taskmage2.lexers.Lexer):
+                A lexer subclass, (TaskList, Mtask, ...).
+        """
         self.__lexer = lexer
         self.__lexer.read()
 
