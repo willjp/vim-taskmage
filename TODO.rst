@@ -1,11 +1,8 @@
 
-* multiline comments are not working
-  (task indentation is stripped from line when read into RST)
+* taskmage2 needs commands that can be mapped to vim
 
 * vim command to open taskfile readonly 
   in raw task format (in new buffer)
-
-* support for multiline task-comments
 
 * completion reports
 

@@ -8,10 +8,11 @@ if !has('python')
     finish
     echo "Your version of vim does not support python"
 else
-    execute 'pyfile ' .   s:scriptroot . '/taskmage_init_syspath.py'
-    execute 'py import taskmage.vim_plugin'
+    py import sys
     py import logging
-    py logging.basicConfig( lv=20 )
+    py logging.basicConfig(lv=20)
+    execute 'py if "' . s:scriptroot . '" not in sys.path: sys.path.append("' . s:scriptroot . '")'
+    py import taskmage2
 endif
 
 
