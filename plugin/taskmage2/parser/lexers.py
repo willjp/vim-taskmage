@@ -148,8 +148,7 @@ class _Lexer(object):
 
 
 class TaskList(_Lexer):
-    """
-    Lexer for the TaskList format (that appears within vim).
+    """ Lexer for the TaskList format (that appears within vim).
 
     Example:
 
@@ -194,8 +193,7 @@ class TaskList(_Lexer):
         return self.data
 
     def read_next(self):
-        """
-        Obtains next token, saves to ``self.data`` , and returns it.
+        """ Obtains next token, saves to ``self.data`` , and returns it.
 
         Returns:
 

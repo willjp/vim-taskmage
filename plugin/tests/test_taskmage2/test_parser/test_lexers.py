@@ -10,18 +10,22 @@ Description :   checks operating system running maya so adjustments can be made 
 ________________________________________________________________________________
 """
 # builtin
-from   __future__    import unicode_literals
-from   __future__    import absolute_import
-from   __future__    import division
-from   __future__    import print_function
+from __future__ import absolute_import, division, print_function
 import uuid
 import json
 # package
-from taskmage2.testutils import lexers, tokens, core
+from taskmage2.testutils import core
+from taskmage2.testutils import lexers as lexers_dummy
+from taskmage2.testutils import tokens as tokens_dummy
+from taskmage2.parser import iostream, lexers
+import six
 # external
 import pytest
 import mock
 # internal
+
+
+ns = lexers.__name__
 
 
 @pytest.fixture
@@ -30,189 +34,281 @@ def uid():
 
 
 class Test_TaskList:
-    @pytest.mark.parametrize(
-        '    testname, conts, expected', [
-            ('status:todo',
-                '* taskA',
-                [ tokens.task() ]
-            ),
-            ('status:done',
-                'x taskA',
-                 [ tokens.task({'data':{'status': 'done', 'finished': True}}) ]
-            ),
-            ('status:skip',
-                '- taskA',
-                [ tokens.task({'data':{'status':'skip'}}) ]
-            ),
-            ('status:wip',
-                'o taskA',
-                [ tokens.task({'data':{'status':'wip'}}) ]
-            ),
-    ])
-    def test_status(self, testname, conts, expected, uid):
-        with mock.patch.object(uuid, 'uuid4', return_value=uid):
-            output = lexers.tasklist(conts)
+    """ Tests for the TaskList Lexer
+    """
+    def test_status_todo(self):
+        tokens = self.tasklist('* taskA')
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
 
-        print(testname)
-        assert output == expected
+    def test_status_done(self):
+        tokens = self.tasklist('x taskA')
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'done', 'created': None, 'finished': True, 'modified': None},
+            }
+        ]
 
-    @pytest.mark.parametrize(
-        '    testname, conts, expected', [
+    def test_status_skip(self):
+        tokens = self.tasklist('- taskA')
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'skip', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
 
-            ('toplevel taskid',
-                '* {*C5ED1030425A436DABE94E0FCCCE76D6*} taskA',
-                [tokens.task({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6'})]
-            ),
-            ('subtask taskid',
-                '* taskA\n'
-                '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n',
-                [tokens.task(), tokens.task({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': core.uuid})]
-            ),
-            ('subtask taskid 2x',
+    def test_status_wip(self):
+        tokens = self.tasklist('o taskA')
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'wip', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
+
+    def test_toplevel_task_with_id(self):
+        tokens = self.tasklist('* {*C5ED1030425A436DABE94E0FCCCE76D6*} taskA')
+        assert tokens == [
+            {
+                '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
+
+    def test_subtask_with_id(self):
+        tokens = self.tasklist(
+            '* taskA\n'
+            '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n'
+        )
+        assert tokens[1] == {
+            '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+            'type': 'task',
+            'name': 'subtaskA',
+            'indent': 4,
+            'parent': uid().hex.upper(),
+            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+        }
+
+    def test_2nd_subtask_with_id(self):
+        tokens = self.tasklist(
                 '* taskA\n'
                 '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n'
                 '    * {*AAAAAAA0425A436DABE94E0FCCCE76D6*} subtaskB\n',
-                [
-                    tokens.task(),
-                    tokens.task({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6', 'name': 'subtaskA', 'indent': 4, 'parent': core.uuid}),
-                    tokens.task({'_id': 'AAAAAAA0425A436DABE94E0FCCCE76D6', 'name': 'subtaskB', 'indent': 4, 'parent': core.uuid}),
-                ],
-            ),
-            ('toplevel headerid',
-                '{*C5ED1030425A436DABE94E0FCCCE76D6*} home\n'
-                '====\n',
-                [tokens.section({'_id': 'C5ED1030425A436DABE94E0FCCCE76D6'})]
-            ),
-    ])
-    def test_ids(self, testname, conts, expected, uid):
-        with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = lexers.tasklist(conts)
+        )
+        assert tokens[2] == {
+            '_id': 'AAAAAAA0425A436DABE94E0FCCCE76D6',
+            'type': 'task',
+            'name': 'subtaskB',
+            'indent': 4,
+            'parent': uid().hex.upper(),
+            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+        }
 
-        print(testname)
-        assert output == expected
-
-    @pytest.mark.parametrize(
-        '    testname, conts, expected', [
-            ('header lv1',
-                (
-                    'home\n'
-                    '====\n'
-                ),
-                [ tokens.section() ]
-            ),
-            ('file lv1',
-                'file::path/home.mtask\n'
-                '=====================\n',
-                [ tokens.section({'type': 'file', 'name': 'path/home.mtask'}) ]
-            ),
-            ('header lv2',
-                'home\n'
-                '====\n'
-                '\n'
-                'kitchen\n'
-                '-------\n',
-                [
-                    tokens.section(),
-                    tokens.section({'name':'kitchen', 'indent':1, 'parent':core.uuid})
-                ]
-            ),
-    ])
-    def test_sections(self, testname, conts, expected, uid):
-        with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = lexers.tasklist(conts)
-
-        print(testname)
-        assert output == expected
-
-    @pytest.mark.parametrize(
-            'testname, conts, expected', [
-
-            ('multiline',
-                 '* taskA\n    continued',
-                 [tokens.task({'name': 'taskA\n continued'})]
-            ),
-            ('subtask 1x',
-                 '* taskA\n    * subtaskA',
-                 [
-                     tokens.task(),
-                     tokens.task({'name': 'subtaskA', 'indent':4, 'parent':core.uuid})
-                 ]
-            ),
-            ('subtask 2x',
-                 (
-                    '* taskA\n'
-                    '    * subtaskA\n'
-                    '    * subtaskB\n'
-                 ),
-                 [
-                     tokens.task(),
-                     tokens.task({'name': 'subtaskA', 'indent':4, 'parent':core.uuid}),
-                     tokens.task({'name': 'subtaskB', 'indent':4, 'parent':core.uuid}),
-                 ],
-            )
+    def test_toplevel_section_with_id(self):
+        tokens = self.tasklist(
+            '{*C5ED1030425A436DABE94E0FCCCE76D6*} home\n'
+            '====\n',
+        )
+        assert tokens == [
+            {
+                '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            }
         ]
-    )
-    def test_subtasks(self, testname, conts, expected, uid):
-        with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = lexers.tasklist(conts)
 
-        print(testname)
-        assert output == expected
+    def test_toplevel_section(self):
+        tokens = self.tasklist(
+            'home\n'
+            '====\n'
+        )
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            }
+        ]
 
-    @pytest.mark.parametrize(
-        '    testname, conts, expected', [
-            ('indent',
-                '    * taskA',
-                [ tokens.task({'indent':4}) ]
-            ),
-    ])
-    def test_indent(self, testname, conts, expected, uid):
-        with mock.patch.object(uuid, 'uuid4', return_value=uid):
-            output = lexers.tasklist(conts)
+    def test_toplevel_file(self):
+        tokens = self.tasklist(
+            'file::path/home.mtask\n'
+            '=====================\n',
+        )
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'file',
+                'name': 'path/home.mtask',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            },
+        ]
 
-        print(testname)
-        assert output == expected
+    def test_subsection(self):
+        tokens = self.tasklist(
+            'home\n'
+            '====\n'
+            '\n'
+            'kitchen\n'
+            '-------\n',
+        )
+        assert tokens[1] == {
+            '_id': uid().hex.upper(),
+            'type': 'section',
+            'name': 'kitchen',
+            'indent': 1,
+            'parent': uid().hex.upper(),
+            'data': {},
+        }
 
+    def test_multiline_task(self):
+        tokens = self.tasklist(
+            '* taskA\n'
+            '  continued'
+        )
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA\n continued',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
 
+    def test_multiline_subtask(self):
+        tokens = self.tasklist(
+            '* taskA\n'
+            '    * subtaskA\n'
+            '      continued\n'
+        )
+        assert tokens[1] == {
+            '_id': uid().hex.upper(),
+            'type': 'task',
+            'name': 'subtaskA\n continued',
+            'indent': 4,
+            'parent': uid().hex.upper(),
+            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+        }
 
-    @pytest.mark.parametrize(
-        '    testname, conts, expected', [
-            ('header task',
-                (
-                    'home\n'
-                    '====\n'
-                    '* taskA\n'
-                ),
-                [ tokens.section(), tokens.task({'parent':core.uuid}) ]
-            ),
-    ])
-    def test_headertasks(self, testname, conts, expected, uid):
-        with mock.patch.object( uuid, 'uuid4', return_value=uid):
-            output = lexers.tasklist(conts)
+    def test_2nd_multiline_subtask(self):
+        tokens = self.tasklist(
+            '* taskA\n'
+            '    * subtaskA\n'
+            '      continued\n'
+            '    * subtaskB\n'
+            '      continued\n'
+        )
+        assert tokens[2] == {
+            '_id': uid().hex.upper(),
+            'type': 'task',
+            'name': 'subtaskB\n continued',
+            'indent': 4,
+            'parent': uid().hex.upper(),
+            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+        }
 
-        print(testname)
-        assert output == expected
+    def test_section_subtask(self):
+        tokens = self.tasklist(
+            'home\n'
+            '====\n'
+            '\n'
+            '    * taskA\n'
+        )
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            },
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 4,
+                'parent': uid().hex.upper(),
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
+
+    def tasklist(self, filecontents):
+        """ Initializes a TaskList(), returns the lexed contents as a list.
+        """
+        with mock.patch('{}.uuid.uuid4'.format(ns), side_effect=uid):
+            # initialize TaskList()
+            fd = six.StringIO()
+            fd.write(filecontents)
+            iofd = iostream.FileDescriptor(fd)
+            lexer = lexers.TaskList(iofd)
+
+            # read until end of TaskList
+            _lexertokens = []
+            token = ''
+            while token is not None:
+                token = lexer.read_next()
+                if token is not None:
+                    _lexertokens.append(token)
+
+            return _lexertokens
 
 
 class Test_Mtask:
     @pytest.mark.parametrize(
         '    testname, conts, expected', [
             ('task',
-                json.dumps([tokens.task()]),
-                [tokens.task()],
+                json.dumps([tokens_dummy.task()]),
+                [tokens_dummy.task()],
             ),
             ('section',
-                json.dumps([tokens.section()]),
-                [tokens.section()],
+                json.dumps([tokens_dummy.section()]),
+                [tokens_dummy.section()],
             ),
             ('filedef',
-                 json.dumps([tokens.file()]),
-                 [tokens.file()],
+                 json.dumps([tokens_dummy.file()]),
+                 [tokens_dummy.file()],
             ),
         ]
     )
     def test_working(self, testname, conts, expected):
-        output = lexers.mtask(conts)
+        output = lexers_dummy.mtask(conts)
 
         print(testname)
         assert output == expected

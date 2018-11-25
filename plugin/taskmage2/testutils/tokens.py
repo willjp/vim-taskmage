@@ -8,11 +8,26 @@ from taskmage2.testutils import core
 
 
 def task(changes=None):
-    """
+    """ Modifies a defaulttask dictionary
+
     Args:
         changes (dict):
             A dictionary with nothing but the changes
             to _defaulttask.
+
+    Returns:
+        dict:
+
+            .. code-block:: python
+
+                {
+                    '_id': uuid,
+                    'type': 'task',
+                    'name': 'taskA',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                }
     """
     taskcopy = copy.deepcopy(core.defaulttask)
 
