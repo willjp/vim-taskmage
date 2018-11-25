@@ -14,11 +14,8 @@ Description :   Lexers for all of the various datatypes tasks can
 ________________________________________________________________________________
 """
 # builtin
-from   __future__    import unicode_literals
-from   __future__    import absolute_import
-from   __future__    import division
-from   __future__    import print_function
-from   collections   import namedtuple
+from __future__ import absolute_import, division, print_function
+from collections import namedtuple
 import os
 import json
 import abc
@@ -95,6 +92,7 @@ class _Lexer(object):
 
     """
     __metaclass__ = abc.ABCMeta
+
     def __init__(self):
         """
         Constructor.
@@ -177,14 +175,14 @@ class TaskList(_Lexer):
     def __init__(self, iostream):
         super(TaskList, self).__init__()
         self._next = None  # the next token
-        self._iostream  = iostream   # file-descriptor abstracted into an iostream.IOStream
+        self._iostream = iostream   # file-descriptor abstracted into an iostream.IOStream
 
         self._headerchar_order = []  # underline character used for each level of
-                                     # header indent. ex: ['=', '-', '.'] if
-                                     # header lv1 is underlined with '==='
-                                     # header lv2 is underlined with '---'
-                                     # header lv3 is underlined with '...'
-                                     # ...etc
+        # header indent. ex: ['=', '-', '.'] if
+        # header lv1 is underlined with '==='
+        # header lv2 is underlined with '---'
+        # header lv3 is underlined with '...'
+        # ...etc
 
     def read(self):
         """
@@ -240,13 +238,12 @@ class TaskList(_Lexer):
         offset = 0
         indent = 0
 
-
         # =============
         # Handle Indent
         # =============
         if ch == ' ':
             indent = self._read_indent()
-            self._iostream.offset(offset+indent)
+            self._iostream.offset(offset + indent)
             ch = self._iostream.peek()
             offset = 0
 
@@ -256,7 +253,6 @@ class TaskList(_Lexer):
         if ch == '\n':
             self._iostream.next(offset)
             return self.read_next()
-
 
         # =====================
         # Header (section,file)
@@ -300,7 +296,7 @@ class TaskList(_Lexer):
                 0   # if not indented
         """
         indent = 0
-        while self._iostream.peek(offset+indent) == ' ':
+        while self._iostream.peek(offset + indent) == ' ':
             indent += 1
         return indent
 
@@ -459,7 +455,7 @@ class TaskList(_Lexer):
             # parse indentation of newline
             if newline:
                 _indent = self._read_indent(offset)
-                ch_after_indent = self._iostream.peek(offset+_indent)
+                ch_after_indent = self._iostream.peek(offset + _indent)
 
                 # newline is the start of something else
                 # *NOT* a continuation of this task
@@ -475,11 +471,11 @@ class TaskList(_Lexer):
                 # continute reading - at least until end of line
                 newline = False
                 if _indent:
-                    offset += _indent -1 # so later offset+=1 still works
+                    offset += _indent - 1  # so later offset+=1 still works
 
             if ch == '\n':
                 newline = True
-                name    = name.strip()
+                name = name.strip()
             name += ch
             offset += 1
 
@@ -562,8 +558,7 @@ class TaskList(_Lexer):
         return True
 
     def _get_task_parent(self, indent):
-        """
-        Finds the nearest parent of a token with the provided `indent`.
+        """ Finds the nearest parent of a token with the provided `indent`.
 
         Searches previously encountered tokens (section, task, ...)
         for a token with a smaller indent than `indent`.
@@ -642,7 +637,7 @@ class TaskList(_Lexer):
 
 class TaskDetails(_Lexer):
     def __init__(self, iostream):
-        self._iostream  = iostream  # file-desriptor to the file being parsed.
+        self._iostream = iostream  # file-desriptor to the file being parsed.
         raise NotImplementedError('todo')
 
 
@@ -669,6 +664,7 @@ class Mtask(_Lexer):
         'wip',
         'todo',
     }
+
     def __init__(self, fd):
         """
         Constructor:
@@ -726,7 +722,7 @@ class Mtask(_Lexer):
                     'Invalid entry in mtaskfile: \n'
                     'key "type" has unexpected value: "{}"\n'
                     '{}\n'
-                    ).format(self._rawdata[index]['type'], repr(self._rawdata[index]))
+                ).format(self._rawdata[index]['type'], repr(self._rawdata[index]))
                 )
 
     def _read_task(self, index):
@@ -811,20 +807,20 @@ class Mtask(_Lexer):
 
         if missing_keys:
             self._parser_exception((
-                    'Token at index {} is formatted improperly: \n'
-                    '{}\n'
-                    'missing keys: {}\n'
-                    'received: {}\n'
-                ).format(index, desc, data, missing_keys, data)
+                'Token at index {} is formatted improperly: \n'
+                '{}\n'
+                'missing keys: {}\n'
+                'received: {}\n'
+            ).format(index, desc, data, missing_keys, data)
             )
 
         if extra_keys:
             self._parser_exception((
-                    'Task at index {} is formatted improperly: \n'
-                    '{}\n'
-                    'missing keys: {}\n'
-                    'received: {}\n'
-                ).format(index, desc, data, missing_keys, data)
+                'Task at index {} is formatted improperly: \n'
+                '{}\n'
+                'missing keys: {}\n'
+                'received: {}\n'
+            ).format(index, desc, data, missing_keys, data)
             )
 
 

@@ -10,10 +10,7 @@ Description :   Using a lexer, parses a file into an AST
 ________________________________________________________________________________
 """
 # builtin
-from   __future__    import unicode_literals
-from   __future__    import absolute_import
-from   __future__    import division
-from   __future__    import print_function
+from __future__ import absolute_import, division, print_function
 import os
 # package
 # external
@@ -23,8 +20,7 @@ from taskmage2.parser import render
 
 
 class Parser(object):
-    """
-    The parser transforms the tokens collected in the Lexer
+    """ The parser transforms the tokens collected in the Lexer
     into a AST tree of Nodes. It can then render that AST
     tree into various output formats.
 

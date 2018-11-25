@@ -10,26 +10,23 @@ Description :   Classes to abstract reading from file, stream, etc. to
 ________________________________________________________________________________
 """
 # builtin
-from   __future__    import unicode_literals
-from   __future__    import absolute_import
-from   __future__    import division
-from   __future__    import print_function
+from   __future__    import absolute_import, division, print_function
 from collections import namedtuple
 import abc
-# package
 # external
 # internal
 
+
 class IOStream(object):
-    """
-    Base Interface for iostream objects.
+    """ Base Interface for iostream objects.
     """
     __metaclass__ = abc.ABCMeta
+
     def next(self, offset=0):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def peek(self, offset=0):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def peek_line(self, offset=0):
         """
@@ -49,15 +46,14 @@ class IOStream(object):
             offset += 1
 
     def offset(self, offset):
-        raise NotImplemented()
+        raise NotImplementedError()
 
     def eof(self):
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class VimBuffer(IOStream):
-    """
-    Abstracts vim python buffer object, so can read it as if it were raw-bytes.
+    """ Abstracts vim python buffer object, so can read it as if it were raw-bytes.
     Adds functionality like `peek` , so can read ahead without changing the
     current position in the file.
 
@@ -173,8 +169,7 @@ class VimBuffer(IOStream):
 
 
 class FileDescriptor(IOStream):
-    """
-    Abstracts a python file-descriptor so files can be read
+    """ Abstracts a python file-descriptor so files can be read
     one byte at a time. This is mostly for testing.
 
     Example:

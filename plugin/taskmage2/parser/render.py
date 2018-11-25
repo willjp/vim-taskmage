@@ -10,10 +10,7 @@ Description :   A collection of classes to render a Parser object
 ________________________________________________________________________________
 """
 # builtin
-from __future__ import unicode_literals
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+from __future__ import absolute_import, division, print_function
 import os
 import abc
 # package
@@ -111,9 +108,9 @@ class TaskList(Renderer):
 
         """
         node_renderer_map = {
-            'file':     self._render_fileheader,
-            'section':  self._render_sectionheader,
-            'task':     self._render_task,
+            'file': self._render_fileheader,
+            'section': self._render_sectionheader,
+            'task': self._render_task,
         }
         if node.type not in node_renderer_map:
             raise NotImplementedError(
@@ -124,7 +121,7 @@ class TaskList(Renderer):
         )
 
         for child in node.children:
-            render = self._render_node(render, child, indent=indent+1)
+            render = self._render_node(render, child, indent=indent + 1)
 
         return render
 
@@ -216,10 +213,10 @@ class TaskList(Renderer):
 
         """
         data = {
-            'status_char':  '',
-            'id_str':       '',
-            'indent_spc':   '',
-            'name':         node.name,
+            'status_char': '',
+            'id_str': '',
+            'indent_spc': '',
+            'name': node.name,
         }
 
         fmtdata.TaskList.statuschar(node.data['status'])
@@ -293,9 +290,9 @@ class Mtask(Renderer):
 
         """
         node_renderer_map = {
-            'file':     self._render_fileheader,
-            'section':  self._render_sectionheader,
-            'task':     self._render_task,
+            'file': self._render_fileheader,
+            'section': self._render_sectionheader,
+            'task': self._render_task,
         }
         if node.type not in node_renderer_map:
             raise NotImplementedError(
