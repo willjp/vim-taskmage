@@ -154,5 +154,5 @@ if __name__ == '__main__':
             print(parser.render(render.Mtask))
 
     ex_tasklist()
-    print()
+    print('---')
     ex_mtask()

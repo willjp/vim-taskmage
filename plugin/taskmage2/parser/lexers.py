@@ -656,6 +656,10 @@ class TaskList(_Lexer):
 
 
 class TaskDetails(_Lexer):
+    """ Displays editable Mtask details for a single task.
+
+    Exposes details Mtask details that are not present within TaskList.
+    """
     def __init__(self, iostream):
         self._iostream = iostream  # file-desriptor to the file being parsed.
         raise NotImplementedError('todo')

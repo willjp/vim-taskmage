@@ -14,7 +14,6 @@ from __future__ import absolute_import, division, print_function
 import uuid
 import json
 # package
-from taskmage2.testutils import core
 from taskmage2.parser import iostream, lexers
 import six
 # external
@@ -28,7 +27,7 @@ ns = lexers.__name__
 
 @pytest.fixture
 def uid():
-    return uuid.UUID(core.uuid)
+    return uuid.UUID('481ae479e4ab4c9b81653db9b92469c0')
 
 
 class Test_TaskList:
