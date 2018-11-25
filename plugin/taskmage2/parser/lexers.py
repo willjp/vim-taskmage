@@ -640,8 +640,7 @@ class TaskDetails(_Lexer):
 
 
 class Mtask(_Lexer):
-    """
-    Lexer for  ``*.mtask``  files (JSON).
+    """ Lexer for  ``*.mtask``  files (JSON).
 
     Example:
 

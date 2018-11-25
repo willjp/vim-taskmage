@@ -291,24 +291,54 @@ class Test_TaskList:
 
 
 class Test_Mtask:
-    @pytest.mark.parametrize(
-        '    testname, conts, expected', [
-            ('task',
-                json.dumps([tokens_dummy.task()]),
-                [tokens_dummy.task()],
-            ),
-            ('section',
-                json.dumps([tokens_dummy.section()]),
-                [tokens_dummy.section()],
-            ),
-            ('filedef',
-                 json.dumps([tokens_dummy.file()]),
-                 [tokens_dummy.file()],
-            ),
-        ]
-    )
-    def test_working(self, testname, conts, expected):
-        output = lexers_dummy.mtask(conts)
+    """ Mtask shouldn't alter raw json
+    """
+    def test_task(self):
+        task = {
+            '_id': uid().hex.upper(),
+            'type': 'task',
+            'name': 'taskA',
+            'indent': 0,
+            'parent': None,
+            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+        }
+        assert self.mtask(json.dumps([task])) == [task]
 
-        print(testname)
-        assert output == expected
+    def test_section(self):
+        section = {
+            '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+            'type': 'section',
+            'name': 'home',
+            'indent': 0,
+            'parent': None,
+            'data': {},
+        }
+        assert self.mtask(json.dumps([section])) == [section]
+
+    def test_file(self):
+        file_ = {
+            '_id': uid().hex.upper(),
+            'type': 'file',
+            'name': 'path/home.mtask',
+            'indent': 0,
+            'parent': None,
+            'data': {},
+        }
+        assert self.mtask(json.dumps([file_])) == [file_]
+
+    def mtask(self, filecontents):
+        # load lexer
+        fd = six.StringIO()
+        fd.write(filecontents)
+        fd.seek(0)
+        lexer = lexers.Mtask(fd)
+
+        # read all tokens
+        _lexertokens = []
+        token = ''
+        while token is not None:
+            token = lexer.read_next()
+            if token is not None:
+                _lexertokens.append(token)
+
+        return _lexertokens
