@@ -106,7 +106,7 @@ class Test_TaskList(object):
             )
         ])
 
-        assert render == ['* {*5F831BF3088A42209AF644CDD8962D3A*}task A']
+        assert render == ['*{*5F831BF3088A42209AF644CDD8962D3A*} task A']
 
     def test_task_multiline(self):
         render = self.render([
@@ -147,7 +147,7 @@ class Test_TaskList(object):
         ])
 
         assert render == [
-            '* {*CB1B055F2A38477D9D944E22D3608E6A*}line A',
+            '*{*CB1B055F2A38477D9D944E22D3608E6A*} line A',
             '  line B',
             '  line C',
         ]

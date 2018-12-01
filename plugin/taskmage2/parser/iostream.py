@@ -195,7 +195,11 @@ class VimBuffer(IOStream):
                 line = 0
                 if col < 0:
                     col = 0
-                ch = self._buf[line][col]
+                # if no line/col, is EOF
+                try:
+                    ch = self._buf[line][col]
+                except(IndexError):
+                    return None
 
             # if column-index is valid within current line, return char
             elif col < (len(self._buf[line]) - 1):

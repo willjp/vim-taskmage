@@ -232,7 +232,7 @@ class TaskList(Renderer):
         lines = node.name.split('\n')
 
         # format output
-        returns = ['{indent_spc}{status_char} {id_str}'.format(**data) + lines[0]]
+        returns = ['{indent_spc}{status_char}{id_str} '.format(**data) + lines[0]]
         for i in range(1, len(lines)):
             returns.append('{}  {}'.format(data['indent_spc'], lines[i]))
 

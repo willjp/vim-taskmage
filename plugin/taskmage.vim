@@ -85,8 +85,8 @@ endfunc
 autocmd BufRead      *.mtask  py taskmage2.api.handle_open_mtask()
 
 
-autocmd BufWritePre  *.mtask  call TaskMageSaveStart()
-autocmd BufWritePost *.mtask  call TaskMageSaveEnd()
-
+"autocmd BufWritePre  *.mtask  call TaskMageSaveStart()
+"autocmd BufWritePost *.mtask  call TaskMageSaveEnd()
+autocmd BufWritePre *.mtask call taskmage2.api.handle_presave_mtask()
 
 

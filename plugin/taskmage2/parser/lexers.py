@@ -722,31 +722,32 @@ class Mtask(_Lexer):
         return token
 
     def _read_next(self):
-        """
-        Reads the JSON object (serialized into python), validates,
+        """ Reads the JSON object (serialized into python), validates,
         and makes any more required type changes.
         """
         self._index += 1
         index = self._index
 
+        type_map = dict(
+            task=self._read_task,
+            section=self._read_section,
+            file=self._read_filedef,
+        )
+
         if self._index >= len(self._rawdata):
             return None
 
-        if 'type' in self._rawdata[index]:
-            dtype = self._rawdata[index]['type']
-            if dtype == 'task':
-                return self._read_task(index)
-            elif dtype == 'section':
-                return self._read_section(index)
-            elif dtype == 'file':
-                return self._read_filedef(index)
-            else:
-                self._parser_exception((
-                    'Invalid entry in mtaskfile: \n'
-                    'key "type" has unexpected value: "{}"\n'
-                    '{}\n'
-                ).format(self._rawdata[index]['type'], repr(self._rawdata[index]))
-                )
+        type_ = self._rawdata[index].get('type', None)
+        if type_ in type_map:
+            return type_map[type_](index)
+
+        self._parser_exception(
+            (
+                'Invalid entry in mtaskfile: \n'
+                'key "type" has unexpected value: "{}"\n'
+                '{}\n'
+            ).format(self._rawdata[index]['type'], repr(self._rawdata[index]))
+        )
 
     def _read_task(self, index):
         dtype = self._rawdata[index]
