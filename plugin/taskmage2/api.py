@@ -37,4 +37,3 @@ def handle_postsave_mtask():
     vim.current.buffer[:] = render
     vim.command('syntax on')
     return render
-    return render

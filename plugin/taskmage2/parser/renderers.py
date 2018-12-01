@@ -13,6 +13,7 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 import os
 import abc
+import json
 # package
 from taskmage2.parser import fmtdata
 # external
@@ -108,9 +109,9 @@ class TaskList(Renderer):
 
         """
         node_renderer_map = {
-            'file': self._render_fileheader,
+            'file':    self._render_fileheader,
             'section': self._render_sectionheader,
-            'task': self._render_task,
+            'task':    self._render_task,
         }
         if node.type not in node_renderer_map:
             raise NotImplementedError(
@@ -250,7 +251,7 @@ class Mtask(Renderer):
 
     def render(self):
         """
-        Renders the parser's Abstract-Syntax-Tree.
+        Renders the parser's Abstract-Syntax-Tree into a JSON string.
 
         Returns:
 
@@ -270,7 +271,8 @@ class Mtask(Renderer):
         for node in ast:
             render = self._render_node(render, node, indent=0)
 
-        return render
+        render_as_json = json.dumps(render, indent=2)
+        return render_as_json.split('\n')
 
     def _render_node(self, render, node, indent=0):
         """

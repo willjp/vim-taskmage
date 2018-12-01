@@ -81,13 +81,13 @@ endfunc
 " ========
 
 " on-read, replace buffer with RST
-"autocmd BufRead      *.mtask  py taskmage.vim_plugin.jsonfile_to_rst()
+" autocmd BufRead      *.mtask  py taskmage.vim_plugin.jsonfile_to_rst()
 autocmd BufRead      *.mtask  py taskmage2.api.handle_open_mtask()
 
 
-"autocmd BufWritePre  *.mtask  call TaskMageSaveStart()
-"autocmd BufWritePost *.mtask  call TaskMageSaveEnd()
-autocmd BufWritePre  *.mtask call taskmage2.api.handle_presave_mtask()
-autocmd BufWritePost *.mtask  call taskmage2.api.handle_postsave_mtask()
+" autocmd BufWritePre  *.mtask  call TaskMageSaveStart()
+" autocmd BufWritePost *.mtask  call TaskMageSaveEnd()
+autocmd BufWritePre  *.mtask  py taskmage2.api.handle_presave_mtask()
+autocmd BufWritePost *.mtask  py taskmage2.api.handle_postsave_mtask()
 
 

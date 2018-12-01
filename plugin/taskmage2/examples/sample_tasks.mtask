@@ -1,10 +1,15 @@
 [
-	{
-		"_id": "6ED88AE2E7D94D2C88249A954782FC46",
-		"type": "task",
-		"name": "taskA",
-		"indent": 0,
-		"parent": null,
-		"data": {"status": "todo", "created": null, "finished": false, "modified": null}
-	}
+  {
+    "indent": 0, 
+    "name": "taskA", 
+    "parent": null, 
+    "data": {
+      "status": "todo", 
+      "finished": null, 
+      "modified": null, 
+      "created": null
+    }, 
+    "_id": "6ED88AE2E7D94D2C88249A954782FC46", 
+    "type": "task"
+  }
 ]
