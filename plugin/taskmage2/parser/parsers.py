@@ -44,13 +44,14 @@ class Parser(object):
 
         Args:
             lexer (taskmage2.lexers.Lexer):
-                A lexer subclass instance, (TaskList, Mtask, ...).
+                A lexer subclass instance, (TaskList, Mtask, ...),
+                that has been loaded with data.
         """
         self.__lexer = lexer
         self.__lexer.read()
 
     def parse(self):
-        """
+        """ Parses lexer into a nexted list of Nodes.
 
         Returns:
 

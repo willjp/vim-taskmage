@@ -39,7 +39,7 @@ class Renderer(object):
 
 class TaskList(Renderer):
     """
-    Renders a :py:obj:`taskmage2.parser.Parser` object into the
+    Renders a :py:obj:`taskmage2.parser.parsers.Parser` object into the
     tasklist format.
 
     Example:
@@ -153,7 +153,7 @@ class TaskList(Renderer):
 
         header_title = 'file::{}'.format(node.name)
         if node.id:
-            header_title = ''.join(['{*', node.id, '*}'])
+            header_title = ''.join(['{*', node.id, '*}']) + header_title
 
         return [
             '',
@@ -209,9 +209,10 @@ class TaskList(Renderer):
             .. code-block:: python
 
                 ['* wash dishes']
-                ['* {*FF3DB940B75948A6A7C5BBBF4B0AFD0B*} clean counters']
+                ['*{*FF3DB940B75948A6A7C5BBBF4B0AFD0B*} clean counters']
 
         """
+        # produce `data`
         data = {
             'status_char': '',
             'id_str': '',
@@ -224,13 +225,14 @@ class TaskList(Renderer):
         data['status_char'] = fmtdata.TaskList.statuschar(node.data['status'])
 
         if node.id:
-            data['id_str'] = ''.join(['{*', node.id, '*}', ' '])
+            data['id_str'] = ''.join(['{*', node.id, '*}'])
 
         data['indent_spc'] = ' ' * (4 * indent)
 
         lines = node.name.split('\n')
 
-        returns = ['{indent_spc}{status_char} {id_str} '.format(**data) + lines[0]]
+        # format output
+        returns = ['{indent_spc}{status_char} {id_str}'.format(**data) + lines[0]]
         for i in range(1, len(lines)):
             returns.append('{}  {}'.format(data['indent_spc'], lines[i]))
 
