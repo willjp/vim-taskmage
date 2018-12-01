@@ -145,13 +145,10 @@ class VimBuffer(IOStream):
                 None    # if peek is at, or beyond the end-of-file
 
         """
-        ch_info = self._peek()
-        if not ch_info:
-            return None
-        else:
-            self.line = ch_info.line
-            self.col = ch_info.col
-            return ch_info.char
+        ch_info = self._peek(offset)
+        self.line = ch_info.line
+        self.col = ch_info.col
+        return ch_info.char
 
     def peek(self, offset=0):
         """ Look at next character without changing positions.
@@ -165,10 +162,7 @@ class VimBuffer(IOStream):
 
         """
         ch_info = self._peek(offset)
-        if not ch_info:
-            return None
-        else:
-            return ch_info.char
+        return ch_info.char
 
     def _peek(self, offset=0):
         """
@@ -178,8 +172,9 @@ class VimBuffer(IOStream):
 
             .. code-block:: python
 
-                ch_info(line=1,col=5,char='b')  ## character info
-                None                            ## if reached EOF
+                ch_info(line=1,col=5,char='b')    ## character info
+                ch_info(line=2, col=0, char=None) ## if char is None, then EOF.
+
         """
         ch_info = namedtuple('ch_info', ['line', 'col', 'char'])
 
@@ -199,7 +194,7 @@ class VimBuffer(IOStream):
                 try:
                     ch = self._buf[line][col]
                 except(IndexError):
-                    return None
+                    return ch_info(line, col, None)
 
             # if column-index is valid within current line, return char
             elif col < (len(self._buf[line]) - 1):
@@ -220,7 +215,7 @@ class VimBuffer(IOStream):
 
             # EOF
             else:
-                return None
+                return ch_info(line, col, None)
 
             offset -= 1
 

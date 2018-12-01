@@ -295,7 +295,7 @@ class TaskList(_Lexer):
             self._iostream.offset(1)
 
             # ex: 'x{*0BE8D6CE9CB94AFB82037D2C367566C1*} task'
-            if self._iostream.peek() == '{':
+            if '{*' == '{}{}'.format(self._iostream.peek(), self._iostream.peek(1)):
                 (offset, _id) = self._read_id()
                 self._iostream.offset(offset)
 
