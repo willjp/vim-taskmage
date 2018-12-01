@@ -1,7 +1,10 @@
 
+
 " ===========
 " Plugin Init
 " ===========
+
+
 let s:scriptroot=expand('<sfile>:p:h')
 
 if !has('python')
@@ -16,10 +19,10 @@ else
 endif
 
 
-
 " ========
 " Commands
 " ========
+
 
 function! TaskMageArchiveCompleted()
     """
@@ -43,9 +46,6 @@ function! TaskMageOpenCounterpart( open_command )
     """
     execute 'py taskmage.vim_plugin.open_counterpart( "'. a:open_command .'" )'
 endfunc
-command TaskMageToggle call TaskMageOpenCounterpart('edit')
-command TaskMageSplit  call TaskMageOpenCounterpart('split')
-command TaskMageVSplit call TaskMageOpenCounterpart('vsplit')
 
 
 function! TaskMageCreateProject()
@@ -54,40 +54,35 @@ function! TaskMageCreateProject()
     """
     py taskmage.vim_plugin.create_project()
 endfunc
+
+
+command TaskMageToggle call TaskMageOpenCounterpart('edit')
+command TaskMageSplit  call TaskMageOpenCounterpart('split')
+command TaskMageVSplit call TaskMageOpenCounterpart('vsplit')
 command TaskMageCreateProject call TaskMageCreateProject()
-
-
-function! TaskMageSaveStart()
-    """ 
-    " saves cursor-pos, converts Rst-to-Json 
-    """
-    let s:saved_view = winsaveview()
-    py   taskmage.vim_plugin.rst_to_json()
-endfunc
-
-function! TaskMageSaveEnd()
-    """ 
-    " converts saved-json back to rst, restores cursor-pos 
-    """
-    py   taskmage.vim_plugin.jsonfile_to_rst()
-    call winrestview( s:saved_view )
-endfunc
-
-
 
 
 " ========
 " AutoCmds
 " ========
 
-" on-read, replace buffer with RST
-" autocmd BufRead      *.mtask  py taskmage.vim_plugin.jsonfile_to_rst()
+
+function! TaskMageSaveStart()
+    """ saves cursor-pos, converts Rst-to-Json 
+    """
+    let s:saved_view = winsaveview()
+    py taskmage2.api.handle_presave_mtask()
+endfunc
+
+function! TaskMageSaveEnd()
+    """ converts saved-json back to rst, restores cursor-pos 
+    """
+    py taskmage2.api.handle_postsave_mtask()
+    call winrestview(s:saved_view)
+endfunc
+
+
 autocmd BufRead      *.mtask  py taskmage2.api.handle_open_mtask()
-
-
-" autocmd BufWritePre  *.mtask  call TaskMageSaveStart()
-" autocmd BufWritePost *.mtask  call TaskMageSaveEnd()
-autocmd BufWritePre  *.mtask  py taskmage2.api.handle_presave_mtask()
-autocmd BufWritePost *.mtask  py taskmage2.api.handle_postsave_mtask()
-
+autocmd BufWritePre  *.mtask  call TaskMageSaveStart()
+autocmd BufWritePost *.mtask  call TaskMageSaveEnd()
 

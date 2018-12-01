@@ -2,6 +2,9 @@ from taskmage2.parser import lexers, iostream, renderers, parsers
 import vim
 
 
+_presave_cursor_pos = None
+
+
 def handle_open_mtask():
     fd = iostream.VimBuffer(vim.current.buffer)
     lexer = lexers.Mtask(fd)
@@ -20,6 +23,8 @@ def handle_presave_mtask():
     lexer = lexers.TaskList(fd)
     parser = parsers.Parser(lexer)
     render = parser.render(renderers.Mtask)
+
+    # TODO: compare against saved data, update newly finished tasks
 
     vim.command('syntax off')
     vim.current.buffer[:] = render
