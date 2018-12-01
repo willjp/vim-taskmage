@@ -16,7 +16,7 @@ import os
 # external
 # internal
 from taskmage2 import data
-from taskmage2.parser import render
+from taskmage2.parser import renderers
 
 
 class Parser(object):
@@ -30,7 +30,7 @@ class Parser(object):
 
         .. code-block:: python
 
-            from taskmage2.parser import lexers, iostream, render
+            from taskmage2.parser import lexers, iostream, renderers
 
             with open('/path/file.tasklist', 'rb') as fd:
                 lexer = lexers.TaskList(iostream.FileDescriptor(fd))
@@ -93,7 +93,7 @@ class Parser(object):
         """ Render this parser to an output format.
 
         Args:
-            renderer (taskmage2.parser.render.Renderer):
+            renderer (taskmage2.parser.renderers.Renderer):
                 An un-initialized renderer subclass
                 that will be used to render this parser
                 object.
@@ -111,7 +111,7 @@ class Parser(object):
             The output depends on the renderer.
 
         """
-        if not issubclass(renderer, render.Renderer):
+        if not issubclass(renderer, renderers.Renderer):
             raise TypeError(
                 'Must specify output format'
             )
@@ -121,7 +121,7 @@ class Parser(object):
 
 
 if __name__ == '__main__':
-    from taskmage2.parser import lexers, iostream, render
+    from taskmage2.parser import lexers, iostream, renderers
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     for i in range(3):
@@ -137,7 +137,7 @@ if __name__ == '__main__':
             parser = Parser(lexer)
             print(parser.parse())
             print()
-            print(parser.render(render.TaskList))
+            print(parser.renderers(renderers.TaskList))
 
     def ex_mtask():
         print('=====')
@@ -150,7 +150,7 @@ if __name__ == '__main__':
             parser = Parser(lexer)
             print(parser.parse())
             print()
-            print(parser.render(render.Mtask))
+            print(parser.renderers(renderers.Mtask))
 
     ex_tasklist()
     print('---')

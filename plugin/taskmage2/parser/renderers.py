@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Name :          taskmage2.parser.render.py
+Name :          taskmage2.parser.renderers.py
 Created :       Jul 27, 2018
 Author :        Will Pittman
 Contact :       willjpittman@gmail.com

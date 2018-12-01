@@ -1,4 +1,4 @@
-from taskmage2.parser import lexers, parser, iostream, render
+from taskmage2.parser import lexers, parser, iostream, renderers
 import vim
 
 

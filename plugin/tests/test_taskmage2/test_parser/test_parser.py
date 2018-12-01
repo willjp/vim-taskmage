@@ -9,13 +9,11 @@ Description :   tests parser.
 ________________________________________________________________________________
 """
 # builtin
-from  __future__ import absolute_import, division, print_function
-import pprint
+from __future__ import absolute_import, division, print_function
 # package
 from taskmage2.parser import parser
 from taskmage2 import data
 # external
-import pytest
 import mock
 # internal
 
