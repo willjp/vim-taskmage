@@ -7,25 +7,34 @@ def handle_open_mtask():
     lexer = lexers.Mtask(fd)
     parser = parsers.Parser(lexer)
     render = parser.render(renderers.TaskList)
+
     vim.command('set ft=taskmage2')
     vim.current.buffer[:] = render
-
-
-def print_mtask():
-    fd = iostream.VimBuffer(vim.current.buffer)
-    lexer = lexers.TaskList(fd)
-    parser = parsers.Parser(lexer)
-    render = parser.render(renderers.Mtask)
-    print(render)
+    return render
 
 
 def handle_presave_mtask():
+    """ converts buffer to JSON before save.
+    """
     fd = iostream.VimBuffer(vim.current.buffer)
     lexer = lexers.TaskList(fd)
     parser = parsers.Parser(lexer)
     render = parser.render(renderers.Mtask)
-    print(render)
+
+    vim.command('syntax off')
+    vim.current.buffer[:] = render
+    return render
 
 
 def handle_postsave_mtask():
-    pass
+    """ reloads buffer from JSON after save.
+    """
+    fd = iostream.VimBuffer(vim.current.buffer)
+    lexer = lexers.Mtask(fd)
+    parser = parsers.Parser(lexer)
+    render = parser.render(renderers.TaskList)
+
+    vim.current.buffer[:] = render
+    vim.command('syntax on')
+    return render
+    return render
