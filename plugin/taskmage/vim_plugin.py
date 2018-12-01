@@ -18,7 +18,7 @@ import json
 import sys
 import os
 #package
-from taskmage.parser  import TaskData
+from taskmage.parsers  import TaskData
 from taskmage         import project
 #external
 import vim

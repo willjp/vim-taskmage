@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Name :          taskmage2.parser.parser.py
+Name :          taskmage2.parser.parsers.py
 Created :       Jun 08, 2018
 Author :        Will Pittman
 Contact :       willjpittman@gmail.com

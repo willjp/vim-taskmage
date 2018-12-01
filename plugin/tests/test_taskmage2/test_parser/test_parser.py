@@ -1,17 +1,17 @@
 #!/usr/bin/env python
 """
-Name :          test_parser.py
+Name :          test_parsers.py
 Created :       Jun 08, 2018
 Author :        Will Pittman
 Contact :       willjpittman@gmail.com
 ________________________________________________________________________________
-Description :   tests parser.
+Description :   tests parsers.
 ________________________________________________________________________________
 """
 # builtin
 from __future__ import absolute_import, division, print_function
 # package
-from taskmage2.parser import parser
+from taskmage2.parser import parsers
 from taskmage2 import data
 # external
 import mock
@@ -149,6 +149,6 @@ class Test_Parser:
         lexer = mock.Mock()
         lexer.data = lexed_list
 
-        _parser = parser.Parser(lexer)
-        _parser.lexer = lexer
-        return _parser.parse()
+        parser = parsers.Parser(lexer)
+        parser.lexer = lexer
+        return parser.parse()

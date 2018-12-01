@@ -29,7 +29,7 @@ I have outlined the following plan:
 
 
 * Lexing occurs in 3x steps:
-  * ``parser.iostream.ReadStream()`` : simplifies looking ahead/behind to obtain tokens. used in lexer
+  * ``parsers.iostream.ReadStream()`` : simplifies looking ahead/behind to obtain tokens. used in lexer
   * ``parers.lexers.{Mtask|TaskList|TaskDetails}()`` : produces a flat-list of tokens (task, section, etc)
   * ``parsers.parser.Parer()`` : produces a nested hierarchy of ``data.Node()`` objects. (the AST).
 
