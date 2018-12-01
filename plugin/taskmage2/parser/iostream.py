@@ -67,7 +67,7 @@ class IOStream(object):
             offset += 1
 
     def offset(self, offset):
-        """ Change the position of the cursor.
+        """ Change the position of the cursor relative to it's current position.
 
         Args:
             offset (int):
@@ -245,6 +245,12 @@ class FileDescriptor(IOStream):
     """
 
     def __init__(self, fd):
+        """
+
+        Args:
+            fd (open, io.StringIO):
+                A python file-descriptor, or file-descriptor like object.
+        """
         super(FileDescriptor, self).__init__()
         self._fd = fd
         self.pos = -1
