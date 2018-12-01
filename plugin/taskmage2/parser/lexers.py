@@ -294,8 +294,8 @@ class TaskList(_Lexer):
             status = self.statuses[ch]
             self._iostream.offset(1)
 
-            # ex: 'x {*0BE8D6CE9CB94AFB82037D2C367566C1*}'
-            if self._iostream.peek(1) == '{':
+            # ex: 'x{*0BE8D6CE9CB94AFB82037D2C367566C1*} task'
+            if self._iostream.peek() == '{':
                 (offset, _id) = self._read_id()
                 self._iostream.offset(offset)
 
@@ -363,11 +363,11 @@ class TaskList(_Lexer):
 
         underline = self._iostream.peek_line(len(title) + 1)  # +1 for \n
 
-        if len(title) < len(underline):
+        if len(title.strip()) > len(underline):
             self._parser_exception(
                 ('title and underline do not match \n'
-                 '{}\n'
-                 '{}\n'
+                 '"{}"\n'
+                 '"{}"\n'
                  ).format(title, underline)
             )
 

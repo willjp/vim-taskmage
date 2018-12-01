@@ -86,7 +86,7 @@ class Test_TaskList:
         ]
 
     def test_toplevel_task_with_id(self):
-        tokens = self.tasklist('* {*C5ED1030425A436DABE94E0FCCCE76D6*} taskA')
+        tokens = self.tasklist('*{*C5ED1030425A436DABE94E0FCCCE76D6*} taskA')
         assert tokens == [
             {
                 '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
@@ -101,7 +101,7 @@ class Test_TaskList:
     def test_subtask_with_id(self):
         tokens = self.tasklist(
             '* taskA\n'
-            '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n'
+            '    *{*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n'
         )
         assert tokens[1] == {
             '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
@@ -115,8 +115,8 @@ class Test_TaskList:
     def test_2nd_subtask_with_id(self):
         tokens = self.tasklist(
                 '* taskA\n'
-                '    * {*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n'
-                '    * {*AAAAAAA0425A436DABE94E0FCCCE76D6*} subtaskB\n',
+                '    *{*C5ED1030425A436DABE94E0FCCCE76D6*} subtaskA\n'
+                '    *{*AAAAAAA0425A436DABE94E0FCCCE76D6*} subtaskB\n',
         )
         assert tokens[2] == {
             '_id': 'AAAAAAA0425A436DABE94E0FCCCE76D6',
@@ -127,7 +127,23 @@ class Test_TaskList:
             'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
         }
 
-    def test_toplevel_section_with_id(self):
+    def test_toplevel_section_with_id_longform(self):
+        tokens = self.tasklist(
+            '{*C5ED1030425A436DABE94E0FCCCE76D6*} home\n'
+            '=========================================\n',
+        )
+        assert tokens == [
+            {
+                '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            }
+        ]
+
+    def test_toplevel_section_with_id_shortform(self):
         tokens = self.tasklist(
             '{*C5ED1030425A436DABE94E0FCCCE76D6*} home\n'
             '====\n',

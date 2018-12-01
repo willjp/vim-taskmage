@@ -11,6 +11,14 @@ def handle_open_mtask():
     vim.current.buffer[:] = render
 
 
+def print_mtask():
+    fd = iostream.VimBuffer(vim.current.buffer)
+    lexer = lexers.TaskList(fd)
+    parser = parsers.Parser(lexer)
+    render = parser.render(renderers.Mtask)
+    print(render)
+
+
 def handle_presave_mtask():
     fd = iostream.VimBuffer(vim.current.buffer)
     lexer = lexers.TaskList(fd)
