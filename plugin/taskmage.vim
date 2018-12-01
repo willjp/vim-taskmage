@@ -12,7 +12,7 @@ else
     py import logging
     py logging.basicConfig(lv=20)
     execute 'py if "' . s:scriptroot . '" not in sys.path: sys.path.append("' . s:scriptroot . '")'
-    py import taskmage2
+    py import taskmage2.api
 endif
 
 
@@ -81,7 +81,8 @@ endfunc
 " ========
 
 " on-read, replace buffer with RST
-autocmd BufRead      *.mtask  py taskmage.vim_plugin.jsonfile_to_rst()
+"autocmd BufRead      *.mtask  py taskmage.vim_plugin.jsonfile_to_rst()
+autocmd BufRead      *.mtask  py taskmage2.api.handle_open_mtask()
 
 
 autocmd BufWritePre  *.mtask  call TaskMageSaveStart()

@@ -44,7 +44,7 @@ class Parser(object):
 
         Args:
             lexer (taskmage2.lexers.Lexer):
-                A lexer subclass, (TaskList, Mtask, ...).
+                A lexer subclass instance, (TaskList, Mtask, ...).
         """
         self.__lexer = lexer
         self.__lexer.read()
@@ -90,8 +90,7 @@ class Parser(object):
         return AST
 
     def render(self, renderer):
-        """
-        Render this parser to an output format.
+        """ Render this parser to an output format.
 
         Args:
             renderer (taskmage2.parser.render.Renderer):

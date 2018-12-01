@@ -10,7 +10,7 @@ Description :   Classes to abstract reading from file, stream, etc. to
 ________________________________________________________________________________
 """
 # builtin
-from   __future__    import absolute_import, division, print_function
+from __future__ import absolute_import, division, print_function
 from collections import namedtuple
 import abc
 # external
@@ -23,15 +23,36 @@ class IOStream(object):
     __metaclass__ = abc.ABCMeta
 
     def next(self, offset=0):
+        """ get next character, adjusting cursor position.
+        """
         raise NotImplementedError()
 
     def peek(self, offset=0):
+        """ get next character, without changing cursor position.
+        """
         raise NotImplementedError()
 
     def peek_line(self, offset=0):
-        """
-        Read until the end of the line (returns text)
+        """ Read until the end of the line (returns text)
         or the end of the file (returns None).
+
+        Example:
+
+            If ``^`` marks the current position of the cursor,
+
+            ::
+                'abcdefg'
+                 ^ peek(0)
+                returns 'abcdefg'
+
+
+                'abcdefg'
+                   ^ peek(2)
+                returns 'cdefg'
+
+        Returns:
+            Nonetype: if current position is EOF
+            str: if current position is a valid line
         """
         text = ''
         while True:
@@ -46,16 +67,52 @@ class IOStream(object):
             offset += 1
 
     def offset(self, offset):
+        """ Change the position of the cursor.
+
+        Args:
+            offset (int):
+                desired position of cursor.
+        """
         raise NotImplementedError()
 
     def eof(self):
+        """ Returns True/False is the cursor at the end-of-file?
+        """
         raise NotImplementedError()
+
+    def read(self):
+        """ Reads the entire stream.
+
+        Returns:
+            str:
+                the file contents as a single, newline separated string.
+
+                .. code-block:: python
+
+                    'abc\ndef\nghi\n'
+
+        """
+        contents = ''
+        offset = 0
+
+        while True:
+            line = self.peek_line(offset)
+            if line is None:
+                break
+            contents += '{}\n'.format(line)
+            offset += len(line) + 1  # line + '\n'
+
+        return contents
 
 
 class VimBuffer(IOStream):
     """ Abstracts vim python buffer object, so can read it as if it were raw-bytes.
     Adds functionality like `peek` , so can read ahead without changing the
     current position in the file.
+
+    Notes:
+        vim buffers themselves are a list of lines contained in a file.
+        They do not include the carriage-return characters.
 
     Example:
 
@@ -66,7 +123,7 @@ class VimBuffer(IOStream):
 
     """
 
-    def __init__(self, buf):
+    def __init__(self, buf=None):
         """
         Args:
             buf (vim.api.buffer.Buffer):
@@ -78,8 +135,7 @@ class VimBuffer(IOStream):
         self.col = -1
 
     def next(self, offset=0):
-        """
-        change position forwards, and retrieves the next character
+        """ Change position forwards, and retrieves the next character
 
         Returns:
 
@@ -98,8 +154,7 @@ class VimBuffer(IOStream):
             return ch_info.char
 
     def peek(self, offset=0):
-        """
-        look at next character without changing positions
+        """ Look at next character without changing positions.
 
         Returns:
 
@@ -132,28 +187,36 @@ class VimBuffer(IOStream):
         col = self.col
         line = self.line
 
-        # calculate offset
+        # advance from current pos until `offset` is consumed.
         while offset >= 0:
+
+            # line/col not initialized. new buffer.
             if line < 0:
                 line = 0
-                col = 0
+                if col < 0:
+                    col = 0
                 ch = self._buf[line][col]
 
+            # if column-index is valid within current line, return char
             elif col < (len(self._buf[line]) - 1):
                 col += 1
                 ch = self._buf[line][col]
 
+            # if column-index is equal to the length of current line,
+            # return newline char
             elif col == (len(self._buf[line]) - 1):
                 col += 1
                 ch = '\n'
 
+            # if column-index is larger than line, overflow onto next line
             elif line < (len(self._buf) - 1):
                 line += 1
                 col = 0
                 ch = self._buf[line][col]
 
+            # EOF
             else:
-                return None  # EOF
+                return None
 
             offset -= 1
 

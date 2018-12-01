@@ -228,24 +228,24 @@ class NodeData(object):
             return _namedtuple.__new__(cls, (status, created, finished, modified))
             # return super(task,cls).__new__(cls, (status,created,finished,modified))
 
-    def update(self, data, *args, **kwds):
-        """
-        Convenience method to update an existing `data` object.
-        Note that these objects are immutable, so `updating` them
-        is actually creating/returning a new object.
-
-        .. note::
-            THIS WILL NO LONGER WORK!!! REQUIRES A NAMEDTUPLE
-        """
-        new_kwds = list(data._asdict())
-
-        if args:
-            new_kwds = new_kwds[len(args):]
-
-        if kwds:
-            new_kwds.update(kwds)
-
-        return type(data)(*args, OrderedDict(new_kwds))
+#    def update(self, data, *args, **kwds):
+#        """
+#        Convenience method to update an existing `data` object.
+#        Note that these objects are immutable, so `updating` them
+#        is actually creating/returning a new object.
+#
+#        .. note::
+#            THIS WILL NO LONGER WORK!!! REQUIRES A NAMEDTUPLE
+#        """
+#        new_kwds = list(data._asdict())
+#
+#        if args:
+#            new_kwds = new_kwds[len(args):]
+#
+#        if kwds:
+#            new_kwds.update(kwds)
+#
+#        return type(data)(*args, OrderedDict(new_kwds))
 
 
 if __name__ == '__main__':
