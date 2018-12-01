@@ -10,8 +10,11 @@ ________________________________________________________________________________
 """
 # builtin
 from __future__ import absolute_import, division, print_function
+import datetime
+import json
 # external
 import mock
+from dateutil import tz
 # internal
 from taskmage2.parser import renderers, parsers
 from taskmage2 import data
@@ -304,5 +307,66 @@ class Test_TaskDetails(object):
 
 
 class Test_Mtask(object):
-    def test_working(self):
-        assert False
+    """
+    the AST is essentially the same as JSON .mtask -- not many tests needed here.
+    """
+    def test_status_todo(self):
+        render = self.render([
+            data.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC),
+                    'finished': False,
+                    'modified': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC),
+                },
+                children=None,
+            )
+        ])
+        assert render == [
+            {
+                '_id': None,
+                'ntype': 'task',
+                'name': 'task A',
+                'data': {
+                    'status': 'todo',
+                    'created': '2018-01-01T00:00:00+00:00',
+                    'finished': False,
+                    'modified': '2018-01-01T00:00:00+00:00',
+                },
+                'children': None,
+            }
+        ]
+
+    def render(self, parser_data):
+        """ Render parser_data using a TaskList renderer.
+
+        Args:
+            parser_data (list):
+                A list of nodes, as returned from :py:meth:`taskmage2.parser.parsers.Parser.parse` .
+
+                .. code-block:: python
+
+                    [
+                        Node('name':'home', 'type':'section', ... children=[
+                            Node('name':'laundry', ... children=[]),
+                            Node('name':'dishes', ... children=[]),
+                            ...
+                        ]),
+                        Node('name':'taskA', ...children=[])
+                    ]
+
+        Returns:
+            list:
+                the parsed MTASK file as a list-of-dicts.
+        """
+        parser = mock.MagicMock(spec=parsers.Parser)
+        parser.parse = mock.Mock(return_value=parser_data)
+
+        mtask = renderers.Mtask(parser)
+        mtask_str = '\n'.join(mtask.render())
+        return json.loads(mtask_str)
+
+
