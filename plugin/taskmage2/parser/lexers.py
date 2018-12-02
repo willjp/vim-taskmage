@@ -103,6 +103,11 @@ class _Lexer(object):
         """
         self.data = []  # list of token dictionaries, as they appear.
 
+    def read(self):
+        """ Lex the entire source until EOF.
+        """
+        raise NotImplementedError()
+
     def read_next(self):
         raise NotImplemented(
             '`_Lexer` must be subclassed, and this method should be implemented \n'

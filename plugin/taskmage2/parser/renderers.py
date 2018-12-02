@@ -14,15 +14,14 @@ from __future__ import absolute_import, division, print_function
 import os
 import abc
 import json
-# package
-from taskmage2.parser import fmtdata
 # external
 # internal
+from taskmage2.parser import fmtdata
 
 
 class Renderer(object):
-    """
-    Abstract-Base-class for all renderers. Mostly for type-checks.
+    """ Abstract-Base-class for all renderers. Renders a
+    :py:obj:`taskmage2.parser.parsers.Parser` object into various formats.
     """
     __metaclass__ = abc.ABCMeta
 
@@ -34,14 +33,20 @@ class Renderer(object):
     def parser(self):
         return self._parser
 
-    def render(self):
+    def render(self, touch=False):
+        """
+
+        Args:
+            touch (bool):
+                If True, updates last-modified timestamp, adds
+                id if none present, etc.
+        """
         raise NotImplementedError
 
 
 class TaskList(Renderer):
-    """
-    Renders a :py:obj:`taskmage2.parser.parsers.Parser` object into the
-    tasklist format.
+    """ `AST` to ReStructuredText inspired TaskList format.
+    Displays files/sections/tasks, hierarchy, and status.
 
     Example:
 
@@ -66,7 +71,7 @@ class TaskList(Renderer):
     def __init__(self, parser):
         super(TaskList, self).__init__(parser)
 
-    def render(self):
+    def render(self, touch=False):
         """
         Renders the parser's Abstract-Syntax-Tree.
 
@@ -82,7 +87,7 @@ class TaskList(Renderer):
                 ]
 
         """
-        ast = self.parser.parse()
+        ast = self.parser.parse(touch=touch)
         render = []
 
         for node in ast:
@@ -241,17 +246,21 @@ class TaskList(Renderer):
 
 
 class TaskDetails(Renderer):
+    """ `AST` to an INI inspired view of a single task's info.
+    """
     def __init__(self, parser):
-        pass
+        raise NotImplementedError()
 
 
 class Mtask(Renderer):
+    """ `AST` to JSON - stores all info.
+    """
     def __init__(self, parser):
         super(Mtask, self).__init__(parser)
 
-    def render(self):
+    def render(self, touch=False):
         """
-        Renders the parser's Abstract-Syntax-Tree into a JSON string.
+        Renders the parser's Abstract-Syntax-Tree (list of `data.Node` s ) into a JSON string.
 
         Returns:
 
@@ -265,7 +274,7 @@ class Mtask(Renderer):
                 ]
 
         """
-        ast = self.parser.parse()
+        ast = self.parser.parse(touch=touch)
         render = []
 
         for node in ast:
@@ -350,17 +359,17 @@ class Mtask(Renderer):
         }
 
     def _render_task(self, render, node, indent=0):
-        created = None
-        finished = None
-        modified = None
+        created = node.data.get('modified', None)
+        finished = node.data.get('finished', False)
+        modified = node.data.get('modified', None)
 
-        if node.data['created']:
+        if node.data['created'] is not None:
             created = node.data['created'].isoformat()
 
         if node.data['finished']:
             finished = node.data['finished'].isoformat()
 
-        if node.data['modified']:
+        if node.data['modified'] is not None:
             modified = node.data['modified'].isoformat()
 
         return {

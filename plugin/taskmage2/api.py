@@ -22,9 +22,10 @@ def handle_presave_mtask():
     fd = iostream.VimBuffer(vim.current.buffer)
     lexer = lexers.TaskList(fd)
     parser = parsers.Parser(lexer)
-    render = parser.render(renderers.Mtask)
+    render = parser.render(renderers.Mtask, touch=True)
 
-    # TODO: compare against saved data, update newly finished tasks
+    # TODO: read saved-data, re-adding `created`, `finished`, etc to formats
+    #       that do not encode them (like tasklist)
 
     vim.command('syntax off')
     vim.current.buffer[:] = render

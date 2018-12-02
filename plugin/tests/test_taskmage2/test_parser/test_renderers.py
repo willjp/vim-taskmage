@@ -29,9 +29,9 @@ class Test_TaskList(object):
                 name='task A',
                 data={
                     'status': 'todo',
-                    'created': '2018-12-01T10:56:18.745396-05:00',
+                    'created': None,
                     'finished': False,
-                    'modified': '2018-12-01T10:56:18.745396-05:00',
+                    'modified': None,
                 },
                 children=None,
             )
@@ -47,9 +47,9 @@ class Test_TaskList(object):
                 name='task A',
                 data={
                     'status': 'done',
-                    'created': '2018-12-01T10:56:18.745396-05:00',
+                    'created': None,
                     'finished': True,
-                    'modified': '2018-12-01T10:56:18.745396-05:00',
+                    'modified': None,
                 },
                 children=None,
             )
@@ -65,9 +65,9 @@ class Test_TaskList(object):
                 name='task A',
                 data={
                     'status': 'wip',
-                    'created': '2018-12-01T10:56:18.745396-05:00',
+                    'created': None,
                     'finished': False,
-                    'modified': '2018-12-01T10:56:18.745396-05:00',
+                    'modified': None,
                 },
                 children=None,
             )
@@ -83,9 +83,9 @@ class Test_TaskList(object):
                 name='task A',
                 data={
                     'status': 'skip',
-                    'created': '2018-12-01T10:56:18.745396-05:00',
+                    'created': None,
                     'finished': False,
-                    'modified': '2018-12-01T10:56:18.745396-05:00',
+                    'modified': None,
                 },
                 children=None,
             )
@@ -101,9 +101,9 @@ class Test_TaskList(object):
                 name='task A',
                 data={
                     'status': 'todo',
-                    'created': '2018-12-01T10:56:18.745396-05:00',
+                    'created': None,
                     'finished': False,
-                    'modified': '2018-12-01T10:56:18.745396-05:00',
+                    'modified': None,
                 },
                 children=None,
             )
@@ -119,9 +119,9 @@ class Test_TaskList(object):
                 name='line A\nline B\nline C',
                 data={
                     'status': 'todo',
-                    'created': '2018-12-01T10:56:18.745396-05:00',
+                    'created': None,
                     'finished': False,
-                    'modified': '2018-12-01T10:56:18.745396-05:00',
+                    'modified': None,
                 },
                 children=None,
             )
@@ -141,9 +141,9 @@ class Test_TaskList(object):
                 name='line A\nline B\nline C',
                 data={
                     'status': 'todo',
-                    'created': '2018-12-01T10:56:18.745396-05:00',
+                    'created': None,
                     'finished': False,
-                    'modified': '2018-12-01T10:56:18.745396-05:00',
+                    'modified': None,
                 },
                 children=None,
             )
@@ -241,9 +241,9 @@ class Test_TaskList(object):
                         name='subtask A',
                         data={
                             'status': 'todo',
-                            'created': '2018-12-01T10:56:18.745396-05:00',
+                            'created': None,
                             'finished': False,
-                            'modified': '2018-12-01T10:56:18.745396-05:00',
+                            'modified': None,
                         },
                         children=None,
                     ),
@@ -253,9 +253,9 @@ class Test_TaskList(object):
                         name='subtask B',
                         data={
                             'status': 'todo',
-                            'created': '2018-12-01T10:56:18.745396-05:00',
+                            'created': None,
                             'finished': False,
-                            'modified': '2018-12-01T10:56:18.745396-05:00',
+                            'modified': None,
                         },
                         children=None,
                     ),
@@ -301,11 +301,6 @@ class Test_TaskList(object):
         return tasklist.render()
 
 
-class Test_TaskDetails(object):
-    def test_working(self):
-        assert False
-
-
 class Test_Mtask(object):
     """
     the AST is essentially the same as JSON .mtask -- not many tests needed here.
@@ -328,15 +323,16 @@ class Test_Mtask(object):
         assert render == [
             {
                 '_id': None,
-                'ntype': 'task',
+                'type': 'task',
                 'name': 'task A',
+                'indent': 0,
                 'data': {
                     'status': 'todo',
                     'created': '2018-01-01T00:00:00+00:00',
                     'finished': False,
                     'modified': '2018-01-01T00:00:00+00:00',
                 },
-                'children': None,
+                'parent': None,
             }
         ]
 
@@ -368,5 +364,4 @@ class Test_Mtask(object):
         mtask = renderers.Mtask(parser)
         mtask_str = '\n'.join(mtask.render())
         return json.loads(mtask_str)
-
 

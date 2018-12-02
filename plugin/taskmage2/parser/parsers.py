@@ -50,8 +50,13 @@ class Parser(object):
         self.__lexer = lexer
         self.__lexer.read()
 
-    def parse(self):
+    def parse(self, touch=False):
         """ Parses lexer into a nexted list of Nodes.
+
+        Args:
+            touch (bool):
+                If True, updates last-modified timestamp, adds
+                id if none present, etc.
 
         Returns:
 
@@ -90,7 +95,7 @@ class Parser(object):
 
         return AST
 
-    def render(self, renderer):
+    def render(self, renderer, touch=False):
         """ Render this parser to an output format.
 
         Args:
@@ -98,6 +103,10 @@ class Parser(object):
                 An un-initialized renderer subclass
                 that will be used to render this parser
                 object.
+
+            touch (bool):
+                If True, updates last-modified timestamp, adds
+                id if none present, etc.
 
         Example:
 

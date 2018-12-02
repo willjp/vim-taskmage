@@ -1,12 +1,7 @@
-from collections import OrderedDict
-import enum
-
-
-class TaskStatus(enum.Enum):
-    todo = 'todo'
-    wip = 'wip'
-    done = 'done'
-    skip = 'skip'
+import collections
+import uuid
+import datetime
+from dateutil import tz
 
 
 class Node(object):
@@ -31,7 +26,6 @@ class Node(object):
 
 
     """
-
     def __init__(self, _id, ntype, name, data=None, children=None):
         """
         Constructor.
@@ -41,6 +35,11 @@ class Node(object):
             All they are concerned with is the type, name, data, and if
             it has any children. Indents will be assigned in their native
             format if applicable.
+
+        Args:
+            _id (str, optional): ``(ex: '6a027ca647644d70ab05458fdc99378c')``
+                uuid assigned to node.
+
         """
 
         if children is None:
@@ -83,6 +82,10 @@ class Node(object):
 
     @property
     def type(self):
+        """
+        Returns:
+            str: the nodetype.
+        """
         return self.__type
 
     @property
@@ -100,10 +103,35 @@ class Node(object):
             )
         self.__data = data
 
+    def touch(self):
+        """ Adjusts last-modified timestamp, finished status,
+        adds id if none assigned, etc.
+        """
+        utcnow = datetime.datetime.now(tz.UTC)
+        if self.id is None:
+            self.__id = uuid.uuid4().hex.upper()
+
+        if self.type is 'task':
+            self.data.modified = utcnow
+
+            if self.data.status is None:
+                self.data.status = 'todo'
+
+            if self.data.created is None:
+                self.data.created = utcnow
+
+            # finished
+            if all([
+                self.data.status in ('done', 'skip'),
+                self.data.finished is not False,
+            ]):
+                self.data.finished = utcnow
+            else:
+                self.data.finished = False
+
 
 class _namedtuple(tuple):
-    """
-    A class prototype for custom namdetuples.
+    """ A class prototype for custom namdetuples.
 
     The attribute :py:attr:`_attrs` determines the
     namdetuple properties.
@@ -149,7 +177,7 @@ class _namedtuple(tuple):
         return self[self._attrs.index(attr)]
 
     def _asdict(self):
-        d = OrderedDict()
+        d = collections.OrderedDict()
         for i in range(len(self._attrs)):
             d[self._attrs[i]] = self[i]
         return d
@@ -181,7 +209,7 @@ class _namedtuple(tuple):
         if args:
             new_kwds = new_kwds[len(args):]
 
-        new_kwds = OrderedDict(new_kwds)
+        new_kwds = collections.OrderedDict(new_kwds)
         if kwds:
             new_kwds.update(kwds)
 
@@ -189,9 +217,8 @@ class _namedtuple(tuple):
 
 
 class NodeData(object):
-    """
-    This object is the interface for :py:attr:`taskmage2.data.Node.data` ,
-    it exposes namedtuples for each nodetype, and allows them to be updated.
+    """ Interface for :py:attr:`taskmage2.data.Node.data` ,
+    exposes namedtuples for each nodetype, and allows them to be updated.
 
     Attributes:
 
@@ -203,16 +230,12 @@ class NodeData(object):
 
         task (taskmage2.data._namedtuple):
             namedtuple class, for storing ``task`` Node data.
-
     """
     class file(_namedtuple):
         _attrs = tuple()
 
         def __new__(cls):
             return _namedtuple.__new__(cls, tuple())
-
-        def __repr__(self):
-            return 'filedata()'
 
     class section(_namedtuple):
         _attrs = tuple()
@@ -224,28 +247,28 @@ class NodeData(object):
         _attrs = ('status', 'created', 'finished', 'modified')
 
         def __new__(cls, status, created=None, finished=False, modified=None):
-            # TODO: VALIDATE!!!
-            return _namedtuple.__new__(cls, (status, created, finished, modified))
-            # return super(task,cls).__new__(cls, (status,created,finished,modified))
+            if status not in ('todo', 'skip', 'done', 'wip'):
+                raise TypeError('status')
 
-#    def update(self, data, *args, **kwds):
-#        """
-#        Convenience method to update an existing `data` object.
-#        Note that these objects are immutable, so `updating` them
-#        is actually creating/returning a new object.
-#
-#        .. note::
-#            THIS WILL NO LONGER WORK!!! REQUIRES A NAMEDTUPLE
-#        """
-#        new_kwds = list(data._asdict())
-#
-#        if args:
-#            new_kwds = new_kwds[len(args):]
-#
-#        if kwds:
-#            new_kwds.update(kwds)
-#
-#        return type(data)(*args, OrderedDict(new_kwds))
+            if created is not None:
+                if not isinstance(created, datetime.datetime):
+                    raise TypeError('created')
+                elif not created.tzinfo:
+                    raise TypeError('created')
+
+            if finished is not None:
+                if not isinstance(finished, datetime.datetime):
+                    raise TypeError('finished')
+                elif not finished.tzinfo:
+                    raise TypeError('finished')
+
+            if modified is not None:
+                if not isinstance(modified, datetime.datetime):
+                    raise TypeError('modified')
+                elif not modified.tzinfo:
+                    raise TypeError('modified')
+
+            return _namedtuple.__new__(cls, (status, created, finished, modified))
 
 
 if __name__ == '__main__':
