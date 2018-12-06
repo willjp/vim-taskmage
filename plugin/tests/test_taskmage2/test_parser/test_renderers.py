@@ -48,7 +48,7 @@ class Test_TaskList(object):
                 data={
                     'status': 'done',
                     'created': None,
-                    'finished': True,
+                    'finished': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC),
                     'modified': None,
                 },
                 children=None,

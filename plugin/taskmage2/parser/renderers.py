@@ -226,9 +226,9 @@ class TaskList(Renderer):
             'name': node.name,
         }
 
-        fmtdata.TaskList.statuschar(node.data['status'])
+        fmtdata.TaskList.statuschar(node.data.status)
 
-        data['status_char'] = fmtdata.TaskList.statuschar(node.data['status'])
+        data['status_char'] = fmtdata.TaskList.statuschar(node.data.status)
 
         if node.id:
             data['id_str'] = ''.join(['{*', node.id, '*}'])
@@ -359,18 +359,18 @@ class Mtask(Renderer):
         }
 
     def _render_task(self, render, node, indent=0):
-        created = node.data.get('modified', None)
-        finished = node.data.get('finished', False)
-        modified = node.data.get('modified', None)
+        created = None
+        finished = False
+        modified = None
 
-        if node.data['created'] is not None:
-            created = node.data['created'].isoformat()
+        if node.data.created is not None:
+            created = node.data.created.isoformat()
 
-        if node.data['finished']:
-            finished = node.data['finished'].isoformat()
+        if node.data.finished:
+            finished = node.data.finished.isoformat()
 
-        if node.data['modified'] is not None:
-            modified = node.data['modified'].isoformat()
+        if node.data.modified is not None:
+            modified = node.data.modified.isoformat()
 
         return {
             '_id': node.id,
@@ -379,7 +379,7 @@ class Mtask(Renderer):
             'indent': indent,
             'parent': self._get_parent(render, node, indent),
             'data': {
-                'status': node.data['status'],
+                'status': node.data.status,
                 'created': created,
                 'finished': finished,
                 'modified': modified,
