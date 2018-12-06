@@ -1,7 +1,5 @@
 import uuid
-import datetime
 
-from dateutil import tz
 import mock
 import pytest
 
