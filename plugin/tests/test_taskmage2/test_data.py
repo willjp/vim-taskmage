@@ -87,12 +87,11 @@ class Test_Node(object):
             },
             children=None,
         )
-        with mock.patch('{}.TaskData'.format(nodedata.__name__)):
-            node_A = data.Node(name='task A', **params)
-            node_B = data.Node(name='task B', **params)
+        node_A = data.Node(name='task A', **params)
+        node_B = data.Node(name='task B', **params)
 
-            node_A.update(node_B)
-            assert node_A.name == 'task B'
+        node_A.update(node_B)
+        assert node_A.name == 'task B'
 
     def test_update_operates_on_data(self):
         params = dict(
@@ -107,15 +106,13 @@ class Test_Node(object):
             },
             children=None,
         )
-        with mock.patch(
-            '{}.TaskData'.format(nodedata.__name__),
-            spec='{}.TaskData'.format(nodedata.__name__),
-            return_value=mock.Mock(),
-        ) as mock_taskdata:
+        with mock.patch('{}.isinstance'.format(ns), return_value=True):
+            mock_data = mock.Mock(spec='{}.TaskData'.format(nodedata.__name__))
+            mock_data.update = mock.Mock()
+
             node_A = data.Node(**params)
+            node_A._data = mock_data
             node_B = data.Node(**params)
 
             node_A.update(node_B)
-            assert mock_taskdata.update.called_with(node_B)
-
-
+            assert mock_data.update.called_with(node_B)

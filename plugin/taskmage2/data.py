@@ -83,7 +83,7 @@ class Node(object):
         self.children = children  # list of nodes
         self.__id = _id
         self.__type = ntype
-        self.__data = data_map[ntype](**data)
+        self._data = data_map[ntype](**data)
 
     def __repr__(self):
         return 'Node(id={}, type={}, name={}, data={})'.format(
@@ -121,11 +121,11 @@ class Node(object):
 
     @property
     def data(self):
-        return self.__data
+        return self._data
 
     @data.setter
     def data(self, data):
-        if not isinstance(data, type(self.__data)):
+        if not isinstance(data, type(self._data)):
             data_map = dict(self._data_map)
             data_cls = data_map[NodeType(self.__type)]
             raise TypeError(
@@ -134,7 +134,7 @@ class Node(object):
                     'Received: "{}"'
                 ).format(data_cls, type(data))
             )
-        self.__data = data
+        self._data = data
 
     def touch(self):
         """ Adjusts last-modified timestamp, finished status,
