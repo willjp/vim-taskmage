@@ -15,7 +15,7 @@ import os
 # package
 # external
 # internal
-from taskmage2 import data
+from taskmage2 import astnode
 from taskmage2.parser import renderers
 
 
@@ -75,7 +75,7 @@ class Parser(object):
         # create dictionary of id:node
         allnodes = {}  # {id:node}
         for token in self.__lexer.data:
-            allnodes[token['_id']] = data.Node(
+            allnodes[token['_id']] = astnode.Node(
                 _id=token['_id'],
                 ntype=token['type'],
                 name=token['name'],

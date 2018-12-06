@@ -3,14 +3,14 @@ import uuid
 import mock
 import pytest
 
-from taskmage2 import data, nodedata
+from taskmage2 import astnode, nodedata
 
-ns = data.__name__
+ns = astnode.__name__
 
 
 class Test_Node(object):
     def test_task_without_metadata_not_modified(self):
-        task = data.Node(
+        task = astnode.Node(
             _id=None,
             ntype='task',
             name='task A',
@@ -31,7 +31,7 @@ class Test_Node(object):
         )
 
     def test_touch_assigns_id_if_missing(self):
-        task = data.Node(
+        task = astnode.Node(
             _id=None,
             ntype='task',
             name='task A',
@@ -62,11 +62,11 @@ class Test_Node(object):
             },
             children=None,
         )
-        node_A = data.Node(
+        node_A = astnode.Node(
             _id='24B7213E055B43C2A182FB2CEDC9D36F',
             **params
         )
-        node_B = data.Node(
+        node_B = astnode.Node(
             _id='7B28520767FD4EA2961A42E414022B3F',
             **params
         )
@@ -85,8 +85,8 @@ class Test_Node(object):
             },
             children=None,
         )
-        node_A = data.Node(name='task A', **params)
-        node_B = data.Node(name='task B', **params)
+        node_A = astnode.Node(name='task A', **params)
+        node_B = astnode.Node(name='task B', **params)
 
         node_A.update(node_B)
         assert node_A.name == 'task B'
@@ -108,9 +108,9 @@ class Test_Node(object):
             mock_data = mock.Mock(spec='{}.TaskData'.format(nodedata.__name__))
             mock_data.update = mock.Mock()
 
-            node_A = data.Node(**params)
+            node_A = astnode.Node(**params)
             node_A._data = mock_data
-            node_B = data.Node(**params)
+            node_B = astnode.Node(**params)
 
             node_A.update(node_B)
             assert mock_data.update.called_with(node_B)

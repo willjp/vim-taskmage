@@ -17,13 +17,13 @@ import mock
 from dateutil import tz
 # internal
 from taskmage2.parser import renderers, parsers
-from taskmage2 import data
+from taskmage2 import astnode
 
 
 class Test_TaskList(object):
     def test_status_todo(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id=None,
                 ntype='task',
                 name='task A',
@@ -41,7 +41,7 @@ class Test_TaskList(object):
 
     def test_status_done(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id=None,
                 ntype='task',
                 name='task A',
@@ -59,7 +59,7 @@ class Test_TaskList(object):
 
     def test_status_started(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id=None,
                 ntype='task',
                 name='task A',
@@ -77,7 +77,7 @@ class Test_TaskList(object):
 
     def test_status_skip(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id=None,
                 ntype='task',
                 name='task A',
@@ -95,7 +95,7 @@ class Test_TaskList(object):
 
     def test_task_with_id(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id='5F831BF3088A42209AF644CDD8962D3A',
                 ntype='task',
                 name='task A',
@@ -113,7 +113,7 @@ class Test_TaskList(object):
 
     def test_task_multiline(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id=None,
                 ntype='task',
                 name='line A\nline B\nline C',
@@ -135,7 +135,7 @@ class Test_TaskList(object):
 
     def test_task_multiline_with_id(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id='CB1B055F2A38477D9D944E22D3608E6A',
                 ntype='task',
                 name='line A\nline B\nline C',
@@ -157,7 +157,7 @@ class Test_TaskList(object):
 
     def test_section_without_id(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id=None,
                 ntype='section',
                 name='cleanup',
@@ -175,7 +175,7 @@ class Test_TaskList(object):
 
     def test_section_with_id(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id='E083C4632F0D41CCA4C9712F3D4BD980',
                 ntype='section',
                 name='cleanup',
@@ -193,7 +193,7 @@ class Test_TaskList(object):
 
     def test_file_without_id(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id=None,
                 ntype='file',
                 name='path/projectA.mtask',
@@ -211,7 +211,7 @@ class Test_TaskList(object):
 
     def test_file_with_id(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id='E083C4632F0D41CCA4C9712F3D4BD980',
                 ntype='file',
                 name='path/projectA.mtask',
@@ -229,13 +229,13 @@ class Test_TaskList(object):
 
     def test_section_with_tasks(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id='E083C4632F0D41CCA4C9712F3D4BD980',
                 ntype='section',
                 name='cleanup',
                 data={},
                 children=[
-                    data.Node(
+                    astnode.Node(
                         _id=None,
                         ntype='task',
                         name='subtask A',
@@ -247,7 +247,7 @@ class Test_TaskList(object):
                         },
                         children=None,
                     ),
-                    data.Node(
+                    astnode.Node(
                         _id=None,
                         ntype='task',
                         name='subtask B',
@@ -307,7 +307,7 @@ class Test_Mtask(object):
     """
     def test_status_todo(self):
         render = self.render([
-            data.Node(
+            astnode.Node(
                 _id=None,
                 ntype='task',
                 name='task A',

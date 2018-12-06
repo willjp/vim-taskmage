@@ -12,7 +12,7 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 # package
 from taskmage2.parser import parsers
-from taskmage2 import data
+from taskmage2 import astnode
 # external
 import mock
 # internal
@@ -32,7 +32,7 @@ class Test_Parser:
             'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
         }])
         assert parsed == [
-            data.Node(
+            astnode.Node(
                 _id='6ed88ae2e7d94d2c88249a954782fc46',
                 ntype='task',
                 name='taskA',
@@ -51,7 +51,7 @@ class Test_Parser:
             'data': {},
         }])
         assert parsed == [
-            data.Node(
+            astnode.Node(
                 _id='e19cb28f203e476686f2fb5f2f0faae6',
                 ntype='section',
                 name='home',
@@ -70,7 +70,7 @@ class Test_Parser:
             'data': {},
         }])
         assert parsed == [
-            data.Node(
+            astnode.Node(
                 _id='805c36f82cd74de5b44edff2b07bc125',
                 ntype='file',
                 name='path/home.mtask',
@@ -99,13 +99,13 @@ class Test_Parser:
             },
         ])
         expected = [
-            data.Node(
+            astnode.Node(
                 _id='6ed88ae2e7d94d2c88249a954782fc46',
                 ntype='task',
                 name='taskA',
                 data={'status': 'todo', 'created': None, 'finished': False, 'modified': None},
                 children=[
-                    data.Node(
+                    astnode.Node(
                         _id='032012b832f546d7bdc13a08ade41ba0',
                         ntype='task',
                         name='subtaskA',
