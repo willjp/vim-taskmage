@@ -12,11 +12,13 @@ ________________________________________________________________________________
 # builtin
 from __future__ import absolute_import, division, print_function
 import os
+from taskmage2.parser import renderers
+from taskmage2.ast import astnode
+
+
 # package
 # external
 # internal
-from taskmage2 import astnode
-from taskmage2.parser import renderers
 
 
 class Parser(object):

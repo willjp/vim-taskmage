@@ -10,11 +10,11 @@ ________________________________________________________________________________
 """
 # builtin
 from __future__ import absolute_import, division, print_function
-# package
 from taskmage2.parser import parsers
-from taskmage2 import astnode
-# external
 import mock
+from taskmage2.ast import astnode
+# package
+# external
 # internal
 
 

@@ -12,12 +12,14 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 import datetime
 import json
-# external
 import mock
 from dateutil import tz
-# internal
 from taskmage2.parser import renderers, parsers
-from taskmage2 import astnode
+from taskmage2.ast import astnode
+
+
+# external
+# internal
 
 
 class Test_TaskList(object):
