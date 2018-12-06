@@ -128,27 +128,11 @@ class Node(object):
         """ Adjusts last-modified timestamp, finished status,
         adds id if none assigned, etc.
         """
-        utcnow = datetime.datetime.now(tz.UTC)
         if self.id is None:
             self.__id = uuid.uuid4().hex.upper()
 
-        if self.type is 'task':
-            self.data.modified = utcnow
-
-            if self.data.status is None:
-                self.data.status = 'todo'
-
-            if self.data.created is None:
-                self.data.created = utcnow
-
-            # finished
-            if all([
-                self.data.status in ('done', 'skip'),
-                self.data.finished is not False,
-            ]):
-                self.data.finished = utcnow
-            else:
-                self.data.finished = False
+        # NOTE: NodeData is immutable
+        self.data = self.data.touch()
 
 
 class NodeType(enum.Enum):
@@ -242,6 +226,11 @@ class _NodeData(tuple):
 
         return type(self)(*args, **new_kwds)
 
+    def touch(self):
+        """ Assigns default metadata to unassigned, updates modified-time.
+        """
+        raise NotImplementedError()
+
 
 class FileData(_NodeData):
     _attrs = tuple()
@@ -249,12 +238,18 @@ class FileData(_NodeData):
     def __new__(cls):
         return _NodeData.__new__(cls, tuple())
 
+    def touch(self):
+        pass
+
 
 class SectionData(_NodeData):
     _attrs = tuple()
 
     def __new__(cls):
         return _NodeData.__new__(cls, tuple())
+
+    def touch(self):
+        pass
 
 
 class TaskData(_NodeData):
@@ -286,6 +281,30 @@ class TaskData(_NodeData):
                 raise TypeError('modified')
 
         return _NodeData.__new__(cls, (status, created, finished, modified))
+
+    def touch(self):
+        utcnow = datetime.datetime.now(tz.UTC)
+        new_data = self.as_dict()
+
+        new_data['modified'] = utcnow
+
+        # assign defaults
+        if self.status is None:
+            new_data['status'] = 'todo'
+
+        if self.created is None:
+            new_data['created'] = utcnow
+
+        # update finished-time
+        if all([
+            self.status in ('done', 'skip'),
+            self.finished is False,
+        ]):
+            new_data['finished'] = utcnow
+        else:
+            new_data['finished'] = False
+
+        return TaskData(**new_data)
 
 
 if __name__ == '__main__':
