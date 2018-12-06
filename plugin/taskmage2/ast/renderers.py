@@ -14,9 +14,11 @@ from __future__ import absolute_import, division, print_function
 import os
 import abc
 import json
+from taskmage2.parser import fmtdata
+
+
 # external
 # internal
-from taskmage2.parser import fmtdata
 
 
 class Renderer(object):

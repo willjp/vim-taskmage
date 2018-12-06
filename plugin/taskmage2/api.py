@@ -2,7 +2,8 @@ import os
 
 import vim
 
-from taskmage2.parser import lexers, iostream, renderers, parsers
+from taskmage2.parser import lexers, iostream, parsers
+from taskmage2.ast import renderers
 
 
 def handle_open_mtask():

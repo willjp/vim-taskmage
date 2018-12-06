@@ -12,7 +12,6 @@ ________________________________________________________________________________
 # builtin
 from __future__ import absolute_import, division, print_function
 import os
-from taskmage2.parser import renderers
 from taskmage2.ast import astnode, ast
 
 
@@ -97,40 +96,6 @@ class Parser(object):
 
         return AST
 
-    def render(self, renderer, touch=False):
-        """ Render this parser to an output format.
-
-        Args:
-            renderer (taskmage2.parser.renderers.Renderer):
-                An un-initialized renderer subclass
-                that will be used to render this parser
-                object.
-
-            touch (bool):
-                If True, updates last-modified timestamp, adds
-                id if none present, etc.
-
-        Example:
-
-            .. code-block:: python
-
-                with open(path, 'rb') as fd:
-                    lexer = TaskList(iostream.FileDescriptor(fd))
-                    parser = Parser(lexer)
-                    parser.render(render.Mtask)
-
-        Returns:
-            The output depends on the renderer.
-
-        """
-        if not issubclass(renderer, renderers.Renderer):
-            raise TypeError(
-                'Must specify output format'
-            )
-
-        renderer_inst = renderer(self)
-        return renderer_inst.render()
-
 
 if __name__ == '__main__':
     from taskmage2.parser import lexers, iostream, renderers
@@ -149,7 +114,7 @@ if __name__ == '__main__':
             parser = Parser(lexer)
             print(parser.parse())
             print()
-            print(parser.renderers(renderers.TaskList))
+            print(parser.renderers(taskmage2.ast.renderers.TaskList))
 
     def ex_mtask():
         print('=====')
@@ -162,7 +127,7 @@ if __name__ == '__main__':
             parser = Parser(lexer)
             print(parser.parse())
             print()
-            print(parser.renderers(renderers.Mtask))
+            print(parser.renderers(taskmage2.ast.renderers.Mtask))
 
     ex_tasklist()
     print('---')

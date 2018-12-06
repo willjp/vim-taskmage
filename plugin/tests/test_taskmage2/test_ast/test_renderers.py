@@ -13,8 +13,7 @@ from __future__ import absolute_import, division, print_function
 import datetime
 import json
 from dateutil import tz
-from taskmage2.parser import renderers
-from taskmage2.ast import astnode
+from taskmage2.ast import astnode, renderers
 
 
 # external
