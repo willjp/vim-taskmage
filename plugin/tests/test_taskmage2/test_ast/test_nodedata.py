@@ -5,7 +5,7 @@ from dateutil import tz
 import mock
 import pytest
 
-from taskmage2 import nodedata
+from taskmage2.ast import nodedata
 
 
 ns = nodedata.__name__

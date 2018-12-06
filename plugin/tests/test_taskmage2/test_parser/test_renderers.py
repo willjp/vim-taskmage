@@ -12,9 +12,8 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 import datetime
 import json
-import mock
 from dateutil import tz
-from taskmage2.parser import renderers, parsers
+from taskmage2.parser import renderers
 from taskmage2.ast import astnode
 
 
@@ -274,7 +273,7 @@ class Test_TaskList(object):
             '    * subtask B',
         ]
 
-    def render(self, parser_data):
+    def render(self, ast):
         """ Render parser_data using a TaskList renderer.
 
         Args:
@@ -296,10 +295,7 @@ class Test_TaskList(object):
             list:
                 A list of lines.
         """
-        parser = mock.MagicMock(spec=parsers.Parser)
-        parser.parse = mock.Mock(return_value=parser_data)
-
-        tasklist = renderers.TaskList(parser)
+        tasklist = renderers.TaskList(ast)
         return tasklist.render()
 
 
@@ -338,7 +334,7 @@ class Test_Mtask(object):
             }
         ]
 
-    def render(self, parser_data):
+    def render(self, ast):
         """ Render parser_data using a TaskList renderer.
 
         Args:
@@ -360,10 +356,7 @@ class Test_Mtask(object):
             list:
                 the parsed MTASK file as a list-of-dicts.
         """
-        parser = mock.MagicMock(spec=parsers.Parser)
-        parser.parse = mock.Mock(return_value=parser_data)
-
-        mtask = renderers.Mtask(parser)
+        mtask = renderers.Mtask(ast)
         mtask_str = '\n'.join(mtask.render())
         return json.loads(mtask_str)
 

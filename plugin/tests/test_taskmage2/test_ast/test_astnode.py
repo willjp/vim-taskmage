@@ -3,8 +3,7 @@ import uuid
 import mock
 import pytest
 
-from taskmage2 import nodedata
-from taskmage2.ast import astnode
+from taskmage2.ast import astnode, nodedata
 
 ns = astnode.__name__
 

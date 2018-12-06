@@ -1,7 +1,7 @@
 import uuid
 
 import enum
-from taskmage2 import nodedata
+from taskmage2.ast import nodedata
 
 
 class NodeType(enum.Enum):

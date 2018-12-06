@@ -25,21 +25,16 @@ class Renderer(object):
     """
     __metaclass__ = abc.ABCMeta
 
-    def __init__(self, parser):
+    def __init__(self, ast):
         super(Renderer, self).__init__()
-        self._parser = parser
+        self._ast = ast
 
     @property
-    def parser(self):
-        return self._parser
+    def ast(self):
+        return self._ast
 
-    def render(self, touch=False):
-        """
-
-        Args:
-            touch (bool):
-                If True, updates last-modified timestamp, adds
-                id if none present, etc.
+    def render(self):
+        """ render AST in provided format.
         """
         raise NotImplementedError
 
@@ -68,10 +63,10 @@ class TaskList(Renderer):
     """
     indent_lvl_chars = fmtdata.TaskList.indent_lvl_chars
 
-    def __init__(self, parser):
-        super(TaskList, self).__init__(parser)
+    def __init__(self, ast):
+        super(TaskList, self).__init__(ast)
 
-    def render(self, touch=False):
+    def render(self):
         """
         Renders the parser's Abstract-Syntax-Tree.
 
@@ -87,10 +82,9 @@ class TaskList(Renderer):
                 ]
 
         """
-        ast = self.parser.parse(touch=touch)
         render = []
 
-        for node in ast:
+        for node in self.ast:
             render = self._render_node(render, node, indent=0)
 
         return render
@@ -248,17 +242,17 @@ class TaskList(Renderer):
 class TaskDetails(Renderer):
     """ `AST` to an INI inspired view of a single task's info.
     """
-    def __init__(self, parser):
+    def __init__(self, ast):
         raise NotImplementedError()
 
 
 class Mtask(Renderer):
     """ `AST` to JSON - stores all info.
     """
-    def __init__(self, parser):
-        super(Mtask, self).__init__(parser)
+    def __init__(self, ast):
+        super(Mtask, self).__init__(ast)
 
-    def render(self, touch=False):
+    def render(self):
         """
         Renders the parser's Abstract-Syntax-Tree (list of `data.Node` s ) into a JSON string.
 
@@ -274,10 +268,9 @@ class Mtask(Renderer):
                 ]
 
         """
-        ast = self.parser.parse(touch=touch)
         render = []
 
-        for node in ast:
+        for node in self.ast:
             render = self._render_node(render, node, indent=0)
 
         render_as_json = json.dumps(render, indent=2)
