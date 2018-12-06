@@ -5,8 +5,7 @@ from dateutil import tz
 import mock
 import pytest
 
-from taskmage2 import data
-
+from taskmage2 import data, nodedata
 
 ns = data.__name__
 
@@ -53,106 +52,70 @@ class Test_Node(object):
 
         assert task.id == '34DB96D439164C55AC02DE9173FB79AC'
 
-
-class Test_TaskData(object):
-
-    @pytest.mark.parametrize(
-        'status', ('todo', 'skip', 'done', 'wip'),
-    )
-    def test_status_valid(self, status):
-        taskdata = data.TaskData(status=status)
-        assert getattr(taskdata, 'status') == status
-
-    def test_status_invalid(self):
-        with pytest.raises(TypeError):
-            data.TaskData(status='incomplete')
-
-    @pytest.mark.parametrize(
-        'created', (None, datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)),
-    )
-    def test_created_valid(self, created):
-        taskdata = data.TaskData(status='todo', created=created)
-        assert getattr(taskdata, 'created') == created
-
-    def test_created_invalid(self):
-        with pytest.raises(TypeError):
-            data.TaskData(status='todo', created='November 1st')
-
-    def test_finished_defaults_to_false(self):
-        taskdata = data.TaskData(
-             status='todo',
-             created=None,
-             finished=None,
-             modified=None,
+    def test_update_with_nonmatching_id(self):
+        params = dict(
+            ntype='task',
+            name='task A',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=None,
         )
-        assert taskdata.finished is False
-
-    def test_finished_valid(self):
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        taskdata = data.TaskData('todo', finished=dt)
-        assert taskdata.finished == dt
-
-    def test_finished_missing_timezone(self):
-        with pytest.raises(TypeError):
-            dt = datetime.datetime(2018, 1, 1, 0, 0, 0)
-            data.TaskData('todo', finished=dt)
-
-    @pytest.mark.parametrize(
-        'modified', (None, datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)),
-    )
-    def test_modified_valid(self, modified):
-        taskdata = data.TaskData(status='todo', modified=modified)
-        assert getattr(taskdata, 'modified') == modified
-
-    def test_modified_invalid(self):
-        with pytest.raises(TypeError):
-            data.TaskData(status='todo', modified='November 1st')
-
-    def test_touch_assigns_modified(self):
-        taskdata = data.TaskData(status='todo')
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-
-        new_taskdata = self.touch(taskdata, dt)
-        assert new_taskdata.modified == dt
-
-    def test_touch_overwrites_modified(self):
-        taskdata = data.TaskData(
-            status='todo',
-            modified=datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+        node_A = data.Node(
+            _id='24B7213E055B43C2A182FB2CEDC9D36F',
+            **params
         )
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+        node_B = data.Node(
+            _id='7B28520767FD4EA2961A42E414022B3F',
+            **params
+        )
+        with pytest.raises(RuntimeError):
+            node_A.update(node_B)
 
-        new_taskdata = self.touch(taskdata, dt)
-        assert new_taskdata.modified == dt
+    def test_update_assigns_name(self):
+        params = dict(
+            _id=None,
+            ntype='task',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=None,
+        )
+        with mock.patch('{}.TaskData'.format(nodedata.__name__)):
+            node_A = data.Node(name='task A', **params)
+            node_B = data.Node(name='task B', **params)
 
-    def test_touch_assigns_created(self):
-        taskdata = data.TaskData(status='todo')
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+            node_A.update(node_B)
+            assert node_A.name == 'task B'
 
-        new_taskdata = self.touch(taskdata, dt)
-        assert new_taskdata.created == dt
+    def test_update_operates_on_data(self):
+        params = dict(
+            _id=None,
+            name='task A',
+            ntype='task',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=None,
+        )
+        with mock.patch(
+            '{}.TaskData'.format(nodedata.__name__),
+            spec='{}.TaskData'.format(nodedata.__name__),
+            return_value=mock.Mock(),
+        ) as mock_taskdata:
+            node_A = data.Node(**params)
+            node_B = data.Node(**params)
 
-    def test_touch_does_not_overwrite_created(self):
-        created_dt = datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        current_dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        taskdata = data.TaskData(status='todo', created=created_dt)
+            node_A.update(node_B)
+            assert mock_taskdata.update.called_with(node_B)
 
-        new_taskdata = self.touch(taskdata, current_dt)
-        assert new_taskdata.created == created_dt
 
-    def test_touch_updates_finished(self):
-        # 'status' and 'finished' are inconsistent
-        taskdata = data.TaskData(status='done', finished=False)
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-
-        new_taskdata = self.touch(taskdata, dt)
-        assert new_taskdata.finished == dt
-
-    def touch(self, taskdata, dt):
-        with mock.patch('{}.datetime'.format(ns)) as mock_datetime:
-            # NOTE: make isinstance(x, datetime.datetime) return true
-            with mock.patch('{}.isinstance'.format(ns), return_value=True):
-                mock_datetime.datetime = mock.MagicMock(spec='datetime.datetime')
-                mock_datetime.datetime.now = mock.Mock(return_value=dt)
-                new_taskdata = taskdata.touch()
-                return new_taskdata

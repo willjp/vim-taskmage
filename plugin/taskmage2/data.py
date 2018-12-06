@@ -1,8 +1,16 @@
 import collections
 import uuid
 import datetime
+
 import enum
 from dateutil import tz
+from taskmage2 import nodedata
+
+
+class NodeType(enum.Enum):
+    task = 'task'
+    section = 'section'
+    file = 'file'
 
 
 class Node(object):
@@ -27,6 +35,12 @@ class Node(object):
 
 
     """
+
+    _data_map = (
+        (NodeType.task,     nodedata.TaskData),
+        (NodeType.section,  nodedata.SectionData),
+        (NodeType.file,     nodedata.FileData),
+    )
 
     def __init__(self, _id, ntype, name, data=None, children=None):
         """ Constructor.
@@ -63,11 +77,7 @@ class Node(object):
             data = {}
 
         ntype = NodeType(ntype)
-        data_map = {
-            NodeType.task:     TaskData,
-            NodeType.section:  SectionData,
-            NodeType.file:     FileData,
-        }
+        data_map = dict(self._data_map)
 
         self.name = name
         self.children = children  # list of nodes
@@ -116,11 +126,13 @@ class Node(object):
     @data.setter
     def data(self, data):
         if not isinstance(data, type(self.__data)):
+            data_map = dict(self._data_map)
+            data_cls = data_map[NodeType(self.__type)]
             raise TypeError(
                 (
                     'Expected `data` to be of type: "{}".\n'
                     'Received: "{}"'
-                ).format(getattr(NodeData, self.__type), type(data))
+                ).format(data_cls, type(data))
             )
         self.__data = data
 
@@ -134,177 +146,13 @@ class Node(object):
         # NOTE: NodeData is immutable
         self.data = self.data.touch()
 
+    def update(self, node):
+        if self.id != node.id:
+            raise RuntimeError('cannot update nodes with different ids')
 
-class NodeType(enum.Enum):
-    task = 'task'
-    section = 'section'
-    file = 'file'
-
-
-class _NodeData(tuple):
-    """ A class prototype for custom namdetuples.
-
-    The attribute :py:attr:`_attrs` determines the
-    namdetuple properties.
-
-    Example:
-
-        .. code-block:: python
-
-            class TaskData(_NodeData):
-                _attrs = ('status', 'created')
-
-            status = TaskData(status='done', created=datetime.datetime(..))
-            print(status.status)
-            >>> 'done'
-
-            print(status.created)
-            >>> datetime.datetime(...)
-
-    """
-    def __new__(cls, data):
-        if not isinstance(cls._attrs, tuple):
-            raise RuntimeError(
-                'Each `_NodeData` must have a `cls._attrs` attribute '
-                'with a list of arguments in order'
-            )
-        if len(cls._attrs) != len(data):
-            raise RuntimeError(
-                'incorrect number of entries in `_NodeData`'
-            )
-        return tuple.__new__(cls, data)
-
-    def __repr__(self):
-        return '{}({})'.format(
-            self.__class__.__name__,
-            ', '.join(
-                ['{}={}'.format(self._attrs[i], self[i]) for i in range(len(self._attrs))]
-            )
-        )
-
-    def __getattr__(self, attr):
-        if attr not in self._attrs:
-            raise AttributeError('Attribute "{}" does not exist on object {}'.format(attr, self.__class__.__name__))
-        return self[self._attrs.index(attr)]
-
-    def as_dict(self):
-        d = collections.OrderedDict()
-        for i in range(len(self._attrs)):
-            d[self._attrs[i]] = self[i]
-        return d
-
-    def copy(self, *args, **kwds):
-        """
-        Create a duplicate object of this type,
-        optionally modifying it's arguments in the new
-        object's constructor.
-
-        Example:
-
-            .. code-block:: python
-
-                >>> class task(_NodeData):
-                >>>     _attrs = ('status','finished')
-                >>>     def __new__(cls, status, finished=False):
-                >>>         return _NodeData.__new__(cls, (status,finished))
-
-                >>> t = task('wip')
-                task(status='wip', finished=False)
-
-                >>> t.copy(finished=True)
-                task(status='wip', finished=True)
-
-        """
-        new_kwds = list(self.as_dict().items())
-
-        if args:
-            new_kwds = new_kwds[len(args):]
-
-        new_kwds = collections.OrderedDict(new_kwds)
-        if kwds:
-            new_kwds.update(kwds)
-
-        return type(self)(*args, **new_kwds)
-
-    def touch(self):
-        """ Assigns default metadata to unassigned, updates modified-time.
-        """
-        raise NotImplementedError()
-
-
-class FileData(_NodeData):
-    _attrs = tuple()
-
-    def __new__(cls):
-        return _NodeData.__new__(cls, tuple())
-
-    def touch(self):
-        pass
-
-
-class SectionData(_NodeData):
-    _attrs = tuple()
-
-    def __new__(cls):
-        return _NodeData.__new__(cls, tuple())
-
-    def touch(self):
-        pass
-
-
-class TaskData(_NodeData):
-    _attrs = ('status', 'created', 'finished', 'modified')
-
-    def __new__(cls, status, created=None, finished=False, modified=None):
-        if finished is None:
-            finished = False
-
-        if status not in ('todo', 'skip', 'done', 'wip'):
-            raise TypeError('status')
-
-        if created is not None:
-            if not isinstance(created, datetime.datetime):
-                raise TypeError('created')
-            elif not created.tzinfo:
-                raise TypeError('created')
-
-        if finished is not False:
-            if not isinstance(finished, datetime.datetime):
-                raise TypeError('finished')
-            elif not finished.tzinfo:
-                raise TypeError('finished')
-
-        if modified is not None:
-            if not isinstance(modified, datetime.datetime):
-                raise TypeError('modified')
-            elif not modified.tzinfo:
-                raise TypeError('modified')
-
-        return _NodeData.__new__(cls, (status, created, finished, modified))
-
-    def touch(self):
-        utcnow = datetime.datetime.now(tz.UTC)
-        new_data = self.as_dict()
-
-        new_data['modified'] = utcnow
-
-        # assign defaults
-        if self.status is None:
-            new_data['status'] = 'todo'
-
-        if self.created is None:
-            new_data['created'] = utcnow
-
-        # update finished-time
-        if all([
-            self.status in ('done', 'skip'),
-            self.finished is False,
-        ]):
-            new_data['finished'] = utcnow
-        else:
-            new_data['finished'] = False
-
-        return TaskData(**new_data)
+        self.name = node.name
+        self.__type = node.type
+        self.data = self.data.update(node.data)
 
 
 if __name__ == '__main__':

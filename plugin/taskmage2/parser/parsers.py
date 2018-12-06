@@ -129,6 +129,12 @@ class Parser(object):
         renderer_inst = renderer(self)
         return renderer_inst.render()
 
+    def update(self, parser):
+        """ Returns a new parser with the differences from another parser
+        applied on top of it.
+        """
+        raise NotImplementedError()
+
 
 if __name__ == '__main__':
     from taskmage2.parser import lexers, iostream, renderers
