@@ -3,3 +3,4 @@
 *.tox
 examples/.ptaskmgr/*.ptask
 .codemod.*
+.ropeproject
