@@ -205,6 +205,33 @@ class Test_TaskList:
             },
         ]
 
+    def test_section_after_task(self):
+        tokens = self.tasklist(
+            '*{*251CCE3BF1E34693B0E3BB8CD8331EA3*} pay bills\n'
+            '\n'
+            'kitchen\n'
+            '=======\n'
+        )
+        print(tokens)
+        assert tokens == [
+            {
+                '_id': '251CCE3BF1E34693B0E3BB8CD8331EA3',
+                'type': 'task',
+                'name': 'pay bills',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            },
+            {
+                '_id': uid().hex.upper(),
+                'type': 'section',
+                'name': 'kitchen',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            }
+        ]
+
     def test_subsection(self):
         tokens = self.tasklist(
             'home\n'

@@ -1,41 +1,28 @@
 [
   {
     "indent": 0, 
-    "name": "a", 
+    "name": "b\n{*C49B17BD8F414A36A9DCABAEBE08EA15*}home\n========================================", 
     "parent": null, 
     "data": {
       "status": "todo", 
       "finished": false, 
-      "modified": "2018-12-07T13:12:51.639693+00:00", 
-      "created": "2018-12-07T13:12:46.116670+00:00"
+      "modified": "2018-12-07T13:15:15.238504+00:00", 
+      "created": "2018-12-07T13:15:10.424929+00:00"
+    }, 
+    "_id": "85B1AFEBF35045F18FC8A066AE4B578F", 
+    "type": "task"
+  }, 
+  {
+    "indent": 1, 
+    "name": "a", 
+    "parent": "85B1AFEBF35045F18FC8A066AE4B578F", 
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-07T13:15:15.238527+00:00", 
+      "created": "2018-12-07T13:15:10.424981+00:00"
     }, 
     "_id": "4DBB83CDC47741F49E83B3149DCB4D7C", 
-    "type": "task"
-  }, 
-  {
-    "indent": 0, 
-    "name": "b", 
-    "parent": null, 
-    "data": {
-      "status": "todo", 
-      "finished": false, 
-      "modified": "2018-12-07T13:12:51.639716+00:00", 
-      "created": "2018-12-07T13:12:46.116730+00:00"
-    }, 
-    "_id": "CBB18C23004C46CEA834E766E1AE3C4D", 
-    "type": "task"
-  }, 
-  {
-    "indent": 0, 
-    "name": "c", 
-    "parent": null, 
-    "data": {
-      "status": "todo", 
-      "finished": false, 
-      "modified": "2018-12-07T13:12:51.639736+00:00", 
-      "created": "2018-12-07T13:12:46.116753+00:00"
-    }, 
-    "_id": "B03E140910A94DE6A9EFF54D11988000", 
     "type": "task"
   }
 ]
