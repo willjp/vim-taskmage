@@ -282,8 +282,8 @@ class TaskList(_Lexer):
         # Newline (outside of taskdef, ignore & continue)
         # ===============================================
         if ch == '\n':
-            self._iostream.next(offset)
-            return self.read_next()
+            self._iostream.offset(offset + 1)
+            return self._read_next()
 
         # =====================
         # Header (section,file)

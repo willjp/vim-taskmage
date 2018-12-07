@@ -86,7 +86,7 @@ class Test_TaskList:
         ]
 
     def test_toplevel_task_with_leading_whitespace(self):
-        tokens = self.tasklist('\n\n* taskA\n')
+        tokens = self.tasklist_data('\n\n* taskA')
 
         assert tokens == [
             {
@@ -342,6 +342,17 @@ class Test_TaskList:
 
             return _lexertokens
 
+    def tasklist_data(self, filecontents):
+        with mock.patch('{}.uuid.uuid4'.format(ns), side_effect=uid):
+            # initialize TaskList()
+            fd = six.StringIO()
+            fd.write(filecontents)
+            iofd = iostream.FileDescriptor(fd)
+            lexer = lexers.TaskList(iofd)
+
+            # read until end of TaskList
+            lexer.read()
+            return lexer.data
 
 class Test_Mtask:
     """ Mtask shouldn't alter raw json

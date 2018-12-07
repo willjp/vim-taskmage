@@ -1,42 +1,41 @@
 [
   {
     "indent": 0, 
-    "name": "home", 
+    "name": "a", 
     "parent": null, 
-    "data": {}, 
-    "_id": "CEB9EBC39A474209982665464308D9BA", 
-    "type": "section"
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-07T13:12:51.639693+00:00", 
+      "created": "2018-12-07T13:12:46.116670+00:00"
+    }, 
+    "_id": "4DBB83CDC47741F49E83B3149DCB4D7C", 
+    "type": "task"
   }, 
   {
     "indent": 0, 
-    "name": "home", 
+    "name": "b", 
     "parent": null, 
-    "data": {}, 
-    "_id": "CEB9EBC39A474209982665464308D9BA", 
-    "type": "section"
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-07T13:12:51.639716+00:00", 
+      "created": "2018-12-07T13:12:46.116730+00:00"
+    }, 
+    "_id": "CBB18C23004C46CEA834E766E1AE3C4D", 
+    "type": "task"
   }, 
   {
     "indent": 0, 
-    "name": "home", 
+    "name": "c", 
     "parent": null, 
-    "data": {}, 
-    "_id": "CEB9EBC39A474209982665464308D9BA", 
-    "type": "section"
-  }, 
-  {
-    "indent": 0, 
-    "name": "home", 
-    "parent": null, 
-    "data": {}, 
-    "_id": "CEB9EBC39A474209982665464308D9BA", 
-    "type": "section"
-  }, 
-  {
-    "indent": 0, 
-    "name": "home", 
-    "parent": null, 
-    "data": {}, 
-    "_id": "CEB9EBC39A474209982665464308D9BA", 
-    "type": "section"
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-07T13:12:51.639736+00:00", 
+      "created": "2018-12-07T13:12:46.116753+00:00"
+    }, 
+    "_id": "B03E140910A94DE6A9EFF54D11988000", 
+    "type": "task"
   }
 ]
