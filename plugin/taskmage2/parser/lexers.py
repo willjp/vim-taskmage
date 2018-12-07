@@ -21,9 +21,9 @@ import json
 import abc
 import uuid
 import re
-# package
 # external
 import dateutil.parser
+import enum
 # internal
 from taskmage2 import exceptions_
 from taskmage2.parser import fmtdata
@@ -33,6 +33,12 @@ from taskmage2.parser import fmtdata
 #         * created-dt
 #         * finished False/dt
 #         * modified dt
+
+
+class LexerTypes(enum.Enum):
+    tasklist = 'tasklist'
+    taskdetails = 'taskdetails'
+    mtask = 'mtask'
 
 
 class _Lexer(object):
@@ -851,6 +857,16 @@ class Mtask(_Lexer):
                 'received: {}\n'
             ).format(index, desc, data, missing_keys, data)
             )
+
+
+def get_lexer(iostream, lexertype):
+    lexertype = LexerTypes(lexertype)
+    lexertype_map = {
+        LexerTypes.tasklist: TaskList,
+        LexerTypes.taskdetails: TaskDetails,
+        LexerTypes.Mtask: Mtask,
+    }
+    return lexertype_map[lexertype](iostream)
 
 
 if __name__ == '__main__':

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 
 import vim
@@ -10,12 +11,12 @@ def handle_open_mtask():
     """ converts buffer from Mtask(JSON) to TaskList(rst)
     """
     fd = iostream.VimBuffer(vim.current.buffer)
-    lexer = lexers.Mtask(fd)
-    parser = parsers.Parser(lexer)
-    render = parser.render(renderers.TaskList)
+    ast = parsers.parse(fd, 'mtask')
+    render = ast.render(renderers.TaskList)
 
-    vim.command('set ft=taskmage2')
+    vim.command('syntax off')
     vim.current.buffer[:] = render
+    vim.command('set ft=taskmage2')
     return render
 
 
@@ -25,19 +26,18 @@ def handle_presave_mtask():
     """
     # convert vim-buffer to Mtask
     fd = iostream.VimBuffer(vim.current.buffer)
-    buffer_lexer = lexers.TaskList(fd)
-    buffer_parser = parsers.Parser(buffer_lexer)
+    buffer_ast = parsers.parse(fd, 'tasklist')
 
     # merge overtop of savedfile if exists
     if not os.path.isfile(vim.current.buffer.name):
-        render = buffer_parser.render(renderers.Mtask, touch=True)
+        buffer_ast.touch()
+        render = buffer_ast.render(renderers.Mtask)
     else:
         with open(vim.current.buffer.name, 'r') as fd:
-            disk_lexer = lexers.Mtask(fd)
-            disk_parser = parsers.Parser(disk_lexer)
-
-        merged_parser = disk_parser.update(buffer_parser)
-        render = merged_parser.render(renderers.Mtask, touch=True)
+            saved_ast = parsers.parse(fd, 'mtask')
+        saved_ast.update(buffer_ast)
+        saved_ast.touch()
+        render = saved_ast.render(renderers.Mtask)
 
     # replace vim-buffer with updated Mtask render
     vim.command('syntax off')
@@ -48,12 +48,9 @@ def handle_presave_mtask():
 def handle_postsave_mtask():
     """ converts buffer back from Mtask(JSON) to TaskList(rst) after save.
     """
-    # NOTE: this step is unecessary if we save the pre-saved, merged, vim-buffer
-    raise NotImplementedError()
     fd = iostream.VimBuffer(vim.current.buffer)
-    lexer = lexers.Mtask(fd)
-    parser = parsers.Parser(lexer)
-    render = parser.render(renderers.TaskList)
+    ast = parsers.parse(fd, 'tasklist')
+    render = ast.render(renderers.TaskList)
 
     vim.current.buffer[:] = render
     vim.command('syntax on')

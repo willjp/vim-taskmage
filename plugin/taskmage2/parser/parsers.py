@@ -13,12 +13,15 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 import os
 from taskmage2.ast import astnode, ast
+from taskmage2.parser import lexers
 
 
 # package
 # external
 # internal
 
+
+# TODO: delete Parser() class
 
 class Parser(object):
     """ The parser transforms the tokens collected in the Lexer
@@ -95,6 +98,33 @@ class Parser(object):
                 AST.append(node)
 
         return AST
+
+
+def parse(iostream, lexer):
+    lexer = lexers.get_lexer(iostream, lexer)
+
+    # create dictionary of id:node
+    allnodes = {}  # {id:node}
+    for token in lexer.data:
+        allnodes[token['_id']] = astnode.Node(
+            _id=token['_id'],
+            ntype=token['type'],
+            name=token['name'],
+            data=token['data'],
+        )
+
+    # create AST
+    AST = ast.AbstractSyntaxTree()
+    for token in lexer.data:
+        if token['parent']:
+            child = allnodes[token['_id']]
+            parent = allnodes[token['parent']]
+            parent.children.append(child)
+        else:
+            node = allnodes[token['_id']]
+            AST.append(node)
+
+    return AST
 
 
 if __name__ == '__main__':
