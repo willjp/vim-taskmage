@@ -129,7 +129,8 @@ def parse(iostream, lexer):
 
 
 if __name__ == '__main__':
-    from taskmage2.parser import lexers, iostream, renderers
+    from taskmage2.parser import lexers, iostream
+    from taskmage2.ast import renderers
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     for i in range(3):
@@ -140,12 +141,13 @@ if __name__ == '__main__':
         print('Tasklist')
         print('========')
         print()
-        with open('{}/examples/example.tasklist'.format(dirname), 'rb') as fd:
+        with open('{}/examples/sample_tasks.tasklist'.format(dirname), 'rb') as fd:
             lexer = lexers.TaskList(iostream.FileDescriptor(fd))
             parser = Parser(lexer)
-            print(parser.parse())
+            ast = parser.parse()
+            print(ast.data)
             print()
-            print(parser.renderers(taskmage2.ast.renderers.TaskList))
+            print(ast.render(renderers.TaskList))
 
     def ex_mtask():
         print('=====')
@@ -153,12 +155,13 @@ if __name__ == '__main__':
         print('=====')
         print()
 
-        with open('{}/examples/example.mtask_'.format(dirname), 'rb') as fd:
+        with open('{}/examples/sample_tasks.mtask'.format(dirname), 'rb') as fd:
             lexer = lexers.Mtask(fd)
             parser = Parser(lexer)
-            print(parser.parse())
+            ast = parser.parse()
+            print(ast.data)
             print()
-            print(parser.renderers(taskmage2.ast.renderers.Mtask))
+            print(ast.render(renderers.Mtask))
 
     ex_tasklist()
     print('---')

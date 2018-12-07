@@ -11,8 +11,8 @@ def handle_open_mtask():
     """ converts buffer from Mtask(JSON) to TaskList(rst)
     """
     # reading directly off disk is MUCH faster
-    with open(vim.current.buffer.name, 'r') as fd:
-        fd = iostream.FileDescriptor(fd)
+    with open(vim.current.buffer.name, 'r') as fd_py:
+        fd = iostream.FileDescriptor(fd_py)
         ast = parsers.parse(fd, 'mtask')
         render = ast.render(renderers.TaskList)
 
@@ -34,11 +34,13 @@ def handle_presave_mtask():
         buffer_ast.touch()
         render = buffer_ast.render(renderers.Mtask)
     else:
-        with open(vim.current.buffer.name, 'r') as fd:
+        with open(vim.current.buffer.name, 'r') as fd_py:
+            fd = iostream.FileDescriptor(fd_py)
             saved_ast = parsers.parse(fd, 'mtask')
         saved_ast.update(buffer_ast)
         saved_ast.touch()
         render = saved_ast.render(renderers.Mtask)
+
 
     # replace vim-buffer with updated Mtask render
     vim.command('syntax off')
@@ -49,10 +51,6 @@ def handle_presave_mtask():
 def handle_postsave_mtask():
     """ converts buffer back from Mtask(JSON) to TaskList(rst) after save.
     """
-    fd = iostream.VimBuffer(vim.current.buffer)
-    ast = parsers.parse(fd, 'tasklist')
-    render = ast.render(renderers.TaskList)
-
-    vim.current.buffer[:] = render
-    vim.command('syntax on')
+    render = handle_open_mtask()
+    vim.command('syntax on ')
     return render

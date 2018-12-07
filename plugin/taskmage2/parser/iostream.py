@@ -188,34 +188,51 @@ class VimBuffer(IOStream):
             # line/col not initialized. new buffer.
             if line < 0:
                 line = 0
+
                 if col < 0:
                     col = 0
-                # if no line/col, is EOF
-                try:
-                    ch = self._buf[line][col]
-                except(IndexError):
+
+                # EOF
+                if len(self._buf) == 0:
                     return ch_info(line, col, None)
 
-            # if column-index is valid within current line, return char
-            elif col < (len(self._buf[line]) - 1):
-                col += 1
-                ch = self._buf[line][col]
+                # first line is blank
+                elif len(self._buf[line]) == 0:
+                    col += 1
+                    ch = '\n'
 
-            # if column-index is equal to the length of current line,
-            # return newline char
-            elif col == (len(self._buf[line]) - 1):
-                col += 1
-                ch = '\n'
+                else:
+                    ch = self._buf[line][col]
 
-            # if column-index is larger than line, overflow onto next line
-            elif line < (len(self._buf) - 1):
-                line += 1
-                col = 0
-                ch = self._buf[line][col]
-
-            # EOF
             else:
-                return ch_info(line, col, None)
+                # if column-index is valid within current line, return char
+                if col < (len(self._buf[line]) - 1):
+                    col += 1
+                    ch = self._buf[line][col]
+
+                # if column-index is equal to the length of current line,
+                # return newline char
+                elif col == (len(self._buf[line]) - 1):
+                    col += 1
+                    ch = '\n'
+
+                # if column-index is larger than line, overflow onto next line
+                elif line < (len(self._buf) - 1):
+                    line += 1
+                    col = 0
+
+                    # if there are characters on line
+                    if len(self._buf[line]):
+                        ch = self._buf[line][col]
+
+                    # if the line is empty
+                    else:
+                        col += 1
+                        ch = '\n'
+
+                # EOF
+                else:
+                    return ch_info(line, col, None)
 
             offset -= 1
 

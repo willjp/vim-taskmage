@@ -1,15 +1,28 @@
 [
   {
     "indent": 0, 
-    "name": "taskA", 
+    "name": "test", 
     "parent": null, 
     "data": {
       "status": "todo", 
       "finished": false, 
-      "modified": null, 
-      "created": null
+      "modified": "2018-12-07T03:25:29.178941+00:00", 
+      "created": "2018-12-07T03:25:19.555303+00:00"
     }, 
-    "_id": "6ED88AE2E7D94D2C88249A954782FC46", 
+    "_id": "6F3D0A0AEC7B4EC89B9D149406DD1908", 
+    "type": "task"
+  }, 
+  {
+    "indent": 0, 
+    "name": "test", 
+    "parent": null, 
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-07T03:25:29.178941+00:00", 
+      "created": "2018-12-07T03:25:19.555303+00:00"
+    }, 
+    "_id": "6F3D0A0AEC7B4EC89B9D149406DD1908", 
     "type": "task"
   }
 ]

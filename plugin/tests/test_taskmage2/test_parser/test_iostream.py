@@ -27,6 +27,20 @@ class Test_VimBuffer(object):
             result.append(buf.peek(i))
         assert result == ['a', '\n', 'b', '\n', 'c', '\n', None]
 
+    def test_peek_with_empty_line(self):
+        buf = self.vimbuffer(['', 'a', 'b', 'c'])
+        result = []
+        for i in range(8):
+            result.append(buf.peek(i))
+        assert result == ['\n', 'a', '\n', 'b', '\n', 'c', '\n', None]
+
+    def test_peek_with_empty_lines(self):
+        buf = self.vimbuffer(['', '', '', 'a', 'b', 'c'])
+        result = []
+        for i in range(10):
+            result.append(buf.peek(i))
+        assert result == ['\n', '\n', '\n', 'a', '\n', 'b', '\n', 'c', '\n', None]
+
     def test_next_overflow(self):
         buf = self.vimbuffer(['a', 'b', 'c'])
         result = []

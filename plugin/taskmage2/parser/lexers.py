@@ -250,7 +250,7 @@ class TaskList(_Lexer):
                 }
         """
         token = self._read_next()
-        if token:
+        if token is not None:
             self.data.append(token)
         return token
 
@@ -882,7 +882,7 @@ if __name__ == '__main__':
 
         _scriptdir = os.path.abspath(os.path.dirname(__file__))
         path = os.path.abspath(
-            '{}/../../../examples/example.tasklist'.format(_scriptdir)
+            '{}/../../../examples/sample_tasks.tasklist'.format(_scriptdir)
         )
         with open(path, 'rb') as fd:
             lexer = TaskList(iostream.FileDescriptor(fd))
@@ -911,5 +911,5 @@ if __name__ == '__main__':
                 token = lexer.read_next()
                 print(token)
 
-    #ex_tasklist()
+    ex_tasklist()
     ex_mtask()

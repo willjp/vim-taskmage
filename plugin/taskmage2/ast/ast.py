@@ -43,8 +43,8 @@ class AbstractSyntaxTree(UserList):
                 'Must specify output format'
             )
 
-        renderer_inst = renderer(self)
-        return renderer_inst.render()
+        renderer_instance = renderer(self)
+        return renderer_instance.render()
 
     def touch(self):
         """ Update modified times, create ids if necessary, update metadata.

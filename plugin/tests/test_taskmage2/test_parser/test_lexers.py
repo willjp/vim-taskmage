@@ -85,6 +85,24 @@ class Test_TaskList:
             }
         ]
 
+    def test_toplevel_task_with_leading_whitespace(self):
+        tokens = self.tasklist('\n\n* taskA\n')
+
+        # NOTE: this returns True, but in production it is not working...
+        #       I suspect a bug with iostream.VimBuffer()
+        assert False
+
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
+
     def test_toplevel_task_with_id(self):
         tokens = self.tasklist('*{*C5ED1030425A436DABE94E0FCCCE76D6*} taskA')
         assert tokens == [
@@ -256,12 +274,38 @@ class Test_TaskList:
             'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
         }
 
-    def test_section_subtask(self):
+    def test_section_subtask_indented(self):
         tokens = self.tasklist(
             'home\n'
             '====\n'
             '\n'
             '    * taskA\n'
+        )
+        assert tokens == [
+            {
+                '_id': uid().hex.upper(),
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            },
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 4,
+                'parent': uid().hex.upper(),
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
+
+    def test_section_subtask_non_indented(self):
+        tokens = self.tasklist(
+            'home\n'
+            '====\n'
+            '\n'
+            '* taskA\n'
         )
         assert tokens == [
             {

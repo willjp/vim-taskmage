@@ -108,6 +108,25 @@ class Test_Node(object):
         node_A.update(node_B)
         assert node_A.name == 'task B'
 
+    def test_update_receives_type(self):
+        params = dict(
+            _id=None,
+            ntype='task',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=None,
+        )
+        node_A = astnode.Node(name='task A', **params)
+        node_B = astnode.Node(name='task B', **params)
+
+        # NOTE: actual value is enum, `type` returns the enum's value
+        node_A.update(node_B)
+        assert node_A.type == 'task'
+
     def test_update_operates_on_data(self):
         params = dict(
             _id=None,

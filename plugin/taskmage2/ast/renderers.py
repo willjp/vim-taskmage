@@ -298,9 +298,9 @@ class Mtask(Renderer):
 
         """
         node_renderer_map = {
-            'file': self._render_fileheader,
+            'task':    self._render_task,
             'section': self._render_sectionheader,
-            'task': self._render_task,
+            'file':    self._render_fileheader,
         }
         if node.type not in node_renderer_map:
             raise NotImplementedError(

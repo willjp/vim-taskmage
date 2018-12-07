@@ -79,13 +79,13 @@ class Node(object):
         self.name = name
         self.children = children  # list of nodes
         self.__id = _id
-        self.__type = ntype
+        self._type = ntype
         self._data = data_map[ntype](**data)
 
     def __repr__(self):
         return 'Node(id={}, type={}, name={}, data={})'.format(
             self.__id,
-            self.__type,
+            self._type,
             self.name,
             self.data,
         )
@@ -114,7 +114,7 @@ class Node(object):
         Returns:
             str: the nodetype.
         """
-        return self.__type.value
+        return self._type.value
 
     @property
     def data(self):
@@ -124,7 +124,7 @@ class Node(object):
     def data(self, data):
         if not isinstance(data, type(self._data)):
             data_map = dict(self._data_map)
-            data_cls = data_map[NodeType(self.__type)]
+            data_cls = data_map[NodeType(self._type)]
             raise TypeError(
                 (
                     'Expected `data` to be of type: "{}".\n'
@@ -152,7 +152,7 @@ class Node(object):
             raise RuntimeError('cannot update nodes with different ids')
 
         self.name = node.name
-        self.__type = node.type
+        self._type = NodeType(node.type)
         self.data = self.data.update(node.data)
 
         self.children = self._update_children(node)
