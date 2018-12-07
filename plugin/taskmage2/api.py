@@ -41,7 +41,6 @@ def handle_presave_mtask():
         saved_ast.touch()
         render = saved_ast.render(renderers.Mtask)
 
-
     # replace vim-buffer with updated Mtask render
     vim.command('syntax off')
     vim.current.buffer[:] = render

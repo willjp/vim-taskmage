@@ -1,28 +1,42 @@
 [
   {
     "indent": 0, 
-    "name": "test", 
+    "name": "home", 
     "parent": null, 
-    "data": {
-      "status": "todo", 
-      "finished": false, 
-      "modified": "2018-12-07T03:33:50.147736+00:00", 
-      "created": "2018-12-07T03:25:19.555303+00:00"
-    }, 
-    "_id": "6F3D0A0AEC7B4EC89B9D149406DD1908", 
-    "type": "task"
+    "data": {}, 
+    "_id": "CEB9EBC39A474209982665464308D9BA", 
+    "type": "section"
   }, 
   {
     "indent": 0, 
-    "name": "test", 
+    "name": "home", 
     "parent": null, 
-    "data": {
-      "status": "todo", 
-      "finished": false, 
-      "modified": "2018-12-07T03:33:50.147736+00:00", 
-      "created": "2018-12-07T03:25:19.555303+00:00"
-    }, 
-    "_id": "6F3D0A0AEC7B4EC89B9D149406DD1908", 
-    "type": "task"
+    "data": {}, 
+    "_id": "CEB9EBC39A474209982665464308D9BA", 
+    "type": "section"
+  }, 
+  {
+    "indent": 0, 
+    "name": "home", 
+    "parent": null, 
+    "data": {}, 
+    "_id": "CEB9EBC39A474209982665464308D9BA", 
+    "type": "section"
+  }, 
+  {
+    "indent": 0, 
+    "name": "home", 
+    "parent": null, 
+    "data": {}, 
+    "_id": "CEB9EBC39A474209982665464308D9BA", 
+    "type": "section"
+  }, 
+  {
+    "indent": 0, 
+    "name": "home", 
+    "parent": null, 
+    "data": {}, 
+    "_id": "CEB9EBC39A474209982665464308D9BA", 
+    "type": "section"
   }
 ]

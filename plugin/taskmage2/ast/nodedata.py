@@ -107,7 +107,7 @@ class FileData(_NodeData):
         return _NodeData.__new__(cls, tuple())
 
     def touch(self):
-        pass
+        return FileData()
 
     def update(self, data):
         return FileData()
@@ -120,7 +120,7 @@ class SectionData(_NodeData):
         return _NodeData.__new__(cls, tuple())
 
     def touch(self):
-        pass
+        return SectionData()
 
     def update(self, data):
         return SectionData()
