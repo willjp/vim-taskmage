@@ -88,10 +88,6 @@ class Test_TaskList:
     def test_toplevel_task_with_leading_whitespace(self):
         tokens = self.tasklist('\n\n* taskA\n')
 
-        # NOTE: this returns True, but in production it is not working...
-        #       I suspect a bug with iostream.VimBuffer()
-        assert False
-
         assert tokens == [
             {
                 '_id': uid().hex.upper(),
