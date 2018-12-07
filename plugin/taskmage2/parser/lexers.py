@@ -862,9 +862,9 @@ class Mtask(_Lexer):
 def get_lexer(iostream, lexertype):
     lexertype = LexerTypes(lexertype)
     lexertype_map = {
-        LexerTypes.tasklist: TaskList,
+        LexerTypes.tasklist:    TaskList,
         LexerTypes.taskdetails: TaskDetails,
-        LexerTypes.Mtask: Mtask,
+        LexerTypes.mtask:       Mtask,
     }
     return lexertype_map[lexertype](iostream)
 

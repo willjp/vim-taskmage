@@ -102,6 +102,7 @@ class Parser(object):
 
 def parse(iostream, lexer):
     lexer = lexers.get_lexer(iostream, lexer)
+    lexer.read()
 
     # create dictionary of id:node
     allnodes = {}  # {id:node}

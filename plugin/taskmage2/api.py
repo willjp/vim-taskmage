@@ -14,9 +14,7 @@ def handle_open_mtask():
     ast = parsers.parse(fd, 'mtask')
     render = ast.render(renderers.TaskList)
 
-    vim.command('syntax off')
     vim.current.buffer[:] = render
-    vim.command('set ft=taskmage2')
     return render
 
 
