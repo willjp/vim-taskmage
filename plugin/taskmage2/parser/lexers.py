@@ -901,7 +901,7 @@ if __name__ == '__main__':
         )
         _scriptdir = os.path.abspath(os.path.dirname(__file__))
         path = os.path.abspath(
-            '{}/../../../examples/example.mtask_'.format(_scriptdir)
+            '{}/../../../examples/sample_tasks.mtask'.format(_scriptdir)
         )
         with open(path, 'r') as fd:
             lexer = Mtask(fd)
@@ -911,5 +911,5 @@ if __name__ == '__main__':
                 token = lexer.read_next()
                 print(token)
 
-    ex_tasklist()
+    #ex_tasklist()
     ex_mtask()

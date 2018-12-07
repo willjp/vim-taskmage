@@ -10,11 +10,14 @@ from taskmage2.ast import renderers
 def handle_open_mtask():
     """ converts buffer from Mtask(JSON) to TaskList(rst)
     """
-    fd = iostream.VimBuffer(vim.current.buffer)
-    ast = parsers.parse(fd, 'mtask')
-    render = ast.render(renderers.TaskList)
+    # reading directly off disk is MUCH faster
+    with open(vim.current.buffer.name, 'r') as fd:
+        fd = iostream.FileDescriptor(fd)
+        ast = parsers.parse(fd, 'mtask')
+        render = ast.render(renderers.TaskList)
 
     vim.current.buffer[:] = render
+    vim.command('set ft=taskmage2')
     return render
 
 
