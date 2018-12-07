@@ -143,6 +143,10 @@ class Node(object):
         # NOTE: NodeData is immutable
         self.data = self.data.touch()
 
+        # also update all children
+        for child in self.children:
+            child.touch()
+
     def update(self, node):
         if self.id != node.id:
             raise RuntimeError('cannot update nodes with different ids')
@@ -150,6 +154,25 @@ class Node(object):
         self.name = node.name
         self.__type = node.type
         self.data = self.data.update(node.data)
+
+        self.children = self._update_children(node)
+
+    def _update_children(self, node):
+        # update children now
+        my_children = {}
+        for child in self.children:
+            my_children[child.id] = child
+
+        # handle add/remove and updates
+        children = []
+        for other_child in node.children:
+            if other_child.id in my_children:
+                my_children[other_child.id].update(child)
+                children.append(my_children[other_child.id])
+            else:
+                children.append(other_child)
+
+        return children
 
 
 if __name__ == '__main__':

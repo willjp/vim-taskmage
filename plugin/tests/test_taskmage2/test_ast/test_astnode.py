@@ -50,6 +50,23 @@ class Test_Node(object):
 
         assert task.id == '34DB96D439164C55AC02DE9173FB79AC'
 
+    def test_touch_updates_children(self):
+        task = astnode.Node(
+            _id=None,
+            ntype='task',
+            name='task A',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=[mock.Mock(), mock.Mock()],
+        )
+
+        task.touch()
+        assert all([child.touch.called for child in task.children])
+
     def test_update_with_nonmatching_id(self):
         params = dict(
             ntype='task',
@@ -114,3 +131,123 @@ class Test_Node(object):
 
             node_A.update(node_B)
             assert mock_data.update.called_with(node_B)
+
+    def test_update_remove_child(self):
+        old_node = astnode.Node(
+            _id='233662903DE54C4E9FC71EF7DA2920A8',
+            ntype='task', name='task A',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=[
+                astnode.Node(
+                    _id='AE0CC1B973694FB4B76F191B28C642FA',
+                    ntype='task', name='subtask A',
+                    data={
+                        'status': 'todo',
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    },
+                ),
+                astnode.Node(
+                    _id='A58ACFFF058849B291D65DFBBC146BB8',
+                    ntype='task', name='subtask B',
+                    data={
+                        'status': 'todo',
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    },
+                )
+            ]
+        )
+
+        new_node = astnode.Node(
+            _id='233662903DE54C4E9FC71EF7DA2920A8',
+            ntype='task', name='task A',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=[
+                astnode.Node(
+                    _id='A58ACFFF058849B291D65DFBBC146BB8',
+                    ntype='task', name='subtask B',
+                    data={
+                        'status': 'todo',
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    },
+                )
+            ]
+        )
+        old_node.update(new_node)
+        assert old_node.children[0].id == new_node.children[0].id
+
+    def test_update_add_child(self):
+        old_node = astnode.Node(
+            _id='233662903DE54C4E9FC71EF7DA2920A8',
+            ntype='task', name='task A',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=[
+                astnode.Node(
+                    _id='A58ACFFF058849B291D65DFBBC146BB8',
+                    ntype='task', name='subtask B',
+                    data={
+                        'status': 'todo',
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    },
+                )
+            ]
+        )
+
+        new_node = astnode.Node(
+            _id='233662903DE54C4E9FC71EF7DA2920A8',
+            ntype='task', name='task A',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=[
+                astnode.Node(
+                    _id='AE0CC1B973694FB4B76F191B28C642FA',
+                    ntype='task', name='subtask A',
+                    data={
+                        'status': 'todo',
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    },
+                ),
+                astnode.Node(
+                    _id='A58ACFFF058849B291D65DFBBC146BB8',
+                    ntype='task', name='subtask B',
+                    data={
+                        'status': 'todo',
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    },
+                )
+            ]
+        )
+
+        old_node.update(new_node)
+        assert len(old_node.children) == 2
+        assert old_node.children[1].id == 'A58ACFFF058849B291D65DFBBC146BB8'
