@@ -386,6 +386,52 @@ class Test_TaskList:
             }
         ]
 
+    def test_subsection_with_task_subtask(self):
+        tokens = self.tasklist(
+            '{*0EB83AE8F0F346ACB4C2A0485DA430C2*}home\n'
+            '========================================\n'
+            '\n'
+            '{*66A4CCF279E4410B90B920FA1BC5C744*}kitchen\n'
+            '-------------------------------------------\n'
+            '\n'
+            '*{*8675386FD62D4355AD4B613054C3E463*} taskA\n'
+            '    * subtaskA\n'
+        )
+        assert tokens == [
+            {
+                '_id': '0EB83AE8F0F346ACB4C2A0485DA430C2',
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            },
+            {
+                '_id': '66A4CCF279E4410B90B920FA1BC5C744',
+                'type': 'section',
+                'name': 'kitchen',
+                'indent': 1,
+                'parent': '0EB83AE8F0F346ACB4C2A0485DA430C2',
+                'data': {},
+            },
+            {
+                '_id': '8675386FD62D4355AD4B613054C3E463',
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': '66A4CCF279E4410B90B920FA1BC5C744',
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            },
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'subtaskA',
+                'indent': 4,
+                'parent': '8675386FD62D4355AD4B613054C3E463',
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
+
     def tasklist(self, filecontents):
         """ Initializes a TaskList(), returns the lexed contents as a list.
         """
