@@ -45,12 +45,17 @@ let s:comment_colour  = '244'
 
 
 let s:uuid_regex          = '{\*[A-Z0-9]\+\*}'
-let s:uuid_nostatus_regex = '\([\*-ox]\w*\)\@<!{\*[A-Z0-9]\+\*}'
 let s:todo_regex          = '\(^\s*\)\@<=\*\([a-zA-Z]\)\@!'
 let s:skip_regex          = '\(^\s*\)\@<=-\([a-zA-Z]\)\@!'
 let s:done_regex          = '\(^\s*\)\@<=x\([a-zA-Z]\)\@!'
 let s:wip_regex           = '\(^\s*\)\@<=o\([a-zA-Z]\)\@!'
 let s:comment_regex       = '#.*$'
+
+" uuid without task-status, OR without a header-underline
+let s:uuid_nostatus_regex = '' . 
+            \ '\([\*\-ox]\w*\)\@<!' .
+            \ '{\*[A-Z0-9]\+\*}' .
+            \ '\(.*\n[=\-`:\.\"~\^_+]\+\)\@!'
 
 
 " unsaved entries will not have a UUID, but will be coloured
@@ -65,9 +70,7 @@ let s:comment_regex       = '#.*$'
 "
 
 execute "syntax match taskmage_uuid    '". s:uuid_regex          ."' conceal "
-"TODO: lookahead regex, ignore if header
 execute "syntax match taskmage_uuid    '". s:uuid_nostatus_regex ."' conceal cchar=E"   
-
 execute "syntax match taskmage_todo    '". s:todo_regex          ."'"
 execute "syntax match taskmage_skip    '". s:skip_regex          ."'"
 execute "syntax match taskmage_done    '". s:done_regex          ."'"

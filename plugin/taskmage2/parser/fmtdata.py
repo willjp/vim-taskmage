@@ -13,7 +13,7 @@ class TaskList(object):
 
     # list of valid characters to underline sections/files
     indent_lvl_chars = [
-        '=', '-', '`', ':', '.', "'", '"', '~', '^', '_', '+'
+        '=', '-', '`', ':', '.', '"', '~', '^', '_', '+'
     ]
 
     @classmethod
