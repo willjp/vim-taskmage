@@ -167,7 +167,7 @@ class Node(object):
         children = []
         for other_child in node.children:
             if other_child.id in my_children:
-                my_children[other_child.id].update(child)
+                my_children[other_child.id].update(other_child)
                 children.append(my_children[other_child.id])
             else:
                 children.append(other_child)

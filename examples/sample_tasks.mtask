@@ -6,7 +6,7 @@
     "data": {
       "status": "todo", 
       "finished": false, 
-      "modified": "2018-12-08T13:39:51.019575+00:00", 
+      "modified": "2018-12-08T13:45:36.490639+00:00", 
       "created": "2018-12-08T13:39:51.019575+00:00"
     }, 
     "_id": "DAF4F7D6EE8F4A52962FFE3C530D3E50", 
@@ -19,10 +19,91 @@
     "data": {
       "status": "todo", 
       "finished": false, 
-      "modified": "2018-12-08T13:39:51.019638+00:00", 
+      "modified": "2018-12-08T13:45:36.490662+00:00", 
       "created": "2018-12-08T13:39:51.019638+00:00"
     }, 
     "_id": "26103926751544B4B39DFCB0246323FD", 
+    "type": "task"
+  }, 
+  {
+    "indent": 0, 
+    "name": "home", 
+    "parent": null, 
+    "data": {}, 
+    "_id": "F92370418E074C0B9665937C1DFE8AF6", 
+    "type": "section"
+  }, 
+  {
+    "indent": 1, 
+    "name": "kitchen", 
+    "parent": "F92370418E074C0B9665937C1DFE8AF6", 
+    "data": {}, 
+    "_id": "0982509FBE9B45E99BE8696A7880A8B0", 
+    "type": "section"
+  }, 
+  {
+    "indent": 2, 
+    "name": "dishes", 
+    "parent": "0982509FBE9B45E99BE8696A7880A8B0", 
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-08T13:45:36.490686+00:00", 
+      "created": "2018-12-08T13:44:39.643613+00:00"
+    }, 
+    "_id": "153D1A3C7CEF44C8A01B4EADC86AABCE", 
+    "type": "task"
+  }, 
+  {
+    "indent": 2, 
+    "name": "oven", 
+    "parent": "0982509FBE9B45E99BE8696A7880A8B0", 
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-08T13:45:36.490707+00:00", 
+      "created": "2018-12-08T13:44:39.643633+00:00"
+    }, 
+    "_id": "ED5573A2B95E4BE38E7335DF3D6CD0DD", 
+    "type": "task"
+  }, 
+  {
+    "indent": 3, 
+    "name": "interior", 
+    "parent": "ED5573A2B95E4BE38E7335DF3D6CD0DD", 
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-08T13:45:36.490726+00:00", 
+      "created": "2018-12-08T13:45:24.907823+00:00"
+    }, 
+    "_id": "AA27169110664539837FD0D5FDC5B4C9", 
+    "type": "task"
+  }, 
+  {
+    "indent": 3, 
+    "name": "elements", 
+    "parent": "ED5573A2B95E4BE38E7335DF3D6CD0DD", 
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-08T13:45:36.490746+00:00", 
+      "created": "2018-12-08T13:45:24.907843+00:00"
+    }, 
+    "_id": "4C3E4F225FF8442DA2DE5BAAA1CE57C4", 
+    "type": "task"
+  }, 
+  {
+    "indent": 3, 
+    "name": "under stove", 
+    "parent": "ED5573A2B95E4BE38E7335DF3D6CD0DD", 
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-08T13:45:36.490765+00:00", 
+      "created": "2018-12-08T13:45:24.907863+00:00"
+    }, 
+    "_id": "52A9EE24548048468183744C730D359E", 
     "type": "task"
   }
 ]
