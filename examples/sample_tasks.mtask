@@ -1,9 +1,28 @@
-*{*A36B584BAB7843DBA6BA8A94F0ABF9DE*} a
-*{*85B1AFEBF35045F18FC8A066AE4B578F*} b
-
-{*DF21B7D6047D4C3B9B1DCBD98D0DE192*}home
-========================================
-
-*{*08BFA585D37D4ADEAB4653EEAD7BC184*} subtask
-*{*C2164BD4E5F54718BD647A720B9FD6E3*} subtask B
-    * sub subtask
+[
+  {
+    "indent": 0, 
+    "name": "task A", 
+    "parent": null, 
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-08T13:39:51.019575+00:00", 
+      "created": "2018-12-08T13:39:51.019575+00:00"
+    }, 
+    "_id": "DAF4F7D6EE8F4A52962FFE3C530D3E50", 
+    "type": "task"
+  }, 
+  {
+    "indent": 0, 
+    "name": "task B", 
+    "parent": null, 
+    "data": {
+      "status": "todo", 
+      "finished": false, 
+      "modified": "2018-12-08T13:39:51.019638+00:00", 
+      "created": "2018-12-08T13:39:51.019638+00:00"
+    }, 
+    "_id": "26103926751544B4B39DFCB0246323FD", 
+    "type": "task"
+  }
+]
