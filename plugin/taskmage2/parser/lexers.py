@@ -288,13 +288,16 @@ class TaskList(_Lexer):
         # =====================
         # Header (section,file)
         # =====================
+        # header with id
         if ch == '{':
             (offset, _id) = self._read_id()
             self._iostream.offset(offset)
             offset = 0
             ch = self._iostream.peek()
-            return self._read_header(_id, indent)
+            header = self._read_header(_id, indent)
+            return header
 
+        # header without id
         if self._is_header(indent, offset):
             return self._read_header(_id, indent)
 
@@ -567,23 +570,24 @@ class TaskList(_Lexer):
         if title is None:
             return False
 
+        # title may or may not have id (depending on when is_header() is run)
+        title_without_id = re.sub('^{\*[A-Z0-9]+\*}', '', title)
+
         # underlines must be at least as long as title
         # ex:   title
         #       ======
         underline = self._iostream.peek_line(offset + len(title) + 1)  # +1 for \n
 
-        if underline is None:
+        if not underline:
             return False
 
-        if len(title) > len(underline):
+        if len(title_without_id) > len(underline):
             return False
 
         # underlines must be made of the same character
         # ex: '======='
         uline_ch = underline[0]
         for ch in underline:
-            if not underline:
-                continue
             if ch != uline_ch:
                 return False
 

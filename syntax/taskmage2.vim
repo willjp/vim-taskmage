@@ -65,7 +65,9 @@ let s:comment_regex       = '#.*$'
 "
 
 execute "syntax match taskmage_uuid    '". s:uuid_regex          ."' conceal "
-execute "syntax match taskmage_uuid    '". s:uuid_nostatus_regex ."' conceal cchar=E"
+"TODO: lookahead regex, ignore if header
+execute "syntax match taskmage_uuid    '". s:uuid_nostatus_regex ."' conceal cchar=E"   
+
 execute "syntax match taskmage_todo    '". s:todo_regex          ."'"
 execute "syntax match taskmage_skip    '". s:skip_regex          ."'"
 execute "syntax match taskmage_done    '". s:done_regex          ."'"
