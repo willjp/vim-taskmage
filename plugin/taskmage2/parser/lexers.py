@@ -493,6 +493,7 @@ class TaskList(_Lexer):
                 if any([
                     _indent < indent,
                     ch_after_indent in self.statuses,
+                    self._is_header(_indent, offset),
                 ]):
                     self._iostream.offset(offset)
                     task['name'] = name.strip()
