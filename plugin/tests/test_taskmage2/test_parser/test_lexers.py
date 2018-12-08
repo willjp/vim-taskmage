@@ -343,8 +343,45 @@ class Test_TaskList:
                 '_id': uid().hex.upper(),
                 'type': 'task',
                 'name': 'taskA',
-                'indent': 4,
+                'indent': 0,
                 'parent': uid().hex.upper(),
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            }
+        ]
+
+    def test_subsection_with_task(self):
+        tokens = self.tasklist(
+            '{*0EB83AE8F0F346ACB4C2A0485DA430C2*}home\n'
+            '========================================\n'
+            '\n'
+            '{*66A4CCF279E4410B90B920FA1BC5C744*}kitchen\n'
+            '-------------------------------------------\n'
+            '\n'
+            '* taskA\n'
+        )
+        assert tokens == [
+            {
+                '_id': '0EB83AE8F0F346ACB4C2A0485DA430C2',
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            },
+            {
+                '_id': '66A4CCF279E4410B90B920FA1BC5C744',
+                'type': 'section',
+                'name': 'kitchen',
+                'indent': 1,
+                'parent': '0EB83AE8F0F346ACB4C2A0485DA430C2',
+                'data': {},
+            },
+            {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': '66A4CCF279E4410B90B920FA1BC5C744',
                 'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
             }
         ]
@@ -380,6 +417,7 @@ class Test_TaskList:
             # read until end of TaskList
             lexer.read()
             return lexer.data
+
 
 class Test_Mtask:
     """ Mtask shouldn't alter raw json
