@@ -187,7 +187,7 @@ class Test_TaskList(object):
         assert render == [
             '',
             '{*E083C4632F0D41CCA4C9712F3D4BD980*}cleanup',
-            '===========================================',
+            '=======',
             '',
         ]
 
@@ -230,7 +230,7 @@ class Test_TaskList(object):
     def test_section_with_tasks(self):
         render = self.render([
             astnode.Node(
-                _id='E083C4632F0D41CCA4C9712F3D4BD980',
+                _id=None,
                 ntype='section',
                 name='cleanup',
                 data={},
@@ -265,8 +265,8 @@ class Test_TaskList(object):
 
         assert render == [
             '',
-            '{*E083C4632F0D41CCA4C9712F3D4BD980*}cleanup',
-            '===========================================',
+            'cleanup',
+            '=======',
             '',
             '* subtask A',
             '* subtask B',

@@ -205,7 +205,7 @@ class TaskList(Renderer):
         return [
             '',
             header_title,
-            char * len(header_title),
+            char * len(node.name),
             '',
         ]
 
