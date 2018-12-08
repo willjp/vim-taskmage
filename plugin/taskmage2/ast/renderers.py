@@ -123,7 +123,14 @@ class TaskList(Renderer):
         )
 
         for child in node.children:
-            render = self._render_node(render, child, node, indent=indent + 1)
+            # indentation is reset at 0 for tasks within sections/files
+            if all([
+                node.type in ('section', 'file'),
+                child.type == 'task',
+            ]):
+                render = self._render_node(render, child, node, indent=0)
+            else:
+                render = self._render_node(render, child, node, indent=indent + 1)
 
         return render
 
@@ -230,9 +237,6 @@ class TaskList(Renderer):
             data['id_str'] = ''.join(['{*', node.id, '*}'])
 
         data['indent_spc'] = ' ' * (4 * indent)
-        if parent is not None:
-            if parent.type in ('file', 'section'):
-                data['indent_spc'] = ''
 
         lines = node.name.split('\n')
 

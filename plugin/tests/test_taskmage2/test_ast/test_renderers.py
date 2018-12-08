@@ -272,6 +272,65 @@ class Test_TaskList(object):
             '* subtask B',
         ]
 
+    def test_subsection_with_task_subtasks(self):
+        render = self.render([
+            astnode.Node(
+                _id=None,
+                ntype='section',
+                name='cleanup',
+                data={},
+                children=[
+                    astnode.Node(
+                        _id=None,
+                        ntype='section',
+                        name='kitchen',
+                        data={},
+                        children=[
+                            astnode.Node(
+                                _id=None,
+                                ntype='task',
+                                name='oven',
+                                data={
+                                    'status': 'todo',
+                                    'created': None,
+                                    'finished': False,
+                                    'modified': None,
+                                },
+                                children=[
+                                    astnode.Node(
+                                        _id=None,
+                                        ntype='task',
+                                        name='elements',
+                                        data={
+                                            'status': 'todo',
+                                            'created': None,
+                                            'finished': False,
+                                            'modified': None,
+                                        },
+                                        children=None,
+                                    ),
+                                ]
+                            ),
+                        ]
+                    )
+                ]
+            )
+        ])
+        print(render)
+
+        assert render == [
+            '',
+            'cleanup',
+            '=======',
+            '',
+            '',
+            'kitchen',
+            '-------',
+            '',
+            '* oven',
+            '    * elements',
+        ]
+
     def render(self, ast):
         """ Render parser_data using a TaskList renderer.
 
