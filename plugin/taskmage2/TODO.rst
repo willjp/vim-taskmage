@@ -2,7 +2,7 @@
 
     * play around with, and confirm that `ast.touch` is behaving as expected.
 
-    * correct syntax highlighting of header ids
+    x correct syntax highlighting of header ids
 
     * write mtask definition for tagbar
 
