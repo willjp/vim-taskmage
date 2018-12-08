@@ -1,49 +1,9 @@
-[
-  {
-    "indent": 0, 
-    "name": "a", 
-    "parent": null, 
-    "data": {
-      "status": "todo", 
-      "finished": false, 
-      "modified": "2018-12-08T13:09:01.440331+00:00", 
-      "created": "2018-12-08T13:08:00.626250+00:00"
-    }, 
-    "_id": "A36B584BAB7843DBA6BA8A94F0ABF9DE", 
-    "type": "task"
-  }, 
-  {
-    "indent": 0, 
-    "name": "b", 
-    "parent": null, 
-    "data": {
-      "status": "todo", 
-      "finished": false, 
-      "modified": "2018-12-08T13:09:01.440353+00:00", 
-      "created": "2018-12-07T13:15:10.424929+00:00"
-    }, 
-    "_id": "85B1AFEBF35045F18FC8A066AE4B578F", 
-    "type": "task"
-  }, 
-  {
-    "indent": 0, 
-    "name": "home", 
-    "parent": null, 
-    "data": {}, 
-    "_id": "DF21B7D6047D4C3B9B1DCBD98D0DE192", 
-    "type": "section"
-  }, 
-  {
-    "indent": 1, 
-    "name": "subtask", 
-    "parent": "DF21B7D6047D4C3B9B1DCBD98D0DE192", 
-    "data": {
-      "status": "todo", 
-      "finished": false, 
-      "modified": "2018-12-08T13:09:01.440376+00:00", 
-      "created": "2018-12-08T13:08:10.092017+00:00"
-    }, 
-    "_id": "08BFA585D37D4ADEAB4653EEAD7BC184", 
-    "type": "task"
-  }
-]
+*{*A36B584BAB7843DBA6BA8A94F0ABF9DE*} a
+*{*85B1AFEBF35045F18FC8A066AE4B578F*} b
+
+{*DF21B7D6047D4C3B9B1DCBD98D0DE192*}home
+========================================
+
+*{*08BFA585D37D4ADEAB4653EEAD7BC184*} subtask
+*{*C2164BD4E5F54718BD647A720B9FD6E3*} subtask B
+    * sub subtask

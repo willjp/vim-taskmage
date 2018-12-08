@@ -87,11 +87,11 @@ class TaskList(Renderer):
         render = []
 
         for node in self.ast:
-            render = self._render_node(render, node, indent=0)
+            render = self._render_node(render, node, parent=None, indent=0)
 
         return render
 
-    def _render_node(self, render, node, indent=0):
+    def _render_node(self, render, node, parent, indent=0):
         """
         Recursively renders a node, until all children have been descended
         into.
@@ -119,15 +119,15 @@ class TaskList(Renderer):
                 'unexpected nodetype: {}'.format(repr(node))
             )
         render.extend(
-            node_renderer_map[node.type](node, indent)
+            node_renderer_map[node.type](node, parent, indent)
         )
 
         for child in node.children:
-            render = self._render_node(render, child, indent=indent + 1)
+            render = self._render_node(render, child, node, indent=indent + 1)
 
         return render
 
-    def _render_fileheader(self, node, indent=0):
+    def _render_fileheader(self, node, parent, indent=0):
         """
         renders a single file-header node.
 
@@ -164,7 +164,7 @@ class TaskList(Renderer):
             '',
         ]
 
-    def _render_sectionheader(self, node, indent=0):
+    def _render_sectionheader(self, node, parent, indent=0):
         """
         renders a single section-header node.
 
@@ -202,7 +202,7 @@ class TaskList(Renderer):
             '',
         ]
 
-    def _render_task(self, node, indent=0):
+    def _render_task(self, node, parent, indent=0):
         """
         Renders a single task node.
 
@@ -230,6 +230,9 @@ class TaskList(Renderer):
             data['id_str'] = ''.join(['{*', node.id, '*}'])
 
         data['indent_spc'] = ' ' * (4 * indent)
+        if parent is not None:
+            if parent.type in ('file', 'section'):
+                data['indent_spc'] = ''
 
         lines = node.name.split('\n')
 

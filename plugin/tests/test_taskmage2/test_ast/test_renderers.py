@@ -268,8 +268,8 @@ class Test_TaskList(object):
             '{*E083C4632F0D41CCA4C9712F3D4BD980*}cleanup',
             '===========================================',
             '',
-            '    * subtask A',
-            '    * subtask B',
+            '* subtask A',
+            '* subtask B',
         ]
 
     def render(self, ast):
