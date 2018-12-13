@@ -25,7 +25,6 @@ import mock
 ns = lexers.__name__
 
 
-@pytest.fixture
 def uid():
     return uuid.UUID('481ae479e4ab4c9b81653db9b92469c0')
 

@@ -571,7 +571,7 @@ class TaskList(_Lexer):
             return False
 
         # title may or may not have id (depending on when is_header() is run)
-        title_without_id = re.sub('^{\*[A-Z0-9]+\*}', '', title)
+        title_without_id = re.sub('^{\\*[A-Z0-9]+\\*}', '', title)
 
         # underlines must be at least as long as title
         # ex:   title
