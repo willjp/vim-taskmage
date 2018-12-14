@@ -25,7 +25,7 @@ import re
 import dateutil.parser
 import enum
 # internal
-from taskmage2 import exceptions_
+from taskmage2.utils import excepts
 from taskmage2.parser import fmtdata
 
 
@@ -149,7 +149,7 @@ class _Lexer(object):
             msg = ''
 
         # TODO: line and col in error.
-        raise exceptions_.ParserError(
+        raise excepts.ParserError(
             # 'ln:{} col:{} -- {}'.format(self._ln,self._col, msg)
             msg
         )
