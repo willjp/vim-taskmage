@@ -3,6 +3,28 @@ from six.moves import UserList
 
 
 class AbstractSyntaxTree(UserList):
+    """
+
+    Example:
+
+        .. code-block:: python
+
+            [
+                astnode.Node(id=.., type='file', name='home/todo.mtask', children=[
+                    astnode.Node(id=.., type='task', name='toplv task', data={}, children=[]),
+                    astnode.Node(id=.., type='section', name='home', data={}, children=[
+                        astnode.Node(id=.., type='task', name='write task parser', data={}, children=[
+                            astnode.Node(id=.., type='task' , name='learn about AST'     , data={} , children=[]) ,
+                            astnode.Node(id=.., type='task' , name='write in pseudocode' , data={} , children=[]) ,
+                            astnode.Node(id=.., type='task' , name='write in real code'  , data={} , children=[]) ,
+                        ]),
+                    ])
+                ]),
+                astnode.Node(id=.., type='file', name='home/todo.mtask', children=[]),
+                ...
+            ]
+
+    """
     def __init__(self, data=None):
         if data is None:
             data = []
@@ -68,3 +90,16 @@ class AbstractSyntaxTree(UserList):
                 new_ast.append(node)
 
         self.data = new_ast
+
+    def get_completed_taskchains(self):
+        """ Returns all top-level nodes whose children statuses are all completed (done, or skip).
+
+        Returns:
+            taskmage2.ast.ast.AbstractSyntaxTree:
+                an abstractsyntaxtree with only the entirely completed task-chains.
+        """
+        completed_taskchains = AbstractSyntaxTree()
+        for node in self.data:
+            if node.is_taskchain_completed():
+                completed_taskchains.append(node)
+        return completed_taskchains

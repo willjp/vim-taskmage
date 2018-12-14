@@ -270,3 +270,6 @@ class Test_Node(object):
         old_node.update(new_node)
         assert len(old_node.children) == 2
         assert old_node.children[1].id == 'A58ACFFF058849B291D65DFBBC146BB8'
+
+    def test_is_taskchain_completed(self):
+        assert False

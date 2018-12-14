@@ -95,6 +95,9 @@ class Test_AbstractSyntaxTree(object):
         AST_A.update(AST_B)
         assert AST_A.data == [FakeNode('2'), FakeNode('1')]
 
+    def test_get_completed_taskchains(self):
+        assert False
+
     def render(self, renderer):
         tree = ast.AbstractSyntaxTree([
             astnode.Node(

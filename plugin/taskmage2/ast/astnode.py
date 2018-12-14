@@ -174,6 +174,10 @@ class Node(object):
 
         return children
 
+    def is_taskchain_completed(self):
+        """ Returns True if all children statuses are in done or skip.
+        """
+        raise NotImplementedError('todo')
 
 if __name__ == '__main__':
     pass

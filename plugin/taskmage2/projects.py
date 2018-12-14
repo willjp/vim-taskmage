@@ -128,8 +128,11 @@ class Project(object):
             filepath (str, optional): ``(ex: '/src/project/file.mtask' )``
                 Optionally, archive completed tasks in a single target file.
         """
-        # I think this belongs on the AST intead...
-        pass
+        with open(vim.current.buffer.name, 'r') as fd_py:
+            fd = iostream.FileDescriptor(fd_py)
+            ast = parsers.parse(fd, 'mtask')
+            completed = ast.get_completed_taskchains()
+            raise NotImplementedError('todo')
 
     def is_project_path(self, filepath):
         """ Test if a file is within this project.
