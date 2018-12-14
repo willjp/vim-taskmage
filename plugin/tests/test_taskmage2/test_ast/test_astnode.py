@@ -271,7 +271,11 @@ class Test_Node(object):
         assert len(old_node.children) == 2
         assert old_node.children[1].id == 'A58ACFFF058849B291D65DFBBC146BB8'
 
-    def test_taskchain_completion_section(self):
+    def test_taskchain_completion_file(self):
+        """ files must resolve as false, at least until
+        I figure out a mechanism for archiving an entire taskfile,
+        and if that is even desirable.
+        """
         task = astnode.Node(
             _id=None,
             ntype='file',
@@ -279,9 +283,12 @@ class Test_Node(object):
             data={},
             children=None,
         )
-        assert task.is_taskchain_completed() is False
+        assert task.is_complete() is False
 
-    def test_taskchain_completion_section(self):
+    def test_taskchain_completion_empty_section(self):
+        """ empty sections resolve as false, they are likely there
+        as markers for what is to come next.
+        """
         task = astnode.Node(
             _id=None,
             ntype='section',
@@ -289,7 +296,32 @@ class Test_Node(object):
             data={},
             children=None,
         )
-        assert task.is_taskchain_completed() is False
+        assert task.is_complete() is False
+
+    def test_taskchain_completion_section_with_children(self):
+        """ entirely completed sections resolve as true.
+        """
+        task = astnode.Node(
+            _id=None,
+            ntype='section',
+            name='kitchen',
+            data={},
+            children=[
+                astnode.Node(
+                    _id=None,
+                    ntype='task',
+                    name='kitchen',
+                    data={
+                        'status': 'done',
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    },
+                    children=None,
+                )
+            ],
+        )
+        assert task.is_complete() is True
 
     def test_taskchain_completion_top_task_incomplete(self):
         task = astnode.Node(
@@ -304,7 +336,7 @@ class Test_Node(object):
             },
             children=None,
         )
-        assert task.is_taskchain_completed() is False
+        assert task.is_complete() is False
 
     def test_taskchain_completion_child_task_incomplete(self):
         task = astnode.Node(
@@ -332,7 +364,7 @@ class Test_Node(object):
                 )
             ],
         )
-        assert task.is_taskchain_completed() is False
+        assert task.is_complete() is False
 
     def test_taskchain_completion_child_and_parent_complete(self):
         task = astnode.Node(
@@ -360,4 +392,4 @@ class Test_Node(object):
                 )
             ],
         )
-        assert task.is_taskchain_completed() is True
+        assert task.is_complete() is True

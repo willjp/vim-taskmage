@@ -85,8 +85,8 @@ class Test_Project(object):
         archived_path = project.get_active_path('/src/project/.taskmage/subdir/file.mtask')
         assert archived_path == '/src/project/subdir/file.mtask'
 
-    def test_archive_completed_tasks(self):
-        assert False
+#    def test_archive_completed_tasks(self):
+#        assert False
 
     def find(self, path, root):
         """

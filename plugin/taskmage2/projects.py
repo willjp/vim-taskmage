@@ -1,5 +1,7 @@
 import os
+import shutil
 from taskmage2.utils import filesystem
+from taskmage2.ast import ast, renderers
 
 
 class Project(object):
@@ -104,7 +106,7 @@ class Project(object):
         projectroot = self.find(path)
         self._root = projectroot
 
-    def archive_completed_tasks(self, filepath=None):
+    def archive_completed(self, filepath=None):
         """ Archives all completed task-branches.
 
         Example:
@@ -129,7 +131,7 @@ class Project(object):
                 Optionally, archive completed tasks in a single target file.
         """
         if filepath is not None:
-            (active_ast, archive_ast) = self._archive_completed_as_ast(filepath)
+            self._archive_completed(filepath)
         else:
             # for every mtask file in the entire project...
             raise NotImplementedError('todo - archive completed tasks from all mtask files')
@@ -239,17 +241,9 @@ class Project(object):
         archive_path = self.get_archived_path(filepath)
         archive_ast = self._get_mtaskfile_ast(archive_path)
 
-        # remove completed from active, add to archive
-        completed_nodes = ast_dst.get_completed_taskchains()
-        new_active_ast = ast.AbstractSyntaxTree()
-
-        for node in ast_src:
-            if node not in completed_nodes:
-                new_active_ast.append(node)
-            else:
-                archive_ast.append(node)
-
-        return (new_active_ast, archive_ast)
+        # perform archive
+        archive_ast = active_ast.archive_completed(archive_ast)
+        return (active_ast, archive_ast)
 
     def _get_mtaskfile_ast(self, filepath):
         if not os.path.isfile(filepath):

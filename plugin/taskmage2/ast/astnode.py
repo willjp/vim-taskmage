@@ -174,25 +174,38 @@ class Node(object):
 
         return children
 
-    def is_taskchain_completed(self):
+    def is_complete(self):
         """ Returns True if self, and all children statuses are in done or skip.
         """
-        # headers have no status
-        if self.type != 'task':
+        if self.type == 'section':
+            return self._is_section_complete()
+        elif self.type == 'task':
+            return self._is_taskchain_complete()
+        else:
             return False
 
-        # current status
+    def _is_taskchain_complete(self):
+        # task completion is determined by task-status
         if self.data.status not in ('done', 'skip'):
             return False
 
-        # child statuses
         if not self.children:
             return True
 
-        for child in self.children:
-            if not child.is_taskchain_completed():
-                return False
+        return self._are_children_complete()
 
+    def _is_section_complete(self):
+        # section completion is determined by it's contents.
+        # empty sections may be left as placeholders.
+        if not self.children:
+            return False
+
+        return self._are_children_complete()
+
+    def _are_children_complete(self):
+        for child in self.children:
+            if not child.is_complete():
+                return False
         return True
 
 

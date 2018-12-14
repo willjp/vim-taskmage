@@ -23,43 +23,35 @@ endif
 " Commands
 " ========
 
-
-function! TaskMageArchiveCompleted()
-    """
-    " Archives all completed tasks 
-    " ( provided all of their parents are also completed )
-    """
-    py taskmage.vim_plugin.archive_completed_tasks()
-endfunc
-command TaskMageArchiveCompleted  call TaskMageArchiveCompleted()
+command TaskMageArchiveCompleted  py taskmage2.api.archive_completed_tasks()
 
 
-function! TaskMageOpenCounterpart( open_command )
-    """
-    " Opens matching archived-file for task-files and vice-versa.
-    "
-    " Args:
-    "
-    "    open_command (str): ``(ex: 'edit', 'split', 'vsplit' )``
-    "       the vim-command to use to open the new buffer
-    " 
-    """
-    execute 'py taskmage.vim_plugin.open_counterpart( "'. a:open_command .'" )'
-endfunc
+"function! TaskMageOpenCounterpart( open_command )
+"    """
+"    " Opens matching archived-file for task-files and vice-versa.
+"    "
+"    " Args:
+"    "
+"    "    open_command (str): ``(ex: 'edit', 'split', 'vsplit' )``
+"    "       the vim-command to use to open the new buffer
+"    " 
+"    """
+"    execute 'py taskmage.vim_plugin.open_counterpart( "'. a:open_command .'" )'
+"endfunc
 
 
-function! TaskMageCreateProject()
-    """ 
-    " prompts user to create a new vim project 
-    """
-    py taskmage.vim_plugin.create_project()
-endfunc
+"function! TaskMageCreateProject()
+"    """ 
+"    " prompts user to create a new vim project 
+"    """
+"    py taskmage.vim_plugin.create_project()
+"endfunc
 
 
-command TaskMageToggle call TaskMageOpenCounterpart('edit')
-command TaskMageSplit  call TaskMageOpenCounterpart('split')
-command TaskMageVSplit call TaskMageOpenCounterpart('vsplit')
-command TaskMageCreateProject call TaskMageCreateProject()
+"command TaskMageToggle call TaskMageOpenCounterpart('edit')
+"command TaskMageSplit  call TaskMageOpenCounterpart('split')
+"command TaskMageVSplit call TaskMageOpenCounterpart('vsplit')
+"command TaskMageCreateProject call TaskMageCreateProject()
 
 
 " ========

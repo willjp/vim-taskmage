@@ -103,3 +103,17 @@ class AbstractSyntaxTree(UserList):
             if node.is_taskchain_completed():
                 completed_taskchains.append(node)
         return completed_taskchains
+
+    def archive_completed(self, archive_ast=None):
+        if archive_ast is None:
+            archive_ast = AbstractSyntaxTree()
+
+        # remove completed from active, add to archive
+        completed_nodes = self.get_completed_taskchains()
+
+        for node in self.data:
+            if node in completed_nodes:
+                self.data.remove(node)
+                archive_ast.append(node)
+
+        return archive_ast

@@ -110,6 +110,21 @@ class Test_AbstractSyntaxTree(object):
         completed = AST.get_completed_taskchains()
         assert completed.data == [complete_node]
 
+    def test_archive_completed_tasks_only(self):
+        data = [mock.Mock(), mock.Mock(), mock.Mock()]
+        completed = [data[1]]
+
+        AST = ast.AbstractSyntaxTree()
+        AST.data = data[:]
+        with mock.patch(
+            '{}.AbstractSyntaxTree.get_completed_taskchains'.format(ast.__name__),
+            return_value=completed
+        ):
+            archive_ast = AST.archive_completed()
+
+        assert archive_ast.data == [data[1]]
+        assert AST.data == [data[0], data[2]]
+
     def render(self, renderer):
         tree = ast.AbstractSyntaxTree([
             astnode.Node(

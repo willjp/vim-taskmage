@@ -54,3 +54,23 @@ def handle_postsave_mtask():
     render = handle_open_mtask()
     vim.command('syntax on ')
     return render
+
+
+def archive_completed_tasks():
+    """ saves current buffer, then archives all entirely-complete task-branches
+    within the tree.
+    """
+    # save file, so saved copy is up to date
+    vimfile = os.path.abspath(vim.current.buffer.name)
+    if not os.path.isfile(vimfile):
+        raise RuntimeError('cannot archive completed tasks in unsaved file')
+    vim.command('w')
+
+    # archive completed tasks on disk
+    project = projects.Project()
+    project.load(vimfile)
+    project.archive_completed_tasks(vimfile)
+
+    # reload from disk
+    vim.command('e "{}"'.format(vimfile))
+
