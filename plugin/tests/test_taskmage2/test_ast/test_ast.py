@@ -96,7 +96,19 @@ class Test_AbstractSyntaxTree(object):
         assert AST_A.data == [FakeNode('2'), FakeNode('1')]
 
     def test_get_completed_taskchains(self):
-        assert False
+        """ Retrieve all top-level task-nodes whose self/children are all completed.
+        """
+        complete_node = mock.Mock()
+        complete_node.is_taskchain_completed = mock.Mock(return_value=True)
+
+        incomplete_node = mock.Mock()
+        incomplete_node.is_taskchain_completed = mock.Mock(return_value=False)
+
+        AST = ast.AbstractSyntaxTree()
+        AST.data = [complete_node, incomplete_node]
+
+        completed = AST.get_completed_taskchains()
+        assert completed.data == [complete_node]
 
     def render(self, renderer):
         tree = ast.AbstractSyntaxTree([

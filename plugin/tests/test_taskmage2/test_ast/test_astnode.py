@@ -271,5 +271,93 @@ class Test_Node(object):
         assert len(old_node.children) == 2
         assert old_node.children[1].id == 'A58ACFFF058849B291D65DFBBC146BB8'
 
-    def test_is_taskchain_completed(self):
-        assert False
+    def test_taskchain_completion_section(self):
+        task = astnode.Node(
+            _id=None,
+            ntype='file',
+            name='home/todo.mtask',
+            data={},
+            children=None,
+        )
+        assert task.is_taskchain_completed() is False
+
+    def test_taskchain_completion_section(self):
+        task = astnode.Node(
+            _id=None,
+            ntype='section',
+            name='kitchen',
+            data={},
+            children=None,
+        )
+        assert task.is_taskchain_completed() is False
+
+    def test_taskchain_completion_top_task_incomplete(self):
+        task = astnode.Node(
+            _id=None,
+            ntype='task',
+            name='kitchen',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=None,
+        )
+        assert task.is_taskchain_completed() is False
+
+    def test_taskchain_completion_child_task_incomplete(self):
+        task = astnode.Node(
+            _id=None,
+            ntype='task',
+            name='kitchen',
+            data={
+                'status': 'done',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=[
+                astnode.Node(
+                    _id=None,
+                    ntype='task',
+                    name='kitchen',
+                    data={
+                        'status': 'todo',
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    },
+                    children=None,
+                )
+            ],
+        )
+        assert task.is_taskchain_completed() is False
+
+    def test_taskchain_completion_child_and_parent_complete(self):
+        task = astnode.Node(
+            _id=None,
+            ntype='task',
+            name='kitchen',
+            data={
+                'status': 'done',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=[
+                astnode.Node(
+                    _id=None,
+                    ntype='task',
+                    name='kitchen',
+                    data={
+                        'status': 'skip',
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    },
+                    children=None,
+                )
+            ],
+        )
+        assert task.is_taskchain_completed() is True

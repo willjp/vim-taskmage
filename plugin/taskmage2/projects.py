@@ -128,11 +128,11 @@ class Project(object):
             filepath (str, optional): ``(ex: '/src/project/file.mtask' )``
                 Optionally, archive completed tasks in a single target file.
         """
-        with open(vim.current.buffer.name, 'r') as fd_py:
-            fd = iostream.FileDescriptor(fd_py)
-            ast = parsers.parse(fd, 'mtask')
-            completed = ast.get_completed_taskchains()
-            raise NotImplementedError('todo')
+        if filepath is not None:
+            (active_ast, archive_ast) = self._archive_completed_as_ast(filepath)
+        else:
+            # for every mtask file in the entire project...
+            raise NotImplementedError('todo - archive completed tasks from all mtask files')
 
     def is_project_path(self, filepath):
         """ Test if a file is within this project.
@@ -190,4 +190,72 @@ class Project(object):
         active_path = '{}/{}'.format(self.root, relpath)
         return active_path
 
+    def _archive_completed(self, filepath):
+        (active_ast, archive_ast) = self._archive_completed_as_ast(filepath)
 
+        # render ASTs
+        active_mtask_contents = active_ast.render(renderers.Mtask)
+        archive_mtask_contents = archive_ast.render(renderers.Mtask)
+
+        # create tempdir (prevent writing bad data)
+        tempdir = tempfile.mkdtemp()
+        active_tmpfile = '{}/active.mtask'.format(tempdir)
+        archive_tmpfile = '{}/archive.mtask'.format(tempdir)
+        try:
+            # write contents to tempfiles
+            with open(active_tempfile, 'w') as fd:
+                fd.write('\n'.join(active_mtask_contents))
+            with open(archive_tempfile, 'w') as fd:
+                fd.write('\n'.join(archive_mtask_contents))
+
+            # overwrite real files
+            archive_path = self.get_archived_path(filepath)
+            archive_dir = os.path.dirname(archive_path)
+            if not os.path.isdir(archive_dir):
+                os.makedirs(archive_dir)
+
+            shutil.copyfile(archive_tempfile, archive_path)
+            shutil.copyfile(active_tempfile, filepath)
+        finally:
+            # delete tempdir
+            if os.path.isdir(tempdir):
+                shutil.rmtree(tempdir)
+
+    def _archive_completed_as_ast(self, filepath):
+        """
+        Returns:
+
+            .. code-block:: python
+
+                (
+                    ast.AbstractSyntaxTree(),  # new active AST
+                    ast.AbstractSyntaxTree(),  # new archive AST
+                )
+        """
+        # get active AST
+        active_ast = self._get_mtaskfile_ast(filepath)
+
+        # get archive AST
+        archive_path = self.get_archived_path(filepath)
+        archive_ast = self._get_mtaskfile_ast(archive_path)
+
+        # remove completed from active, add to archive
+        completed_nodes = ast_dst.get_completed_taskchains()
+        new_active_ast = ast.AbstractSyntaxTree()
+
+        for node in ast_src:
+            if node not in completed_nodes:
+                new_active_ast.append(node)
+            else:
+                archive_ast.append(node)
+
+        return (new_active_ast, archive_ast)
+
+    def _get_mtaskfile_ast(self, filepath):
+        if not os.path.isfile(filepath):
+            return ast.AbstractSyntaxTree()
+
+        with open(filepath, 'r') as fd_src:
+            fd = iostream.FileDescriptor(fd_src)
+            ast = parsers.parse(fd, 'mtask')
+        return ast

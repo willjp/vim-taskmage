@@ -175,9 +175,26 @@ class Node(object):
         return children
 
     def is_taskchain_completed(self):
-        """ Returns True if all children statuses are in done or skip.
+        """ Returns True if self, and all children statuses are in done or skip.
         """
-        raise NotImplementedError('todo')
+        # headers have no status
+        if self.type != 'task':
+            return False
+
+        # current status
+        if self.data.status not in ('done', 'skip'):
+            return False
+
+        # child statuses
+        if not self.children:
+            return True
+
+        for child in self.children:
+            if not child.is_taskchain_completed():
+                return False
+
+        return True
+
 
 if __name__ == '__main__':
     pass
