@@ -10,11 +10,12 @@ def format_path(path):
 
 
 def walk_parents(path):
+    path = format_path(path)
     yield path
 
     last_dir = path
     parent_dir = os.path.dirname(last_dir)
-    while last_dir != parent_dir:
+    while parent_dir and last_dir != parent_dir:
         yield parent_dir
         last_dir = parent_dir
         parent_dir = os.path.dirname(last_dir)
