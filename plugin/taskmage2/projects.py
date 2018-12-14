@@ -72,7 +72,7 @@ class Project(object):
 
     @staticmethod
     def find(path):
-        path = filesystem.format_path(path)
+        path = filesystem.format_path(os.path.abspath(path))
 
         # /src/project/.taskmage
         if os.path.basename(path) == '.taskmage':
@@ -131,20 +131,60 @@ class Project(object):
         # I think this belongs on the AST intead...
         pass
 
+    def is_project_path(self, filepath):
+        """ Test if a file is within this project.
+        """
+        if filepath.startswith('{}/'.format(self.root)):
+            return True
+        return False
+
     def is_archived_path(self, filepath):
-        pass
+        """ Test if file is an archived mtask file.
+        """
+        if filepath.startswith('{}/.taskmage/'.format(self.root)):
+            return True
+        return False
 
     def is_active_path(self, filepath):
-        pass
+        """ Test if file is an active (non-archived) mtask file.
+        """
+        if self.is_project_path(filepath) and not self.is_archived_path(filepath):
+            return True
+        return False
 
     def get_archived_path(self, filepath):
         """ Returns filepath to corresponding archived mtask file's (from un-archived mtask file).
         """
-        pass
+        if not self.is_project_path(filepath):
+            raise RuntimeError(
+                ('filepath not within current taskmage project. \n'
+                 'project "{}"\n'
+                 'filepath "{}\n').format(self.root, filepath)
+            )
+        if self.is_archived_path(filepath):
+            return filepath
+
+        filepath = filesystem.format_path(filepath)
+        relpath = filepath[len(self.root) + 1:]
+        archived_path = '{}/.taskmage/{}'.format(self.root, relpath)
+        return archived_path
 
     def get_active_path(self, filepath):
         """ Returns filepath to corresponding un-archived mtask file (from archived mtask file).
         """
-        pass
+        if not self.is_project_path(filepath):
+            raise RuntimeError(
+                ('filepath not within current taskmage project. \n'
+                 'project "{}"\n'
+                 'filepath "{}\n').format(self.root, filepath)
+            )
+        if not self.is_archived_path(filepath):
+            return filepath
+
+        filepath = filesystem.format_path(filepath)
+        taskdir = '{}/.taskmage'.format(self.root)
+        relpath = filepath[len(taskdir) + 1:]
+        active_path = '{}/{}'.format(self.root, relpath)
+        return active_path
 
 
