@@ -1,3 +1,5 @@
+import os
+
 import mock
 import pytest
 
@@ -8,17 +10,17 @@ ns = projects.__name__
 
 
 class Test_Project(object):
-    def test_load_projectroot(self):
-        project = self.load('/src/project')
-        assert project.root == '/src/project'
+    def test_find_projectroot(self):
+        project_root = self.find('/src/project', root='/src/project')
+        assert project_root == '/src/project'
 
-    def test_load_projectfile(self):
-        project = self.load('/src/project/subdir/file.mtask')
-        assert project.root == '/src/project'
+    def test_find_projectfile(self):
+        project_root = self.find('/src/project/subdir/file.mtask', root='/src/project')
+        assert project_root == '/src/project'
 
-    def test_load_taskmagedir(self):
-        project = self.load('/src/project/.taskmage')
-        assert project.root == '/src/project'
+    def test_find_taskmagedir(self):
+        project_root = self.find('/src/project/.taskmage', root='/src/project')
+        assert project_root == '/src/project'
 
     def test_create_sets_up_filesystem(self):
         (mock_os, project) = self.create('/src/project')
@@ -33,34 +35,52 @@ class Test_Project(object):
             mock_os.path.isdir = mock.Mock(return_value=True)
             projects.Project.create('/src/project')
 
-    def test_archive_all_completed(self):
-        assert False
+    def test_load_sets_root(self):
+        with mock.patch('{}.Project.find'.format(ns), return_value='/src/project'):
+            project = projects.Project()
+            project.load('/src/project')
+        assert project.root == '/src/project'
 
-    def test_archive_completed_in_file(self):
-        assert False
+#    def test_archive_all_completed(self):
+#        assert False
+#
+#    def test_archive_completed_in_file(self):
+#        assert False
+#
+#    def test_is_archived_path(self):
+#        assert False
+#
+#    def test_is_not_archived_path(self):
+#        assert False
+#
+#    def test_is_active_path(self):
+#        assert False
+#
+#    def test_is_not_active_path(self):
+#        assert False
+#
+#    def test_get_archived_path(self):
+#        assert False
+#
+#    def test_get_active_path(self):
+#        assert False
 
-    def test_is_archived_path(self):
-        assert False
+    def find(self, path, root):
+        """
 
-    def test_is_not_archived_path(self):
-        assert False
+        Args:
+            path (str): path whose project we are trying to obtain
+            root (str): the root of the project.
+        """
+        def isdir(path):
+            task_dir = '{}/.taskmage'.format(root)
+            return path == task_dir
 
-    def test_is_active_path(self):
-        assert False
-
-    def test_is_not_active_path(self):
-        assert False
-
-    def test_get_archived_path(self):
-        assert False
-
-    def test_get_active_path(self):
-        assert False
-
-    def load(self, path):
-        return
+        with mock.patch('{}.os.path.isdir'.format(ns), side_effect=isdir):
+            project_root = projects.Project.find(path)
+            return project_root
 
     def create(self, root):
         with mock.patch('{}.os'.format(ns)) as mock_os:
-            project = None
+            project = projects.Project.create(root)
             return (mock_os, project)

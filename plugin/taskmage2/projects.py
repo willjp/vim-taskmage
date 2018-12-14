@@ -1,7 +1,9 @@
+import os
+from taskmage2.utils import filesystem
 
 
 class Project(object):
-    def __init__(self, path):
+    def __init__(self, root=None):
         """ Constructor.
 
         Args:
@@ -18,8 +20,20 @@ class Project(object):
         """
         self._root = None
 
+        if root:
+            self.load(root)
+
     @property
     def root(self):
+        """ The root directory of a project. Contains ``.taskmage`` directory.
+
+        Returns:
+
+            .. code-block:: python
+
+                '/src/project'
+
+        """
         return self._root
 
     @classmethod
@@ -29,8 +43,48 @@ class Project(object):
         Args:
             rootdir (str):
                 Path to the root of your taskmage project.
+
+        Returns:
+            taskmage.projects.Project: a project instance.
         """
-        pass
+
+        if os.path.basename(root) == '.taskmage':
+            root = os.path.dirname(root)
+
+        if os.path.exists(root):
+            if not os.path.isdir(root):
+                raise OSError(
+                    'unable to create taskmage project, provided '
+                    'path exists and is not a directory. "{}"'.format(root)
+                )
+
+        taskmage_dir = '{}/.taskmage'.format(root)
+        if os.path.exists(taskmage_dir):
+            if not os.path.isdir(taskmage_dir):
+                raise OSError(
+                    'unable to create taskmage project, provided '
+                    'path exists and is not a directory. "{}"'.format(taskmage_dir)
+                )
+            return Project(root)
+
+        os.makedirs(taskmage_dir)
+        return Project(root)
+
+    @staticmethod
+    def find(path):
+        path = filesystem.format_path(path)
+
+        # /src/project/.taskmage
+        if os.path.basename(path) == '.taskmage':
+            return os.path.dirname(path)
+
+        # /src/project
+        # /src/project/sub-path
+        for parent_dir in filesystem.walk_parents(path):
+            if os.path.isdir('{}/.taskmage'.format(parent_dir)):
+                return parent_dir
+
+        raise RuntimeError('unable to find taskmage project')
 
     def load(self, path):
         """ Loads a taskmage project from a path.
@@ -45,8 +99,10 @@ class Project(object):
                     '/src/project'
                     '/src/project/subdir/file.mtask'
                     '/src/project/.taskmage'
+
         """
-        pass
+        projectroot = self.find(path)
+        self._root = projectroot
 
     def archive_completed_tasks(self, filepath=None):
         """ Archives all completed task-branches.
@@ -72,6 +128,7 @@ class Project(object):
             filepath (str, optional): ``(ex: '/src/project/file.mtask' )``
                 Optionally, archive completed tasks in a single target file.
         """
+        # I think this belongs on the AST intead...
         pass
 
     def is_archived_path(self, filepath):
@@ -89,3 +146,5 @@ class Project(object):
         """ Returns filepath to corresponding un-archived mtask file (from archived mtask file).
         """
         pass
+
+
