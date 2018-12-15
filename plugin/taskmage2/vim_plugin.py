@@ -70,10 +70,10 @@ def archive_completed_tasks():
     # archive completed tasks on disk
     project = projects.Project()
     project.load(vimfile)
-    project.archive_completed_tasks(vimfile)
+    project.archive_completed(vimfile)
 
     # reload from disk
-    vim.command('e "{}"'.format(vimfile))
+    vim.command("e '{}'".format(vimfile))
 
 
 def create_project():

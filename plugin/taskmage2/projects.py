@@ -1,7 +1,10 @@
 import os
 import shutil
+import tempfile
+
 from taskmage2.utils import filesystem
 from taskmage2.ast import ast, renderers
+from taskmage2.parser import iostream, parsers
 
 
 class Project(object):
@@ -201,8 +204,8 @@ class Project(object):
 
         # create tempdir (prevent writing bad data)
         tempdir = tempfile.mkdtemp()
-        active_tmpfile = '{}/active.mtask'.format(tempdir)
-        archive_tmpfile = '{}/archive.mtask'.format(tempdir)
+        active_tempfile = '{}/active.mtask'.format(tempdir)
+        archive_tempfile = '{}/archive.mtask'.format(tempdir)
         try:
             # write contents to tempfiles
             with open(active_tempfile, 'w') as fd:
@@ -251,5 +254,5 @@ class Project(object):
 
         with open(filepath, 'r') as fd_src:
             fd = iostream.FileDescriptor(fd_src)
-            ast = parsers.parse(fd, 'mtask')
-        return ast
+            AST = parsers.parse(fd, 'mtask')
+        return AST

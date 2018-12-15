@@ -100,7 +100,7 @@ class AbstractSyntaxTree(UserList):
         """
         completed_taskchains = AbstractSyntaxTree()
         for node in self.data:
-            if node.is_taskchain_completed():
+            if node.is_complete():
                 completed_taskchains.append(node)
         return completed_taskchains
 
