@@ -19,11 +19,26 @@ and taskwarrior.
 |
 
 
+Install
+=======
+
+After setting up a vim plugin-manager like vundle_, pathogen_, etc. Add this plugin
+to your ``~/.vimrc`` .
+
+.. code-block:: vim
+
+    Plugin 'https://github.com/willjp/vim-taskmage'
+
+
+.. _vundle: https://github.com/vim-scripts/vundle
+.. _pathogen: https://github.com/tpope/vim-pathogen
+
+
 Usage
 =====
 
 
-Create a taskmage project, then crate/edit a ``*.mtask`` file within it.
+Create a taskmage project, then create/edit a ``*.mtask`` file within it.
 
 .. code-block:: vim
 
