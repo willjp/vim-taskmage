@@ -94,3 +94,24 @@ def create_project():
 
     project = projects.Project.create(projectroot)
     return project
+
+
+def open_counterpart(open_command=None):
+    """ Opens archived taskfile if in active, or opposite.
+
+    Args:
+        open_command (str): ``(ex: None, '', 'vs', 'e', 'split', ...)``
+            The vim command to use to open the file.
+            Defaults to 'edit'.
+    """
+    if not open_command:
+        open_command = 'edit'
+
+    # load project
+    vimfile = os.path.abspath(vim.current.buffer.name)
+    project = projects.Project()
+    project.load(vimfile)
+
+    counterpart = project.get_counterpart(vimfile)
+    vim.command("{} {}".format(open_command, counterpart))
+

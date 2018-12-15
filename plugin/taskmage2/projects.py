@@ -195,6 +195,21 @@ class Project(object):
         active_path = '{}/{}'.format(self.root, relpath)
         return active_path
 
+    def get_counterpart(self, filepath):
+        """ Returns active-path if archived-path, or inverse.
+        """
+        if not self.is_project_path(filepath):
+            raise RuntimeError(
+                ('filepath not within current taskmage project. \n'
+                 'project "{}"\n'
+                 'filepath "{}\n').format(self.root, filepath)
+            )
+
+        if self.is_archived_path(filepath):
+            return self.get_active_path(filepath)
+        else:
+            return self.get_archived_path(filepath)
+
     def _archive_completed(self, filepath):
         (active_ast, archive_ast) = self._archive_completed_as_ast(filepath)
 

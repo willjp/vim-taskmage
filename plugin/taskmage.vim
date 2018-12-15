@@ -22,20 +22,6 @@ endif
 " Functions
 " =========
 
-"function! TaskMageOpenCounterpart( open_command )
-"    """
-"    " Opens matching archived-file for task-files and vice-versa.
-"    "
-"    " Args:
-"    "
-"    "    open_command (str): ``(ex: 'edit', 'split', 'vsplit' )``
-"    "       the vim-command to use to open the new buffer
-"    " 
-"    """
-"    execute 'py taskmage2.vim_plugin.open_counterpart( "'. a:open_command .'" )'
-"endfunc
-
-
 function! TaskMageSaveStart()
     " saves cursor-pos, converts TaskList(rst)-to-Mtask(json)
     let s:saved_view = winsaveview()
@@ -56,10 +42,10 @@ endfunc
 command TaskMageCreateProject     py taskmage2.vim_plugin.create_project()
 command TaskMageArchiveCompleted  py taskmage2.vim_plugin.archive_completed_tasks()
 
-"command TaskMageToggle call TaskMageOpenCounterpart('edit')
-"command TaskMageSplit  call TaskMageOpenCounterpart('split')
-"command TaskMageVSplit call TaskMageOpenCounterpart('vsplit')
-"command TaskMageCreateProject call TaskMageCreateProject()
+command -nargs=* TaskMageOpenCounterpart   py taskmage2.vim_plugin.open_counterpart('<args>')
+command          TaskMageToggle            py taskmage2.vim_plugin.open_counterpart('edit')
+command          TaskMageSplit             py taskmage2.vim_plugin.open_counterpart('split')
+command          TaskMageVSplit            py taskmage2.vim_plugin.open_counterpart('vsplit')
 
 
 " ========
