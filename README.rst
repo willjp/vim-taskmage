@@ -25,16 +25,6 @@ Your vim must be compiled with python (2 or 3). Check this using the command
     vim --version | find /I "+python"  # windows
 
 
-You'll also need to add the following dependencies to the python-interpreter
-that vim uses for the ``py`` call.
-
-Find python-interpreter used by vim using this command inside vim.
-
-.. code-block:: vim
-
-    :py import sys;print(sys.executable)
-
-
 Install
 -------
 
