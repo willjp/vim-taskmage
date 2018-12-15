@@ -4,7 +4,7 @@ import os
 import vim
 
 from taskmage2.parser import lexers, iostream, parsers
-from taskmage2.ast import renderers
+from taskmage2.asttree import renderers
 from taskmage2 import projects
 
 

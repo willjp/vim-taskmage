@@ -12,7 +12,7 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 from taskmage2.parser import parsers
 import mock
-from taskmage2.ast import astnode
+from taskmage2.asttree import astnode
 # package
 # external
 # internal

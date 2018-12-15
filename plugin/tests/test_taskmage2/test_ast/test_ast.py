@@ -1,7 +1,7 @@
 import pytest
 import mock
 
-from taskmage2.ast import ast, astnode, renderers
+from taskmage2.asttree import asttree, astnode, renderers
 
 
 class FakeNode(object):
@@ -38,47 +38,47 @@ class Test_AbstractSyntaxTree(object):
         assert renderer.render_calls == 1
 
     def test_touch(self):
-        AST = ast.AbstractSyntaxTree()
+        AST = asttree.AbstractSyntaxTree()
         AST.data = [mock.Mock(), mock.Mock()]
 
         AST.touch()
         assert all([node.touch.called for node in AST])
 
     def test_update_removes_nodes(self):
-        AST_A = ast.AbstractSyntaxTree()
+        AST_A = asttree.AbstractSyntaxTree()
         AST_A.data = [FakeNode('1'), FakeNode('2'), FakeNode('3')]
 
-        AST_B = ast.AbstractSyntaxTree()
+        AST_B = asttree.AbstractSyntaxTree()
         AST_B.data = [FakeNode('1'), FakeNode('3')]
 
         AST_A.update(AST_B)
         assert AST_A.data == [FakeNode('1'), FakeNode('3')]
 
     def test_update_adds_nodes(self):
-        AST_A = ast.AbstractSyntaxTree()
+        AST_A = asttree.AbstractSyntaxTree()
         AST_A.data = [FakeNode('1'), FakeNode('2')]
 
-        AST_B = ast.AbstractSyntaxTree()
+        AST_B = asttree.AbstractSyntaxTree()
         AST_B.data = [FakeNode('1'), FakeNode('2'), FakeNode('3')]
 
         AST_A.update(AST_B)
         assert AST_A.data == [FakeNode('1'), FakeNode('2'), FakeNode('3')]
 
     def test_update_performs_nodeupdate(self):
-        AST_A = ast.AbstractSyntaxTree()
+        AST_A = asttree.AbstractSyntaxTree()
         AST_A.data = [FakeNode('1')]
 
-        AST_B = ast.AbstractSyntaxTree()
+        AST_B = asttree.AbstractSyntaxTree()
         AST_B.data = [FakeNode('1')]
 
         AST_A.update(AST_B)
         assert AST_A[0].update.called_with(AST_B[0])
 
     def test_update_performs_nodeupdate_when_order_mixed(self):
-        AST_A = ast.AbstractSyntaxTree()
+        AST_A = asttree.AbstractSyntaxTree()
         AST_A.data = [FakeNode('1'), FakeNode('2')]
 
-        AST_B = ast.AbstractSyntaxTree()
+        AST_B = asttree.AbstractSyntaxTree()
         AST_B.data = [FakeNode('2'), FakeNode('1')]
 
         AST_A.update(AST_B)
@@ -86,10 +86,10 @@ class Test_AbstractSyntaxTree(object):
         assert AST_A[1].update.called_with(AST_B[0])
 
     def test_update_keeps_new_order(self):
-        AST_A = ast.AbstractSyntaxTree()
+        AST_A = asttree.AbstractSyntaxTree()
         AST_A.data = [FakeNode('1'), FakeNode('2')]
 
-        AST_B = ast.AbstractSyntaxTree()
+        AST_B = asttree.AbstractSyntaxTree()
         AST_B.data = [FakeNode('2'), FakeNode('1')]
 
         AST_A.update(AST_B)
@@ -104,7 +104,7 @@ class Test_AbstractSyntaxTree(object):
         incomplete_node = mock.Mock()
         incomplete_node.is_complete = mock.Mock(return_value=False)
 
-        AST = ast.AbstractSyntaxTree()
+        AST = asttree.AbstractSyntaxTree()
         AST.data = [complete_node, incomplete_node]
 
         completed = AST.get_completed_taskchains()
@@ -114,10 +114,10 @@ class Test_AbstractSyntaxTree(object):
         data = [mock.Mock(), mock.Mock(), mock.Mock()]
         completed = [data[1]]
 
-        AST = ast.AbstractSyntaxTree()
+        AST = asttree.AbstractSyntaxTree()
         AST.data = data[:]
         with mock.patch(
-            '{}.AbstractSyntaxTree.get_completed_taskchains'.format(ast.__name__),
+            '{}.AbstractSyntaxTree.get_completed_taskchains'.format(asttree.__name__),
             return_value=completed
         ):
             archive_ast = AST.archive_completed()
@@ -126,7 +126,7 @@ class Test_AbstractSyntaxTree(object):
         assert AST.data == [data[0], data[2]]
 
     def render(self, renderer):
-        tree = ast.AbstractSyntaxTree([
+        tree = asttree.AbstractSyntaxTree([
             astnode.Node(
                 _id='',
                 ntype='task',

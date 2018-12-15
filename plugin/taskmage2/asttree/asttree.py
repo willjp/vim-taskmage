@@ -1,4 +1,4 @@
-from taskmage2.ast import renderers, astnode
+from taskmage2.asttree import renderers, astnode
 from six.moves import UserList
 
 

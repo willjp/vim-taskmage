@@ -3,7 +3,7 @@ import shutil
 import tempfile
 
 from taskmage2.utils import filesystem
-from taskmage2.ast import ast, renderers
+from taskmage2.asttree import asttree, renderers
 from taskmage2.parser import iostream, parsers
 
 
@@ -248,8 +248,8 @@ class Project(object):
             .. code-block:: python
 
                 (
-                    ast.AbstractSyntaxTree(),  # new active AST
-                    ast.AbstractSyntaxTree(),  # new archive AST
+                    asttree.AbstractSyntaxTree(),  # new active AST
+                    asttree.AbstractSyntaxTree(),  # new archive AST
                 )
         """
         # get active AST
@@ -265,7 +265,7 @@ class Project(object):
 
     def _get_mtaskfile_ast(self, filepath):
         if not os.path.isfile(filepath):
-            return ast.AbstractSyntaxTree()
+            return asttree.AbstractSyntaxTree()
 
         with open(filepath, 'r') as fd_src:
             fd = iostream.FileDescriptor(fd_src)

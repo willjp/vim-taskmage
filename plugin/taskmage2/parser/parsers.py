@@ -12,7 +12,7 @@ ________________________________________________________________________________
 # builtin
 from __future__ import absolute_import, division, print_function
 import os
-from taskmage2.ast import astnode, ast
+from taskmage2.asttree import astnode, asttree
 from taskmage2.parser import lexers
 
 
@@ -87,7 +87,7 @@ class Parser(object):
             )
 
         # create AST
-        AST = ast.AbstractSyntaxTree()
+        AST = asttree.AbstractSyntaxTree()
         for token in self.__lexer.data:
             if token['parent']:
                 child = allnodes[token['_id']]
@@ -115,7 +115,7 @@ def parse(iostream, lexer):
         )
 
     # create AST
-    AST = ast.AbstractSyntaxTree()
+    AST = asttree.AbstractSyntaxTree()
     for token in lexer.data:
         if token['parent']:
             child = allnodes[token['_id']]
@@ -130,7 +130,7 @@ def parse(iostream, lexer):
 
 if __name__ == '__main__':
     from taskmage2.parser import lexers, iostream
-    from taskmage2.ast import renderers
+    from taskmage2.asttree import renderers
 
     dirname = os.path.dirname(os.path.abspath(__file__))
     for i in range(3):
