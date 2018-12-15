@@ -70,16 +70,14 @@ Usage
             * test saltstack recipe
 
 
-**3.** After completing several tasks, you can cleanup your tasklist
-       by archiving completed task-chains (archived if task/header and all children are complete).
+**3.** After completing several tasks, you can cleanup your tasklist by archiving completed task-chains (archived if task/header and all children are complete).
 
     .. code-block:: vim
     
         :TaskMageArchiveCompleted
 
 
-**4.** You can compare your current tasks against completed tasks
-       side-by-side by looking at the archived-tasks.
+**4.** You can compare your current tasks against completed tasks side-by-side by looking at the archived-tasks.
 
     .. code-block:: vim
     
