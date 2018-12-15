@@ -1,47 +1,25 @@
+taskmage2
+=========
 
-THE PLAN
-========
+taskmage supports a variety of different formats that can be converted between each other.
 
-Debugging my last parser was positively awful.
+* `tasklist`: the ReStructuredText inspired tasklist
+* `mtask`:  a JSON file with tasks, and their metadata
+* `taskdetails`: (todo) ini-inspired metadata representation
 
-Using `How to implement a PL`_ as a rough guide on how to properly write a parser,
-I have outlined the following plan:
+In order to convert between these formats, we use a parser.
 
-
-* `data.Node()`: 
-    The native datatype of a set of tasks is in an `AST`_ in the form of a 
-    nested-set of Nodes. This `AST`_ can comprise of tasks/sections from multiple 
-    files, sections ,tasks. Nodes can be converted to one of the other formats
-    using a `converter` .
-
-
-* TaskMage leverages 3x datatypes. Each has it's own lexer.
-
-  * `mtask` : a JSON object (un-nested list of dictionaries). Each dictionary occupies
-      a single line, and represents one `token` (file, section, task, ...).
-
-  * `tasklist` : the rst-inspired format you use to create/modify tasks within vim. Limits
-      information displayed within vim to the status, id, name. `View` Hierarchy is presented
-      as indentation.
-
-  * `taskmetadata` : a YAML-inspired detailed-view of a single task. Shows all information.
-      except for children.
+* `iostream` abstracts vim-buffers and file-descriptors to a parser-friendly object.
+* `lexers` convert various formats to a standardized dictionary
+* the `parser` coverts that dictionary into an `asttree.AbstractSyntaxTree` , the foundation of all other formats
+* `asttree` can be rendered to various other formats using `asttree.renderers` .
 
 
-* Lexing occurs in 3x steps:
-  * ``parsers.iostream.ReadStream()`` : simplifies looking ahead/behind to obtain tokens. used in lexer
-  * ``parers.lexers.{Mtask|TaskList|TaskDetails}()`` : produces a flat-list of tokens (task, section, etc)
-  * ``parsers.parser.Parer()`` : produces a nested hierarchy of ``data.Node()`` objects. (the AST).
+I had a lot of help from http://lisperator.net/pltut/parser/ , and https://en.wikipedia.org/wiki/Abstract_syntax_tree .
 
 
-.. How to implement a PL_: http://lisperator.net/pltut/parser/
-
-.. AST_: https://en.wikipedia.org/wiki/Abstract_syntax_tree
-
-
-Node (AST)
-----------
-
+Example AST
+===========
 
 .. code-block:: python
 
@@ -57,64 +35,4 @@ Node (AST)
     ])
 
 
-
-
-Formats
--------
-
-
-mtask
-`````
-
-Most closely ressembles a list of string-tokens. the ``*.mtask`` format represents
-a single file. It may not reference other files.
-
-
-.. code-block:: javascript
-
-    [
-        {'id':...,  'type':'section',  'name':'kitchen',       'data':{},     'children':[{id}, {id}, ...] },
-        {'id':...,  'type':'task',     'name':'clean dishes',  'data':{...},  'children':[{id}, {id}, ...] },
-        ...
-    ]
-
-
-
-tasklist
-````````
-
-.. code-block:: ReStructuredText
-
-
-    file:home/misc.mtask
-    ====================
-
-    * finish task list!
-    * push to github
-
-    home
-    ----
-
-    * clean appt.
-        x clean bathroom
-        - wash car # can wait another week
-        o wash dishes
-        * vaccuum
-        * re-organize closet
-
-
-taskdetails
-````````````
-
-.. code-block:: yaml
-
-    name:     wash dishes
-    status:   todo
-    started:  2018-04-19T19:41:24.547530-04:00 
-    finished: null
-    notes:
-
-      blah blah blah
-
-      blah blah
 
