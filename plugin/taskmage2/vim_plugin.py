@@ -73,7 +73,13 @@ def archive_completed_tasks():
     project.archive_completed(vimfile)
 
     # reload from disk
-    vim.command("e '{}'".format(vimfile))
+    with open(vimfile, 'r') as fd_py:
+        fd = iostream.FileDescriptor(fd_py)
+        ast = parsers.parse(fd, 'mtask')
+        render = ast.render(renderers.TaskList)
+
+    vim.current.buffer[:] = render
+    return render
 
 
 def create_project():
@@ -91,12 +97,3 @@ def create_project():
 
     project = projects.Project.create(projectroot)
     return project
-
-
-def _tasklist_2_mtask():
-    fd = iostream.VimBuffer(vim.current.buffer)
-    ast = parsers.parse(fd, 'tasklist')
-    render = ast.render(renderers.Mtask)
-
-    vim.current.buffer[:] = render
-    return render

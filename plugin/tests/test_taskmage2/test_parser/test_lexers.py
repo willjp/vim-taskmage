@@ -41,11 +41,19 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 0,
                 'parent': None,
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
     def test_status_done(self):
+        """
+        Notes:
+            despite being newly finished, the finished datetime is not recorded
+            until `ast.touch()` is performed just before writing to disk.
+
+            TaskList does not store finished information, so it cannot tell if
+            the finished-date must be udpated.
+        """
         tokens = self.tasklist('x taskA')
         assert tokens == [
             {
@@ -54,7 +62,7 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 0,
                 'parent': None,
-                'data': {'status': 'done', 'created': None, 'finished': True, 'modified': None},
+                'data': {'status': 'done', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
@@ -67,7 +75,7 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 0,
                 'parent': None,
-                'data': {'status': 'skip', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'skip', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
@@ -80,7 +88,7 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 0,
                 'parent': None,
-                'data': {'status': 'wip', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'wip', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
@@ -94,7 +102,7 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 0,
                 'parent': None,
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
@@ -107,7 +115,7 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 0,
                 'parent': None,
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
@@ -122,7 +130,7 @@ class Test_TaskList:
             'name': 'subtaskA',
             'indent': 4,
             'parent': uid().hex.upper(),
-            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
         }
 
     def test_2nd_subtask_with_id(self):
@@ -137,7 +145,7 @@ class Test_TaskList:
             'name': 'subtaskB',
             'indent': 4,
             'parent': uid().hex.upper(),
-            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
         }
 
     def test_toplevel_section_with_id_longform(self):
@@ -219,7 +227,7 @@ class Test_TaskList:
                 'name': 'pay bills',
                 'indent': 0,
                 'parent': None,
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             },
             {
                 '_id': uid().hex.upper(),
@@ -260,7 +268,7 @@ class Test_TaskList:
                 'name': 'taskA\n continued',
                 'indent': 0,
                 'parent': None,
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
@@ -276,7 +284,7 @@ class Test_TaskList:
             'name': 'subtaskA\n continued',
             'indent': 4,
             'parent': uid().hex.upper(),
-            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
         }
 
     def test_2nd_multiline_subtask(self):
@@ -293,7 +301,7 @@ class Test_TaskList:
             'name': 'subtaskB\n continued',
             'indent': 4,
             'parent': uid().hex.upper(),
-            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
         }
 
     def test_section_subtask_indented(self):
@@ -318,7 +326,7 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 4,
                 'parent': uid().hex.upper(),
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
@@ -344,7 +352,7 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 0,
                 'parent': uid().hex.upper(),
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
@@ -381,7 +389,7 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 0,
                 'parent': '66A4CCF279E4410B90B920FA1BC5C744',
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 
@@ -419,7 +427,7 @@ class Test_TaskList:
                 'name': 'taskA',
                 'indent': 0,
                 'parent': '66A4CCF279E4410B90B920FA1BC5C744',
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             },
             {
                 '_id': uid().hex.upper(),
@@ -427,7 +435,7 @@ class Test_TaskList:
                 'name': 'subtaskA',
                 'indent': 4,
                 'parent': '8675386FD62D4355AD4B613054C3E463',
-                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+                'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
             }
         ]
 

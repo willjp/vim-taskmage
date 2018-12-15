@@ -283,7 +283,9 @@ class Mtask(Renderer):
             render = self._render_node(render, node, indent=0)
 
         render_as_json = json.dumps(render, indent=2)
-        return render_as_json.split('\n')
+        render = render_as_json.split('\n')
+        render.append('')
+        return render
 
     def _render_node(self, render, node, indent=0):
         """
