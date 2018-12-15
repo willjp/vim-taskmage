@@ -10,15 +10,6 @@ and taskwarrior.
 .. image:: ./media/screenshot.png
 
 
-|
-|
-
-.. contents:: Table Of Contents
-
-|
-|
-
-
 Install
 =======
 
