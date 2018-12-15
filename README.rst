@@ -57,8 +57,12 @@ Instructions
 Misc
 ====
 
+* sphinx_documentation
 * under_the_hood_
 * future_ideas_
+* similar_projects_
+
 
 .. _under_the_hood: ./doc/readme/under_the_hood.rst
 .. _future_ideas: ./doc/readme/future_ideas.rst
+.. _similar_projects: ./doc/readme/similar_projects.rst
