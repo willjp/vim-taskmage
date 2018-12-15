@@ -22,10 +22,9 @@ import abc
 import uuid
 import re
 # external
-import dateutil.parser
 import enum
 # internal
-from taskmage2.utils import excepts
+from taskmage2.utils import excepts, timezone
 from taskmage2.parser import fmtdata
 
 
@@ -783,7 +782,7 @@ class Mtask(_Lexer):
         for key in ('created', 'finished', 'modified'):
             if dtype['data'][key]:
                 isodate = dtype['data'][key]
-                dtype['data'][key] = dateutil.parser.parse(isodate)
+                dtype['data'][key] = timezone.parse_utc_iso8601(isodate)
 
         return dtype
 

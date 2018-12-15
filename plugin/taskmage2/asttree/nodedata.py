@@ -1,7 +1,7 @@
 import datetime
 import collections
 
-from dateutil import tz
+from taskmage2.utils import timezone
 
 
 class _NodeData(tuple):
@@ -172,7 +172,7 @@ class TaskData(_NodeData):
         return _NodeData.__new__(cls, (status, created, finished, modified))
 
     def touch(self):
-        utcnow = datetime.datetime.now(tz.UTC)
+        utcnow = datetime.datetime.now(timezone.UTC())
         new_data = self.as_dict()
 
         new_data['modified'] = utcnow
@@ -201,7 +201,7 @@ class TaskData(_NodeData):
         """ Return a new taskdata object with changes from another
         taskdata object merged on top of this one.
         """
-        utcnow = datetime.datetime.now(tz.UTC)
+        utcnow = datetime.datetime.now(timezone.UTC())
         new_data = self.as_dict()
 
         # if no changes, nothing to do

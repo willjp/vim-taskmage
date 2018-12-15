@@ -21,8 +21,5 @@ setuptools.setup(
     version=__version__,
     author='Will Pittman',
     license='BSD',
-    install_requires=[
-        'dateutils',
-        'six',
-    ],
+    install_requires=[],
 )

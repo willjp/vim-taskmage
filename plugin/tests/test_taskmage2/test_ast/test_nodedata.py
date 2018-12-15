@@ -1,11 +1,11 @@
 import uuid
 import datetime
 
-from dateutil import tz
 import mock
 import pytest
 
 from taskmage2.asttree import nodedata
+from taskmage2.utils import timezone
 
 
 ns = nodedata.__name__
@@ -25,7 +25,7 @@ class Test_TaskData(object):
             nodedata.TaskData(status='incomplete')
 
     @pytest.mark.parametrize(
-        'created', (None, datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)),
+        'created', (None, datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())),
     )
     def test_created_valid(self, created):
         taskdata = nodedata.TaskData(status='todo', created=created)
@@ -45,7 +45,7 @@ class Test_TaskData(object):
         assert taskdata.finished is False
 
     def test_finished_valid(self):
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
         taskdata = nodedata.TaskData('todo', finished=dt)
         assert taskdata.finished == dt
 
@@ -55,7 +55,7 @@ class Test_TaskData(object):
             nodedata.TaskData('todo', finished=dt)
 
     @pytest.mark.parametrize(
-        'modified', (None, datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)),
+        'modified', (None, datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())),
     )
     def test_modified_valid(self, modified):
         taskdata = nodedata.TaskData(status='todo', modified=modified)
@@ -67,7 +67,7 @@ class Test_TaskData(object):
 
     def test_touch_assigns_modified(self):
         taskdata = nodedata.TaskData(status='todo')
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
 
         new_taskdata = self.touch(taskdata, dt)
         assert new_taskdata.modified == dt
@@ -75,23 +75,23 @@ class Test_TaskData(object):
     def test_touch_overwrites_modified(self):
         taskdata = nodedata.TaskData(
             status='todo',
-            modified=datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+            modified=datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
         )
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
 
         new_taskdata = self.touch(taskdata, dt)
         assert new_taskdata.modified == dt
 
     def test_touch_assigns_created(self):
         taskdata = nodedata.TaskData(status='todo')
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
 
         new_taskdata = self.touch(taskdata, dt)
         assert new_taskdata.created == dt
 
     def test_touch_does_not_overwrite_created(self):
-        created_dt = datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        current_dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+        created_dt = datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+        current_dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
         taskdata = nodedata.TaskData(status='todo', created=created_dt)
 
         new_taskdata = self.touch(taskdata, current_dt)
@@ -100,15 +100,15 @@ class Test_TaskData(object):
     def test_touch_updates_finished(self):
         # 'status' and 'finished' are inconsistent
         taskdata = nodedata.TaskData(status='done', finished=False)
-        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
+        dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
 
         new_taskdata = self.touch(taskdata, dt)
         assert new_taskdata.finished == dt
 
     def test_update_sets_modified_when_changed(self):
-        old_modified_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        new_modified_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=tz.UTC)
-        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        old_modified_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+        new_modified_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=timezone.UTC())
+        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
 
         old_data = nodedata.TaskData(status='todo', modified=old_modified_date)
         new_data = nodedata.TaskData(status='wip', modified=new_modified_date)
@@ -117,8 +117,8 @@ class Test_TaskData(object):
         assert merged_data.modified == current_date
 
     def test_update_does_not_set_modified_when_identical(self):
-        task_dt = datetime.datetime(2018, 1, 1, 0, 0, 0, 0, tzinfo=tz.UTC)
-        current_dt = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        task_dt = datetime.datetime(2018, 1, 1, 0, 0, 0, 0, tzinfo=timezone.UTC())
+        current_dt = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
         taskdata = nodedata.TaskData(
             status='todo',
             modified=task_dt,
@@ -130,8 +130,8 @@ class Test_TaskData(object):
         assert merged_data.modified == task_dt
 
     def test_update_does_not_set_modified_if_status_identical_and_no_changes(self):
-        task_dt = datetime.datetime(2018, 1, 1, 0, 0, 0, 0, tzinfo=tz.UTC)
-        current_dt = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        task_dt = datetime.datetime(2018, 1, 1, 0, 0, 0, 0, tzinfo=timezone.UTC())
+        current_dt = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
         old_data = nodedata.TaskData(
             status='todo',
             modified=task_dt,
@@ -149,9 +149,9 @@ class Test_TaskData(object):
         assert merged_data.modified == task_dt
 
     def test_update_status(self):
-        old_modified_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        new_modified_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=tz.UTC)
-        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        old_modified_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+        new_modified_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=timezone.UTC())
+        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
 
         old_data = nodedata.TaskData(status='todo', modified=old_modified_date)
         new_data = nodedata.TaskData(status='wip', modified=new_modified_date)
@@ -160,9 +160,9 @@ class Test_TaskData(object):
         assert merged_data.status == 'wip'
 
     def test_update_created(self):
-        old_created_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        new_created_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=tz.UTC)
-        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        old_created_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+        new_created_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=timezone.UTC())
+        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
 
         old_data = nodedata.TaskData(status='todo', created=old_created_date)
         new_data = nodedata.TaskData(status='todo', created=new_created_date)
@@ -171,8 +171,8 @@ class Test_TaskData(object):
         assert merged_data.created == new_created_date
 
     def test_update_created_no_new_data(self):
-        old_created_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        old_created_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
 
         old_data = nodedata.TaskData(status='todo', created=old_created_date)
         new_data = nodedata.TaskData(status='todo', created=None)
@@ -181,8 +181,8 @@ class Test_TaskData(object):
         assert merged_data.created == old_created_date
 
     def test_update_finished_to_unfinished(self):
-        old_finished_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        old_finished_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
 
         old_data = nodedata.TaskData(status='done', finished=old_finished_date)
         new_data = nodedata.TaskData(status='todo')
@@ -191,7 +191,7 @@ class Test_TaskData(object):
         assert merged_data.finished is False
 
     def test_update_unfinished_to_finished_without_date(self):
-        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
 
         old_data = nodedata.TaskData(status='todo')
         new_data = nodedata.TaskData(status='done')
@@ -200,8 +200,8 @@ class Test_TaskData(object):
         assert merged_data.finished == current_date
 
     def test_update_unfinished_to_finished_with_date(self):
-        new_finished_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=tz.UTC)
-        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        new_finished_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=timezone.UTC())
+        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
 
         old_data = nodedata.TaskData(status='wip')
         new_data = nodedata.TaskData(status='done', finished=new_finished_date)
@@ -210,9 +210,9 @@ class Test_TaskData(object):
         assert merged_data.finished == new_finished_date
 
     def test_update_finished_with_date_when_already_finished(self):
-        old_finished_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC)
-        new_finished_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=tz.UTC)
-        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=tz.UTC)
+        old_finished_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+        new_finished_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=timezone.UTC())
+        current_date = datetime.datetime(2018, 3, 3, 0, 0, 0, 0, tzinfo=timezone.UTC())
 
         old_data = nodedata.TaskData(status='done', finished=old_finished_date)
         new_data = nodedata.TaskData(status='done', finished=new_finished_date)

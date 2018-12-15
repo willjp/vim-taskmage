@@ -12,8 +12,8 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 import datetime
 import json
-from dateutil import tz
 from taskmage2.asttree import astnode, renderers
+from taskmage2.utils import timezone
 
 
 # external
@@ -48,7 +48,7 @@ class Test_TaskList(object):
                 data={
                     'status': 'done',
                     'created': None,
-                    'finished': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC),
+                    'finished': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
                     'modified': None,
                 },
                 children=None,
@@ -369,9 +369,9 @@ class Test_Mtask(object):
                 name='task A',
                 data={
                     'status': 'todo',
-                    'created': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC),
+                    'created': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
                     'finished': False,
-                    'modified': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=tz.UTC),
+                    'modified': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
                 },
                 children=None,
             )
