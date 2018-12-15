@@ -10,6 +10,7 @@ and taskwarrior.
 
 
 <br><br>
+* auto-gen TOC:
 {:toc}
 <br><br>
 
