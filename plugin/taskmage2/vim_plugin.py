@@ -18,7 +18,6 @@ def handle_open_mtask():
         render = ast.render(renderers.TaskList)
 
     vim.current.buffer[:] = render
-    vim.command('set ft=taskmage2')
     return render
 
 
@@ -44,7 +43,6 @@ def handle_presave_mtask():
         render = saved_ast.render(renderers.Mtask)
 
     # replace vim-buffer with updated Mtask render
-    vim.command('syntax off')
     vim.current.buffer[:] = render
     return render
 
@@ -53,7 +51,6 @@ def handle_postsave_mtask():
     """ converts buffer back from Mtask(JSON) to TaskList(rst) after save.
     """
     render = handle_open_mtask()
-    vim.command('syntax on ')
     return render
 
 

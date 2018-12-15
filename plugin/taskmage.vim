@@ -1,5 +1,4 @@
 
-
 " ===========
 " Plugin Init
 " ===========
@@ -19,13 +18,9 @@ else
 endif
 
 
-" ========
-" Commands
-" ========
-
-command TaskMageCreateProject     py taskmage2.vim_plugin.create_project()
-command TaskMageArchiveCompleted  py taskmage2.vim_plugin.archive_completed_tasks()
-
+" =========
+" Functions
+" =========
 
 "function! TaskMageOpenCounterpart( open_command )
 "    """
@@ -37,17 +32,29 @@ command TaskMageArchiveCompleted  py taskmage2.vim_plugin.archive_completed_task
 "    "       the vim-command to use to open the new buffer
 "    " 
 "    """
-"    execute 'py taskmage.vim_plugin.open_counterpart( "'. a:open_command .'" )'
+"    execute 'py taskmage2.vim_plugin.open_counterpart( "'. a:open_command .'" )'
 "endfunc
 
 
-"function! TaskMageCreateProject()
-"    """ 
-"    " prompts user to create a new vim project 
-"    """
-"    py taskmage.vim_plugin.create_project()
-"endfunc
+function! TaskMageSaveStart()
+    " saves cursor-pos, converts TaskList(rst)-to-Mtask(json)
+    let s:saved_view = winsaveview()
+    py taskmage2.vim_plugin.handle_presave_mtask()
+endfunc
 
+function! TaskMageSaveEnd()
+    " converts saved-Mtask(json) back to TaskList(rst), restores cursor-pos 
+    py taskmage2.vim_plugin.handle_postsave_mtask()
+    call winrestview(s:saved_view)
+endfunc
+
+
+" ========
+" Commands
+" ========
+
+command TaskMageCreateProject     py taskmage2.vim_plugin.create_project()
+command TaskMageArchiveCompleted  py taskmage2.vim_plugin.archive_completed_tasks()
 
 "command TaskMageToggle call TaskMageOpenCounterpart('edit')
 "command TaskMageSplit  call TaskMageOpenCounterpart('split')
@@ -59,23 +66,8 @@ command TaskMageArchiveCompleted  py taskmage2.vim_plugin.archive_completed_task
 " AutoCmds
 " ========
 
-
-function! TaskMageSaveStart()
-    """ saves cursor-pos, converts Rst-to-Json 
-    """
-    let s:saved_view = winsaveview()
-    py taskmage2.vim_plugin.handle_presave_mtask()
-endfunc
-
-function! TaskMageSaveEnd()
-    """ converts saved-json back to rst, restores cursor-pos 
-    """
-    py taskmage2.vim_plugin.handle_postsave_mtask()
-    call winrestview(s:saved_view)
-endfunc
-
-
-autocmd BufRead      *.mtask  py taskmage2.vim_plugin.handle_open_mtask()
-autocmd BufWritePre  *.mtask  call TaskMageSaveStart()
-autocmd BufWritePost *.mtask  call TaskMageSaveEnd()
+autocmd BufRead             *.mtask  py taskmage2.vim_plugin.handle_open_mtask()
+autocmd BufNewFile,BufRead  *.mtask  set filetype=taskmage2
+autocmd BufWritePre         *.mtask  call TaskMageSaveStart()
+autocmd BufWritePost        *.mtask  call TaskMageSaveEnd()
 
