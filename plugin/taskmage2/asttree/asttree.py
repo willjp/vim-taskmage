@@ -48,11 +48,11 @@ class AbstractSyntaxTree(UserList):
 
             .. code-block:: python
 
-                >>> tree = ast.AbstractSyntaxTree([
+                >>> ast = asttree.AbstractSyntaxTree([
                 >>>     astnode.Node(ntype='task', name='task A', ...),
                 >>>     astnode.Node(ntype='task', name='task B', ...),
                 >>> ])
-                >>> tree.render(render.TaskList)
+                >>> ast.render(render.TaskList)
                 * task A
                 * task B
 
@@ -95,7 +95,7 @@ class AbstractSyntaxTree(UserList):
         """ Returns all top-level nodes whose children statuses are all completed (done, or skip).
 
         Returns:
-            taskmage2.ast.ast.AbstractSyntaxTree:
+            taskmage2.asttree.asttree.AbstractSyntaxTree:
                 an abstractsyntaxtree with only the entirely completed task-chains.
         """
         completed_taskchains = AbstractSyntaxTree()
