@@ -10,6 +10,19 @@ and taskwarrior.
 .. image:: ./media/screenshot.png
 
 
+|
+|
+
+.. contents:: Table Of Contents
+
+|
+|
+
+
+Usage
+=====
+
+
 Create a taskmage project, then crate/edit a ``*.mtask`` file within it.
 
 .. code-block:: vim
@@ -62,15 +75,6 @@ side-by-side by looking at the archived-tasks.
 I use git to synchronize tasks between my computers. On-disk, entries are recorded one-task-per-line
 so that you can more easily resolve merge-conflicts. Occasionally, I find it useful keep a tasklist
 alongside my source-tree.
-
-
-|
-|
-
-.. contents:: Table Of Contents
-
-|
-|
 
 
 Syntax:
