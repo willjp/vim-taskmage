@@ -16,8 +16,8 @@ Install
 Prerequisistes
 --------------
 
-Your vim must be compiled with python (2 or 3). Check this using the command
-(if nothing is returned, your vim was not compiled with python support).
+Your vim must be compiled with python (2 or 3). Run the following command
+from a console - if a line is returned, your vim was built with python support.
 
 .. code-block:: bash
 
