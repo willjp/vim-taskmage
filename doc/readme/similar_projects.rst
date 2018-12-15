@@ -1,5 +1,5 @@
-Simlar Projects
-===============
+Similar Projects
+================
 
 TaskMage is a much smaller, simpler task-manager than most of these. But I drew very heavy inspiration
 from the following fantastic projects. You owe it to yourself to check these out. 
