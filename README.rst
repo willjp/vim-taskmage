@@ -37,7 +37,7 @@ to your ``~/.vimrc`` .
 Usage
 =====
 
-Create a taskmage project, then create/edit a ``*.mtask`` file within it.
+1. Create a taskmage project, then create/edit a ``*.mtask`` file within it.
 
 .. code-block:: vim
 
@@ -48,7 +48,7 @@ Create a taskmage project, then create/edit a ``*.mtask`` file within it.
     :edit file.mtask
 
 
-Populate it with tasks, using a format similar to ReStructuredText.
+2. Populate it with tasks, using a format similar to ReStructuredText.
 
 .. code-block:: ReStructuredText
 
@@ -70,16 +70,16 @@ Populate it with tasks, using a format similar to ReStructuredText.
         * test saltstack recipe
 
 
-After completing several tasks, you can cleanup your tasklist
-by archiving completed task-chains (archived if task/header and all children are complete).
+3. After completing several tasks, you can cleanup your tasklist
+   by archiving completed task-chains (archived if task/header and all children are complete).
 
 .. code-block:: vim
 
     :TaskMageArchiveCompleted
 
 
-You can compare your current tasks against completed tasks
-side-by-side by looking at the archived-tasks.
+4. You can compare your current tasks against completed tasks
+   side-by-side by looking at the archived-tasks.
 
 .. code-block:: vim
 
