@@ -34,33 +34,24 @@ to your ``~/.vimrc`` .
 .. _pathogen: https://github.com/tpope/vim-pathogen
 
 
-Usage
-=====
+Instructions
+============
 
-See usage_ .
+
+* usage_
+* syntax_
+* projects_
 
 .. _usage: ./doc/readme/usage.rst
-
-Syntax
-======
-
-See syntax_ .
-
 .. _syntax: ./doc/readme/syntax.rst
-
-
-Projects
-========
-
-See projects_ .
-
 .. _projects: ./doc/readme/projects.rst
 
 
-Under the Hood
-==============
+Misc
+====
 
-See under_the_hood_ .
+* under_the_hood_
+* future_ideas_
 
 .. _under_the_hood: ./doc/readme/under_the_hood.rst
-
+.. _future_ideas: ./doc/readme/future_ideas.rst

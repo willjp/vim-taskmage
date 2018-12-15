@@ -116,6 +116,7 @@ more quickly navigate between sections.
 > 
 > section
 > =======
+> 
 > * task 2
 >     * subtask 2
 
