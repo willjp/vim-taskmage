@@ -21,11 +21,15 @@ import json
 import abc
 import uuid
 import re
+import sys
 # external
-import enum
 # internal
 from taskmage2.utils import excepts, timezone
 from taskmage2.parser import fmtdata
+if sys.version_info[0] < 3:
+    from taskmage2.vendor import enum
+else:
+    import enum
 
 
 class LexerTypes(enum.Enum):

@@ -1,7 +1,11 @@
 import uuid
+import sys
 
-import enum
 from taskmage2.asttree import nodedata
+if sys.version_info[0] < 3:
+    from taskmage2.vendor import enum
+else:
+    import enum
 
 
 class NodeType(enum.Enum):
