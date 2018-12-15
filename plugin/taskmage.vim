@@ -53,7 +53,7 @@ command          TaskMageVSplit            py taskmage2.vim_plugin.open_counterp
 " ========
 
 autocmd BufRead             *.mtask  py taskmage2.vim_plugin.handle_open_mtask()
-autocmd BufNewFile,BufRead  *.mtask  set filetype=taskmage2
+autocmd BufNewFile,BufRead  *.mtask  set filetype=taskmage
 autocmd BufWritePre         *.mtask  call TaskMageSaveStart()
 autocmd BufWritePost        *.mtask  call TaskMageSaveEnd()
 
