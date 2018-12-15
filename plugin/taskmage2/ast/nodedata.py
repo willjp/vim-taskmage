@@ -130,6 +130,9 @@ class TaskData(_NodeData):
     _attrs = ('status', 'created', 'finished', 'modified')
 
     def __new__(cls, status, created=None, finished=False, modified=None):
+        if any([x for x in (created, finished, modified) if x is True]):
+            raise RuntimeError('created, finished, modified may not be True')
+
         if finished is None:
             finished = False
 
@@ -138,15 +141,27 @@ class TaskData(_NodeData):
 
         if created is not None:
             if not isinstance(created, datetime.datetime):
-                raise TypeError('created')
+                raise TypeError(
+                    '`created` expects a datetime object. received {}'.format(
+                        str(type(created))
+                ))
             elif not created.tzinfo:
-                raise TypeError('created')
+                raise TypeError(
+                    '`created` expects a timezone-localized datetime object. received {}'.format(
+                        str(type(created))
+                ))
 
         if finished is not False:
             if not isinstance(finished, datetime.datetime):
-                raise TypeError('finished')
+                raise TypeError(
+                    '`finished` expects a datetime object. received {}'.format(
+                        str(type(finished))
+                ))
             elif not finished.tzinfo:
-                raise TypeError('finished')
+                raise TypeError(
+                    '`finished` expects a timezone-localized datetime object. received {}'.format(
+                        str(type(finished))
+                ))
 
         if modified is not None:
             if not isinstance(modified, datetime.datetime):
@@ -175,6 +190,8 @@ class TaskData(_NodeData):
             self.finished is False,
         ]):
             new_data['finished'] = utcnow
+        elif self.finished:
+            new_data['finished'] = self.finished
         else:
             new_data['finished'] = False
 

@@ -29,12 +29,6 @@ from taskmage2.utils import excepts
 from taskmage2.parser import fmtdata
 
 
-# TODO: task:
-#         * created-dt
-#         * finished False/dt
-#         * modified dt
-
-
 class LexerTypes(enum.Enum):
     tasklist = 'tasklist'
     taskdetails = 'taskdetails'
@@ -472,8 +466,8 @@ class TaskList(_Lexer):
             'data': {
                 'status': status,
                 'created': None,
-                'finished': bool(status == 'done'),
-                'modified': None,    # utcnow() if changed only
+                'finished': None,  # do not assign date here
+                'modified': None,  # utcnow() if changed only
             },
         }
 

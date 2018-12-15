@@ -15,7 +15,7 @@ else
     py import logging
     py logging.basicConfig(lv=20)
     execute 'py if "' . s:scriptroot . '" not in sys.path: sys.path.append("' . s:scriptroot . '")'
-    py import taskmage2.api
+    py import taskmage2.vim_plugin
 endif
 
 
@@ -23,7 +23,8 @@ endif
 " Commands
 " ========
 
-command TaskMageArchiveCompleted  py taskmage2.api.archive_completed_tasks()
+command TaskMageCreateProject     py taskmage2.vim_plugin.create_project()
+command TaskMageArchiveCompleted  py taskmage2.vim_plugin.archive_completed_tasks()
 
 
 "function! TaskMageOpenCounterpart( open_command )
@@ -63,18 +64,18 @@ function! TaskMageSaveStart()
     """ saves cursor-pos, converts Rst-to-Json 
     """
     let s:saved_view = winsaveview()
-    py taskmage2.api.handle_presave_mtask()
+    py taskmage2.vim_plugin.handle_presave_mtask()
 endfunc
 
 function! TaskMageSaveEnd()
     """ converts saved-json back to rst, restores cursor-pos 
     """
-    py taskmage2.api.handle_postsave_mtask()
+    py taskmage2.vim_plugin.handle_postsave_mtask()
     call winrestview(s:saved_view)
 endfunc
 
 
-autocmd BufRead      *.mtask  py taskmage2.api.handle_open_mtask()
+autocmd BufRead      *.mtask  py taskmage2.vim_plugin.handle_open_mtask()
 autocmd BufWritePre  *.mtask  call TaskMageSaveStart()
 autocmd BufWritePost *.mtask  call TaskMageSaveEnd()
 

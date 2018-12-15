@@ -5,6 +5,7 @@ import vim
 
 from taskmage2.parser import lexers, iostream, parsers
 from taskmage2.ast import renderers
+from taskmage2 import projects
 
 
 def handle_open_mtask():
@@ -74,3 +75,28 @@ def archive_completed_tasks():
     # reload from disk
     vim.command('e "{}"'.format(vimfile))
 
+
+def create_project():
+    """ Interactive Vim Prompt to create a new TaskMage project.
+    ( in any location )
+    """
+    vim.command('call inputsave()')
+    vim.command("let projectroot=input('Create New Ptask Project at: ', '.', 'file' )")
+    vim.command('call inputrestore()')
+    projectroot = vim.eval('projectroot')
+
+    if not projectroot:
+        print('No project defined. aborting')
+        return
+
+    project = projects.Project.create(projectroot)
+    return project
+
+
+def _tasklist_2_mtask():
+    fd = iostream.VimBuffer(vim.current.buffer)
+    ast = parsers.parse(fd, 'tasklist')
+    render = ast.render(renderers.Mtask)
+
+    vim.current.buffer[:] = render
+    return render
