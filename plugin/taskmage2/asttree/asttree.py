@@ -1,5 +1,5 @@
 from taskmage2.asttree import renderers, astnode
-from six.moves import UserList
+from taskmage2.vendor.six.moves import UserList
 
 
 class AbstractSyntaxTree(UserList):
