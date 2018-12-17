@@ -15,6 +15,7 @@ from collections import namedtuple
 import abc
 # external
 # internal
+from taskmage2.vendor import six
 
 
 class IOStream(object):
@@ -105,7 +106,7 @@ class IOStream(object):
         return contents
 
 
-class VimBuffer(IOStream):
+class PureVimBuffer(IOStream):
     """ Abstracts vim python buffer object, so can read it as if it were raw-bytes.
     Adds functionality like `peek` , so can read ahead without changing the
     current position in the file.
@@ -118,8 +119,8 @@ class VimBuffer(IOStream):
 
         .. code-block:: python
 
-            stream = VimBuffer(vim.current.buffer)
-            vimbuf = VimBuffer(stream)
+            stream = PureVimBuffer(vim.current.buffer)
+            vimbuf = PureVimBuffer(stream)
 
     """
 
@@ -129,7 +130,7 @@ class VimBuffer(IOStream):
             buf (vim.api.buffer.Buffer):
                 A vim buffer. For example: ``vim.current.buffer`` .
         """
-        super(VimBuffer, self).__init__()
+        super(PureVimBuffer, self).__init__()
         self._buf = buf
         self.line = -1
         self.col = -1
@@ -307,3 +308,22 @@ class FileDescriptor(IOStream):
 
     def eof(self):
         return self.peek() is None
+
+
+class VimBuffer(FileDescriptor):
+    """ Improvement on VimBuffer, reads contents into a StringIO object, and wraps it
+    in a :py;obj:`taskmage2.parser.iostream.FileDescriptor` for massive speed gains.
+
+    Notes:
+        using PureVimBuffer, save operations on files with only 5 tasks were taking about 23s.
+        this implementation only takes 0.04s .
+    """
+    def __init__(self, buf=None):
+
+        stringio_buf = buf
+        if buf is not None:
+            stringio_buf = six.moves.StringIO()
+            stringio_buf.write('\n'.join(buf[:]))
+            stringio_buf.seek(0)
+
+        super(VimBuffer, self).__init__(stringio_buf)

@@ -25,10 +25,10 @@ def handle_presave_mtask():
     """ converts buffer to Mtask(JSON) before writing to disk.
     Also updates modified time, finished time, etc.
     """
+
     # convert vim-buffer to Mtask
     fd = iostream.VimBuffer(vim.current.buffer)
     buffer_ast = parsers.parse(fd, 'tasklist')
-    # NOTE: doubling of entire buffer is happening here...
 
     # merge overtop of savedfile if exists
     if not os.path.isfile(vim.current.buffer.name):

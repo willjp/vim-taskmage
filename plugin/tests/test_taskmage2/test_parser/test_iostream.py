@@ -17,7 +17,7 @@ import six
 from taskmage2.parser import iostream
 
 
-class Test_VimBuffer(object):
+class Test_PureVimBuffer(object):
     """
     """
     def test_peek_overflow(self):
@@ -101,7 +101,7 @@ class Test_VimBuffer(object):
                     ]
 
         """
-        buf = iostream.VimBuffer()
+        buf = iostream.PureVimBuffer()
         buf._buf = contents
         return buf
 
