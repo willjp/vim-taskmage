@@ -127,9 +127,46 @@ class SectionData(_NodeData):
 
 
 class TaskData(_NodeData):
+    """ Object representing the dictionary of task-data.
+    Behaves similar to a namedtuple.
+
+    Examples:
+
+        .. code-block:: python
+
+            >>> TaskData(status='todo')
+            Taskdata(status=todo, created=None, finished=False, modified=None)
+
+            >>> from taskmage2.utils import timezone
+            >>> created = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            >>> TaskData(status='todo', created=created)
+            TaskData(status=todo, created=2018-01-01 00:00:00+00:00, finished=False, modified=None)
+
+            >>> taskdata = TaskData(status='todo')
+            >>> taskdata.status
+            'todo'
+
+    """
     _attrs = ('status', 'created', 'finished', 'modified')
 
     def __new__(cls, status, created=None, finished=False, modified=None):
+        """
+
+        Args:
+            status (str): ``(ex: 'todo', 'skip', 'done', 'wip')``
+                The current status of a task. Must be one of todo, skip, done, or wip.
+
+            created (datetime, optional): ``(ex: datetime.datetime(2018, 1, 1, 0, 0, 0, taskmage2.utils.timezone.UTC())``
+                A timezone-localized datetime object.
+
+            finished (False, datetime, optional): ``(ex: False, datetime.datetime(2018, 1, 1, 0, 0, 0, taskmage2.utils.timezone.UTC())``
+                False, or the a timezone-localized datetime object indicatin gwhen
+                the task was completed.
+
+            modified (None, datetime, optional): ``(ex: None, datetime.datetime(2018, 1, 1, 0, 0, 0, taskmage2.utils.timezone.UTC())``
+                None, or the most recent time a task was modified.
+
+        """
         if any([x for x in (created, finished, modified) if x is True]):
             raise RuntimeError('created, finished, modified may not be True')
 
