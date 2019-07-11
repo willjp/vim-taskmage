@@ -1,17 +1,10 @@
 #!/usr/bin/env python
-"""
-Name :          setup.py
-Created :       Jul 31, 2018
-Author :        Will Pittman
-Contact :       willjpittman@gmail.com
-________________________________________________________________________________
-Description :   installs dependencies for taskmage2
-________________________________________________________________________________
-"""
-# builtin
-# external
 import setuptools
-# internal
+import os
+import sys
+_rootdir = os.path.dirname(os.path.abspath(__file__))
+_plugindir = '{}/plugin'.format(_rootdir)
+sys.path.insert(0, _plugindir)
 import taskmage2
 
 __version__ = taskmage2.__version__
@@ -22,4 +15,10 @@ setuptools.setup(
     author='Will Pittman',
     license='BSD',
     install_requires=[],
+    setup_requires=[
+        'pytest-runner',
+    ],
+    tests_require=[
+        'pytest',
+    ],
 )
