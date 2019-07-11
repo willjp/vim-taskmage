@@ -105,6 +105,10 @@ class Test_TaskData(object):
         new_taskdata = self.touch(taskdata, dt)
         assert new_taskdata.finished == dt
 
+    def test_finalize(self):
+        print('todo')
+        assert False
+
     def test_update_sets_modified_when_changed(self):
         old_modified_date = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
         new_modified_date = datetime.datetime(2018, 2, 2, 0, 0, 0, tzinfo=timezone.UTC())

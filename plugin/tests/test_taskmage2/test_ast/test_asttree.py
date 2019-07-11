@@ -44,6 +44,10 @@ class Test_AbstractSyntaxTree(object):
         AST.touch()
         assert all([node.touch.called for node in AST])
 
+    def test_finalize(self):
+        print('todo')
+        assert False
+
     def test_update_removes_nodes(self):
         AST_A = asttree.AbstractSyntaxTree()
         AST_A.data = [FakeNode('1'), FakeNode('2'), FakeNode('3')]

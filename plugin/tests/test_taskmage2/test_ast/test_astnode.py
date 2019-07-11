@@ -67,6 +67,10 @@ class Test_Node(object):
         task.touch()
         assert all([child.touch.called for child in task.children])
 
+    def test_finalize(self):
+        print('todo')
+        assert False
+
     def test_update_with_nonmatching_id(self):
         params = dict(
             ntype='task',
