@@ -1,3 +1,24 @@
+""" Immutable Objects representing contents of "data" key of the various node types.
+
+.. code-block:: javascript
+
+    // A sample node of type task
+    // (status, finished, modified, created all represented in TaskData() object)
+
+    {
+        "indent": 1,
+        "name":  "Clean Kitchen",
+        "parent": null,
+        "type": "task"
+        "data": {
+            "status": "todo",
+            "finished": false,
+            "modified": "2019-07-11T13:59:14.690601-00:00",
+            "created": "2019-07-11T13:59:14.690601-00:00"
+        }
+    }
+
+"""
 import datetime
 import collections
 
