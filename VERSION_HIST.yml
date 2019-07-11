@@ -2,4 +2,5 @@
     - rewrite of original taskmage, cleaner code, AST-like parsing
 1.0.1: 
     - run tests from setup.py
-
+1.0.2: # unreleased
+# TODO: fix date always being updated..  
