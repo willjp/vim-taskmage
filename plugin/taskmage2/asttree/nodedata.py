@@ -5,7 +5,7 @@ from taskmage2.utils import timezone
 
 
 class _NodeData(tuple):
-    """ A class prototype for custom namdetuples.
+    """ BaseClass for type-validated namdetuples.
 
     The attribute :py:attr:`_attrs` determines the
     namdetuple properties.
@@ -101,6 +101,8 @@ class _NodeData(tuple):
 
 
 class FileData(_NodeData):
+    """ Immutable Object "data" dict of a file node.
+    """
     _attrs = tuple()
 
     def __new__(cls):
@@ -114,6 +116,8 @@ class FileData(_NodeData):
 
 
 class SectionData(_NodeData):
+    """ Immutable Object "data" dict of a section node.
+    """
     _attrs = tuple()
 
     def __new__(cls):
@@ -127,7 +131,7 @@ class SectionData(_NodeData):
 
 
 class TaskData(_NodeData):
-    """ Immutable Object representing the dictionary of task-data.
+    """ Immutable Object "data" dict of a task node.
     Behaves like a namedtuple with type-validation.
 
     Examples:
