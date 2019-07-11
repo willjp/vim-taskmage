@@ -124,6 +124,11 @@ class _NodeData(tuple):
         """
         raise NotImplementedError()
 
+    def finalize(self):
+        """ Finalizes null-fields on nodes where appropriate so node is ready to save.
+        """
+        raise NotImplementedError()
+
     def update(self, data):
         """ Creates a new nodedata object, with the merged contents of self, and the provided node-data.
         """
@@ -141,6 +146,11 @@ class FileData(_NodeData):
     def touch(self):
         return FileData()
 
+    def finalize(self):
+        """ Finalizes null-fields on nodes where appropriate so node is ready to save.
+        """
+        return FileData()
+
     def update(self, data):
         return FileData()
 
@@ -154,6 +164,11 @@ class SectionData(_NodeData):
         return _NodeData.__new__(cls, tuple())
 
     def touch(self):
+        return SectionData()
+
+    def finalize(self):
+        """ Finalizes null-fields on nodes where appropriate so node is ready to save.
+        """
         return SectionData()
 
     def update(self, data):
@@ -272,6 +287,20 @@ class TaskData(_NodeData):
         new_data['modified'] = utcnow
         new_data['created'] = self._get_updated_created_status(utcnow)
         new_data['finished'] = self._get_updated_finished_status(utcnow)
+
+        return TaskData(**new_data)
+
+    def finalize(self):
+        """ Finalizes null-fields on nodes where appropriate so node is ready to save.
+        """
+        utcnow = datetime.datetime.now(timezone.UTC())
+        new_data = self.as_dict()
+        new_data['created'] = self._get_updated_created_status(utcnow)
+        new_data['finished'] = self._get_updated_finished_status(utcnow)
+
+        # only set modified if it is not already set.
+        if new_data['modified'] is None:
+            new_data['modified'] = utcnow
 
         return TaskData(**new_data)
 

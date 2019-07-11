@@ -74,6 +74,13 @@ class AbstractSyntaxTree(UserList):
         for node in self.data:
             node.touch()
 
+    def finalize(self):
+        """ Finalizes null-fields on nodes where appropriate so node is ready to save.
+        Only sets modified-date where it is not present.
+        """
+        for node in self.data:
+            node.finalize()
+
     def update(self, other_ast):
         """ Merge changes from another AST on top of this one.
         """

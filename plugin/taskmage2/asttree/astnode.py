@@ -138,8 +138,8 @@ class Node(object):
         self._data = data
 
     def touch(self):
-        """ Adjusts last-modified timestamp, finished status,
-        adds id if none assigned, etc.
+        """ Finalizes fields, and sets modified-date on this node,
+        and all of it's children.
         """
         if self.id is None:
             self.__id = uuid.uuid4().hex.upper()
@@ -151,7 +151,29 @@ class Node(object):
         for child in self.children:
             child.touch()
 
+    def finalize(self):
+        """ Finalizes null-fields where appropriate so node is ready to save.
+        Does not change modified-date unless it is not set.
+        """
+        if self.id is None:
+            self.__id = uuid.uuid4().hex.upper()
+
+        # NOTE: NodeData is immutable
+        self.data = self.data.finalize()
+
+        # also update all children
+        for child in self.children:
+            child.finalize()
+
+
     def update(self, node):
+        """ Merges non-null fields from `node` on top of this one.
+        Only changes modified-dates where changes were necessary.
+
+        Args:
+            node (taskmage2.asttree.astnode.Node):
+                another ast node to merge on top of this one.
+        """
         if self.id != node.id:
             raise RuntimeError('cannot update nodes with different ids')
 
