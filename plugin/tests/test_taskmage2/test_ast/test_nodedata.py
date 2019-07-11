@@ -220,6 +220,19 @@ class Test_TaskData(object):
         merged_data = self.update(old_data, new_data, current_date)
         assert merged_data.finished == old_finished_date
 
+    @pytest.mark.parametrize(
+        'params', [
+            ('todo', datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()), False, datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())),
+        ]
+    )
+    def test_equality(self, params):
+        task_A = nodedata.TaskData(*params)
+        task_B = nodedata.TaskData(*params)
+        assert task_A == task_B
+
+    def test_inequality(self):
+        pass
+
     def touch(self, taskdata, current_dt):
         with mock.patch('{}.datetime'.format(ns)) as mock_datetime:
             # NOTE: make isinstance(x, datetime.datetime) return true
@@ -237,3 +250,5 @@ class Test_TaskData(object):
                 mock_datetime.datetime.now = mock.Mock(return_value=current_dt)
                 merged_taskdata = taskdata.update(newtaskdata)
                 return merged_taskdata
+
+

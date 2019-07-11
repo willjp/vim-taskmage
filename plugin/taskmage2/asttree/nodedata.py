@@ -71,6 +71,15 @@ class _NodeData(tuple):
             raise AttributeError('Attribute "{}" does not exist on object {}'.format(attr, self.__class__.__name__))
         return self[self._attrs.index(attr)]
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            raise TypeError('type of `other` does not match')
+        for attr in self._attrs:
+            if not getattr(self, attr) == getattr(other, attr):
+                return False
+
+        return True
+
     def as_dict(self):
         d = collections.OrderedDict()
         for i in range(len(self._attrs)):
@@ -256,12 +265,10 @@ class TaskData(_NodeData):
             raise TypeError('modified')
 
     def touch(self):
-        """ Returns a new TaskData instance, with an updated modified date,
-        and a refreshed created/finished status.
+        """ Updates fields, updates modified date (even if no changes).
         """
         utcnow = datetime.datetime.now(timezone.UTC())
         new_data = self.as_dict()
-
         new_data['modified'] = utcnow
         new_data['created'] = self._get_updated_created_status(utcnow)
         new_data['finished'] = self._get_updated_finished_status(utcnow)
