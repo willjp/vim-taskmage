@@ -304,6 +304,7 @@ class TaskData(_NodeData):
         new_data = self.as_dict()
 
         # if no changes, nothing to do
+        # (not same as equality, ignores None values on `data`)
         if all([
             self.status == data.status,
             (self.created == data.created or data.created is None),
@@ -312,7 +313,7 @@ class TaskData(_NodeData):
         ]):
             return TaskData(**new_data)
 
-        # modified is always now,
+        # we know there is some change, so update modified
         new_data['modified'] = utcnow
 
         # status always correct on new obj

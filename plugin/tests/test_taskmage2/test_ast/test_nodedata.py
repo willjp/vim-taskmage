@@ -230,8 +230,16 @@ class Test_TaskData(object):
         task_B = nodedata.TaskData(*params)
         assert task_A == task_B
 
-    def test_inequality(self):
-        pass
+    @pytest.mark.parametrize(
+        'params', [
+            (datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()), False, datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())),
+        ]
+    )
+    def test_inequality(self, params):
+        task_A = nodedata.TaskData('todo', *params)
+        task_B = nodedata.TaskData('skip', *params)
+        assert task_A != task_B
+
 
     def touch(self, taskdata, current_dt):
         with mock.patch('{}.datetime'.format(ns)) as mock_datetime:
