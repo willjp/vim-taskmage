@@ -176,37 +176,49 @@ class TaskData(_NodeData):
         if status not in ('todo', 'skip', 'done', 'wip'):
             raise TypeError('status')
 
-        if created is not None:
-            if not isinstance(created, datetime.datetime):
-                raise TypeError(
-                    '`created` expects a datetime object. received {}'.format(
-                        str(type(created))
-                ))
-            elif not created.tzinfo:
-                raise TypeError(
-                    '`created` expects a timezone-localized datetime object. received {}'.format(
-                        str(type(created))
-                ))
-
-        if finished is not False:
-            if not isinstance(finished, datetime.datetime):
-                raise TypeError(
-                    '`finished` expects a datetime object. received {}'.format(
-                        str(type(finished))
-                ))
-            elif not finished.tzinfo:
-                raise TypeError(
-                    '`finished` expects a timezone-localized datetime object. received {}'.format(
-                        str(type(finished))
-                ))
-
-        if modified is not None:
-            if not isinstance(modified, datetime.datetime):
-                raise TypeError('modified')
-            elif not modified.tzinfo:
-                raise TypeError('modified')
+        cls._validate_created_param(created)
+        cls._validate_finished_param(finished)
+        cls._validate_modified_param(modified)
 
         return _NodeData.__new__(cls, (status, created, finished, modified))
+
+    @staticmethod
+    def _validate_created_param(created):
+        if created is None:
+            return
+
+        if not isinstance(created, datetime.datetime):
+            message = ('`created` expects a datetime object. '
+                       'received {}').format(str(type(created)))
+            raise TypeError(message)
+        elif not created.tzinfo:
+            message = ('`created` expects a timezone-localized datetime '
+                       'object. received {}').format(str(type(created)))
+            raise TypeError(message)
+
+    @staticmethod
+    def _validate_finished_param(finished):
+        if finished is False:
+            return
+
+        if not isinstance(finished, datetime.datetime):
+            message = ('`finished` expects a datetime object. '
+                       'received {}').format(str(type(finished)))
+            raise TypeError(message)
+        elif not finished.tzinfo:
+            message = ('`finished` expects a timezone-localized datetime '
+                       'object. received {}').format(str(type(finished)))
+            raise TypeError(message)
+
+    @staticmethod
+    def _validate_modified_param(modified):
+        if modified is None:
+            return
+
+        if not isinstance(modified, datetime.datetime):
+            raise TypeError('modified')
+        elif not modified.tzinfo:
+            raise TypeError('modified')
 
     def touch(self):
         utcnow = datetime.datetime.now(timezone.UTC())
