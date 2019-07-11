@@ -58,11 +58,13 @@ Misc
 ====
 
 * sphinx_documentation
+* running_tests_
 * under_the_hood_
 * future_ideas_
 * similar_projects_
 
 
+.. _running_tests: ./doc/readme/running_tests.rst
 .. _under_the_hood: ./doc/readme/under_the_hood.rst
 .. _future_ideas: ./doc/readme/future_ideas.rst
 .. _similar_projects: ./doc/readme/similar_projects.rst
