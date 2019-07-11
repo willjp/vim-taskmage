@@ -275,30 +275,20 @@ class TaskData(_NodeData):
 
         return TaskData(**new_data)
 
-    def _get_updated_created_status(self, utcnow):
-        if self.created is None:
-            return utcnow
-        return self.created
-
-    def _get_updated_finished_status(self, utcnow):
-        # if the task is 'done' or 'skip' it is considered completed.
-        # if the task is not marked as completed, set it's completion
-        # time to the current time/date, otherwise return the existing
-        # finished timestamp
-        task_is_completed = self.status in ('done', 'skip')
-        if task_is_completed:
-            if self.finished is False:
-                return utcnow
-            else:
-                return self.finished
-
-        # the task is not finished. It either was never finished,
-        # or it's status has been reverted. Clear the finished date.
-        return False
-
     def update(self, data):
-        """ Return a new taskdata object with changes from another
-        taskdata object merged on top of this one.
+        """ Returns a new taskdata object, with non-null values from `data` assigned to it.
+
+        Example:
+
+            .. code-block:: python
+
+                data_A = TaskData(status='todo')
+                data_B = TaskData(status='skip', created=datetime(...))
+                data_merged = data_A.update(data_B)
+
+        Returns:
+            TaskData:
+                a new taskdata object
         """
         utcnow = datetime.datetime.now(timezone.UTC())
         new_data = self.as_dict()
@@ -336,4 +326,26 @@ class TaskData(_NodeData):
             new_data['finished'] = utcnow
 
         return TaskData(**new_data)
+
+    def _get_updated_created_status(self, utcnow):
+        if self.created is None:
+            return utcnow
+        return self.created
+
+    def _get_updated_finished_status(self, utcnow):
+        # if the task is 'done' or 'skip' it is considered completed.
+        # if the task is not marked as completed, set it's completion
+        # time to the current time/date, otherwise return the existing
+        # finished timestamp
+        task_is_completed = self.status in ('done', 'skip')
+        if task_is_completed:
+            if self.finished is False:
+                return utcnow
+            else:
+                return self.finished
+
+        # the task is not finished. It either was never finished,
+        # or it's status has been reverted. Clear the finished date.
+        return False
+
 
