@@ -155,9 +155,21 @@ class Node(object):
         if self.id != node.id:
             raise RuntimeError('cannot update nodes with different ids')
 
-        self.name = node.name
-        self._type = NodeType(node.type)
+        changed = False
+        if self.name != node.name:
+            self.name = node.name
+            changed = True
+
+        if self._type != NodeType(node.type):
+            self._type = NodeType(node.type)
+            changed = True
+
+        # data.update() sets changed if it has changed
         self.data = self.data.update(node.data)
+
+        # update modified date
+        if changed:
+            self.data = self.data.touch()
 
         self.children = self._update_children(node)
 

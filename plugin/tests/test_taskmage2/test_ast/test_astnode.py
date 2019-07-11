@@ -271,6 +271,24 @@ class Test_Node(object):
         assert len(old_node.children) == 2
         assert old_node.children[1].id == 'A58ACFFF058849B291D65DFBBC146BB8'
 
+    def test_update_name_also_updates_modified(self):
+        params = dict(
+            _id=None,
+            ntype='task',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': None,
+                'modified': None,
+            },
+            children=None,
+        )
+        node_A = astnode.Node(name='task A', **params)
+        node_B = astnode.Node(name='task B', **params)
+
+        node_A.update(node_B)
+        assert node_A.data.modified != node_B.data.modified
+
     def test_taskchain_completion_file(self):
         """ files must resolve as false, at least until
         I figure out a mechanism for archiving an entire taskfile,
