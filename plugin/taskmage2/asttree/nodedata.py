@@ -127,8 +127,8 @@ class SectionData(_NodeData):
 
 
 class TaskData(_NodeData):
-    """ Object representing the dictionary of task-data.
-    Behaves similar to a namedtuple.
+    """ Immutable Object representing the dictionary of task-data.
+    Behaves like a namedtuple with type-validation.
 
     Examples:
 
@@ -150,7 +150,7 @@ class TaskData(_NodeData):
     _attrs = ('status', 'created', 'finished', 'modified')
 
     def __new__(cls, status, created=None, finished=False, modified=None):
-        """
+        """ Constructor.
 
         Args:
             status (str): ``(ex: 'todo', 'skip', 'done', 'wip')``
@@ -184,7 +184,7 @@ class TaskData(_NodeData):
         """ Status only accepts string with valid status
         """
         if status not in ('todo', 'skip', 'done', 'wip'):
-            raise TypeError('status')
+            raise TypeError('`status` must be one of (todo, skip, done, or wip)')
 
     @staticmethod
     def _validate_created_param(created):
@@ -231,32 +231,38 @@ class TaskData(_NodeData):
             raise TypeError('modified')
 
     def touch(self):
-        """
+        """ Returns a new TaskData instance, with an updated modified date,
+        and a refreshed created/finished status.
         """
         utcnow = datetime.datetime.now(timezone.UTC())
         new_data = self.as_dict()
 
         new_data['modified'] = utcnow
-
-        # assign defaults
-        if self.status is None:
-            new_data['status'] = 'todo'
-
-        if self.created is None:
-            new_data['created'] = utcnow
-
-        # update finished-time
-        if all([
-            self.status in ('done', 'skip'),
-            self.finished is False,
-        ]):
-            new_data['finished'] = utcnow
-        elif self.finished:
-            new_data['finished'] = self.finished
-        else:
-            new_data['finished'] = False
+        new_data['created'] = self._get_updated_created_status(utcnow)
+        new_data['finished'] = self._get_updated_finished_status(utcnow)
 
         return TaskData(**new_data)
+
+    def _get_updated_created_status(self, utcnow):
+        if self.created is None:
+            return utcnow
+        return self.created
+
+    def _get_updated_finished_status(self, utcnow):
+        # if the task is 'done' or 'skip' it is considered completed.
+        # if the task is not marked as completed, set it's completion
+        # time to the current time/date, otherwise return the existing
+        # finished timestamp
+        task_is_completed = self.status in ('done', 'skip')
+        if task_is_completed:
+            if self.finished is False:
+                return utcnow
+            else:
+                return self.finished
+
+        # the task is not finished. It either was never finished,
+        # or it's status has been reverted. Clear the finished date.
+        return False
 
     def update(self, data):
         """ Return a new taskdata object with changes from another
