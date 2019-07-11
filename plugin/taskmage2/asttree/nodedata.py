@@ -167,15 +167,12 @@ class TaskData(_NodeData):
                 None, or the most recent time a task was modified.
 
         """
-        if any([x for x in (created, finished, modified) if x is True]):
-            raise RuntimeError('created, finished, modified may not be True')
-
+        # defaults
         if finished is None:
             finished = False
 
-        if status not in ('todo', 'skip', 'done', 'wip'):
-            raise TypeError('status')
-
+        # validation
+        cls._validate_status_param(status)
         cls._validate_created_param(created)
         cls._validate_finished_param(finished)
         cls._validate_modified_param(modified)
@@ -183,7 +180,16 @@ class TaskData(_NodeData):
         return _NodeData.__new__(cls, (status, created, finished, modified))
 
     @staticmethod
+    def _validate_status_param(status):
+        """ Status only accepts string with valid status
+        """
+        if status not in ('todo', 'skip', 'done', 'wip'):
+            raise TypeError('status')
+
+    @staticmethod
     def _validate_created_param(created):
+        """ Created can be None, or a timezone-localized datetime
+        """
         if created is None:
             return
 
@@ -198,6 +204,8 @@ class TaskData(_NodeData):
 
     @staticmethod
     def _validate_finished_param(finished):
+        """ Finished can be False, or a timezone-localized datetime object.
+        """
         if finished is False:
             return
 
@@ -212,6 +220,8 @@ class TaskData(_NodeData):
 
     @staticmethod
     def _validate_modified_param(modified):
+        """ Modified can be None, or a timezone-localized datetime object.
+        """
         if modified is None:
             return
 
@@ -221,6 +231,8 @@ class TaskData(_NodeData):
             raise TypeError('modified')
 
     def touch(self):
+        """
+        """
         utcnow = datetime.datetime.now(timezone.UTC())
         new_data = self.as_dict()
 
