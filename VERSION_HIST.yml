@@ -1,0 +1,5 @@
+1.0.0:
+    - rewrite of original taskmage, cleaner code, AST-like parsing
+1.0.1: 
+    - run tests from setup.py
+
