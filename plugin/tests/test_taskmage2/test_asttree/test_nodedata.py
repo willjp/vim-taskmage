@@ -117,16 +117,65 @@ class Test_TaskData(object):
 
     class Test_finalize:
         def test_sets_modified_when_null(self):
-            print('todo')
-            assert False
+            taskdata = nodedata.TaskData(status='todo')
+            now_dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            new_taskdata = self.finalize(taskdata, now_dt)
+            assert new_taskdata.modified == now_dt
 
         def test_does_not_change_non_null_modified(self):
-            print('todo')
-            assert False
+            modified = datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            now = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            taskdata = nodedata.TaskData(status='todo', modified=modified)
+            new_taskdata = self.finalize(taskdata, now)
+            assert new_taskdata.modified == modified
 
-        def test_does_not_change_created_if_non_null(self):
-            print('todo')
-            assert False
+        def test_sets_created_if_null(self):
+            now = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            taskdata = nodedata.TaskData(status='todo', created=None)
+            new_taskdata = self.finalize(taskdata, now)
+            assert new_taskdata.created == now
+
+        def test_does_not_set_created_already_set(self):
+            created = datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            now = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            taskdata = nodedata.TaskData(status='todo', created=created)
+            new_taskdata = self.finalize(taskdata, now)
+            assert new_taskdata.created == created
+
+        def test_sets_finished_when_task_complete_and_finished_is_null(self):
+            now = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            taskdata = nodedata.TaskData(status='done', finished=None)
+            new_taskdata = self.finalize(taskdata, now)
+            assert new_taskdata.finished == now
+
+        def test_does_not_set_finished_when_task_incomplete_and_finished_is_null(self):
+            now = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            taskdata = nodedata.TaskData(status='todo', finished=None)
+            new_taskdata = self.finalize(taskdata, now)
+            assert new_taskdata.finished is False
+
+        def test_does_not_overwrite_finished_when_task_complete_and_finished_is_set(self):
+            finished = datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            now = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            taskdata = nodedata.TaskData(status='done', finished=finished)
+            new_taskdata = self.finalize(taskdata, now)
+            assert new_taskdata.finished == finished
+
+        def test_clears_finished_when_task_incomplete(self):
+            finished = datetime.datetime(2017, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            now = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            taskdata = nodedata.TaskData(status='todo', finished=finished)
+            new_taskdata = self.finalize(taskdata, now)
+            assert new_taskdata.finished is False
+
+        def finalize(self, taskdata, current_dt):
+            with mock.patch('{}.datetime'.format(ns)) as mock_datetime:
+                # NOTE: make isinstance(x, datetime.datetime) return true
+                with mock.patch('{}.isinstance'.format(ns), return_value=True):
+                    mock_datetime.datetime = mock.MagicMock(spec='datetime.datetime')
+                    mock_datetime.datetime.now = mock.Mock(return_value=current_dt)
+                    new_taskdata = taskdata.finalize()
+                    return new_taskdata
 
     class Test_update:
         def test_sets_modified_when_changed(self):
