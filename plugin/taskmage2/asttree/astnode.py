@@ -43,7 +43,7 @@ class Node(object):
         (NodeType.file,     nodedata.FileData),
     )
 
-    def __init__(self, _id, ntype, name, data=None, children=None):
+    def __init__(self, _id, ntype, name, data=None, children=None, parent=None):
         """ Constructor.
 
         .. note::
@@ -69,8 +69,10 @@ class Node(object):
                 list of :py:obj:`taskmage2.data.Node` objects with a child
                 relationship to this node.
 
-        """
+            parent (astnode.Node, optional):
+                the parent node, if node has a parent.
 
+        """
         if children is None:
             children = []
 
@@ -81,20 +83,32 @@ class Node(object):
         data_map = dict(self._data_map)
 
         self.name = name
+        self.parent = parent
         self.children = children  # list of nodes
         self.__id = _id
         self._type = ntype
         self._data = data_map[ntype](**data)
 
     def __repr__(self):
-        return 'Node(id={}, type={}, name={}, data={})'.format(
+        # get parentid
+        #if self.parent:
+        #    parentid = self.parent.id
+        #else:
+        #    parentid = 'None'
+        parentid = 'None'
+
+        # string representation
+        return 'Node(id={}, type={}, name={}, parentid={}, data={})'.format(
             self.__id,
             self._type,
             self.name,
+            parentid,
             self.data,
         )
 
     def __eq__(self, obj):
+        """ Tests equality of node, and it's children *ignoring it's parent* .
+        """
         if not isinstance(obj, Node):
             raise TypeError('Invalid comparison')
 
@@ -104,9 +118,25 @@ class Node(object):
         return True
 
     def __ne__(self, obj):
+        """ Tests inequality of node and it's children *ignoring it's parent* .
+        """
         if self.__eq__(obj):
             return False
         return True
+
+    def __getitem__(self, index):
+        """
+        Args:
+            index (int, str):
+                either the child's position-index, or it's id.
+        """
+        if isinstance(index, int):
+            return self.children[index]
+        for child in self.children:
+            if child.id == index:
+                return child
+        raise KeyError('no child exists with id/index: {}'.format(repr(index)))
+
 
     @property
     def id(self):
@@ -164,7 +194,6 @@ class Node(object):
         # also update all children
         for child in self.children:
             child.finalize()
-
 
     def update(self, node):
         """ Merges non-null fields from `node` on top of this one.

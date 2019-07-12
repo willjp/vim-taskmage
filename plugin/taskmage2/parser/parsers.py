@@ -90,8 +90,9 @@ class Parser(object):
         AST = asttree.AbstractSyntaxTree()
         for token in self.__lexer.data:
             if token['parent']:
-                child = allnodes[token['_id']]
                 parent = allnodes[token['parent']]
+                child = allnodes[token['_id']]
+                child.parent = parent
                 parent.children.append(child)
             else:
                 node = allnodes[token['_id']]
@@ -118,8 +119,9 @@ def parse(iostream, lexer):
     AST = asttree.AbstractSyntaxTree()
     for token in lexer.data:
         if token['parent']:
-            child = allnodes[token['_id']]
             parent = allnodes[token['parent']]
+            child = allnodes[token['_id']]
+            child.parent = parent
             parent.children.append(child)
         else:
             node = allnodes[token['_id']]

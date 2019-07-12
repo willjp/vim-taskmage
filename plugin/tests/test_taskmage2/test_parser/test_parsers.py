@@ -117,6 +117,31 @@ class Test_Parser:
         ]
         assert parsed == expected
 
+    def test_subtask_assigns_parent(self):
+        """ Children keep a reference to their parent.
+        """
+        parsed = self.parser([
+            {
+                '_id': '6ed88ae2e7d94d2c88249a954782fc46',
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            },
+            {
+                '_id': '032012b832f546d7bdc13a08ade41ba0',
+                'type': 'task',
+                'name': 'subtaskA',
+                'indent': 4,
+                'parent': '6ed88ae2e7d94d2c88249a954782fc46',
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            },
+        ])
+
+        assert parsed[0][0].id == '032012b832f546d7bdc13a08ade41ba0'
+        assert parsed[0][0].parent.id == '6ed88ae2e7d94d2c88249a954782fc46'
+
     def parser(self, lexed_list):
         """
         Produce a parser object, whose data is set
