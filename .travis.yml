@@ -2,5 +2,8 @@ language: python
 python:
     - '2.7'
     - '3.6'
+install:
+    - pip install codecov
 script:
-    python setup.py test
+    - python setup.py test --addopts --cov
+    - codecov --token=836e8801-c039-4f16-8b36-717f92ff7664
