@@ -97,11 +97,12 @@ def render_tags_using_regex(filepath):
 
         fileconts = fd.read()
 
-        for match in re.finditer(regex, fileconts):
+        for match in re.finditer(regex, fileconts, re.MULTILINE):
             if len(match.group('name')) == len(match.group('underline')):
+                uuid = match.group('uuid') or ''
                 line_regex = (
                     '/^'
-                    + match.group('uuid')
+                    + uuid
                     + match.group('name')
                     + '$/;"'
                 )
@@ -115,15 +116,15 @@ def render_tags_using_regex(filepath):
                 )
 
         # get line-numbers for sections
-        fd.seek(0)
-        lineno = 1  # ctags line nums  1-indexed
-        for match in matches:
-            while fd.tell() < match.match_start_pos:
-                ch = fd.peek()
-                if ch == '\n':
-                    lineno += 1
-                fd.seek(1, whence=1)
-            print(lineno, match.name)
+        #fd.seek(0)
+        #lineno = 1  # ctags line nums  1-indexed
+        #for match in matches:
+        #    while fd.tell() < match.match_start_pos:
+        #        ch = fd.peek()
+        #        if ch == '\n':
+        #            lineno += 1
+        #        fd.seek(1, whence=1)
+        #    print(lineno, match.name)
 
     return matches
 
