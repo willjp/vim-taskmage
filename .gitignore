@@ -6,3 +6,4 @@
 examples/.ptaskmgr/*.ptask
 .codemod.*
 .ropeproject
+.coverage
