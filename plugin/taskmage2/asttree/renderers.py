@@ -395,6 +395,8 @@ class Mtask(Renderer):
 
 class Ctags(Renderer):
     """ Renders a ctags `tags` file (that can be used by tagbar extension).
+
+    .. warning:: DEPRECATED!! this was a bad idea, do not have enough information
     """
     def __init__(self, ast):
         super(Ctags, self).__init__(ast)
