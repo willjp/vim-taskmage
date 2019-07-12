@@ -29,118 +29,129 @@ def renderer():
 
 
 class Test_AbstractSyntaxTree(object):
-    def test_render_invalid_renderer(self):
-        with pytest.raises(TypeError):
-            self.render('invalid renderer')
+    class Test_render:
+        def test_render_invalid_renderer(self):
+            with pytest.raises(TypeError):
+                self.render('invalid renderer')
 
-    def test_render_valid(self, renderer):
-        self.render(renderer)
-        assert renderer.render_calls == 1
+        def test_render_valid(self, renderer):
+            self.render(renderer)
+            assert renderer.render_calls == 1
 
-    def test_touch(self):
-        AST = asttree.AbstractSyntaxTree()
-        AST.data = [mock.Mock(), mock.Mock()]
+        def render(self, renderer):
+            tree = asttree.AbstractSyntaxTree([
+                astnode.Node(
+                    _id='',
+                    ntype='task',
+                    name='task A',
+                    data={
+                        'status': 'todo',
+                        'created': None,
+                        'finished': False,
+                        'modified': None,
+                    },
+                )
+            ])
+            tree.render(renderer)
 
-        AST.touch()
-        assert all([node.touch.called for node in AST])
+    class Test_touch:
+        def test_children_run_touch(self):
+            AST = asttree.AbstractSyntaxTree()
+            AST.data = [mock.Mock(), mock.Mock()]
 
-    def test_finalize(self):
-        print('todo')
-        assert False
+            AST.touch()
+            assert all([node.touch.called for node in AST])
 
-    def test_update_removes_nodes(self):
-        AST_A = asttree.AbstractSyntaxTree()
-        AST_A.data = [FakeNode('1'), FakeNode('2'), FakeNode('3')]
+    class Test_finalize:
+        def test_children_run_finalize(self):
+            AST = asttree.AbstractSyntaxTree()
+            AST.data = [mock.Mock(), mock.Mock()]
 
-        AST_B = asttree.AbstractSyntaxTree()
-        AST_B.data = [FakeNode('1'), FakeNode('3')]
+            AST.finalize()
+            assert all([node.finalize.called for node in AST])
 
-        AST_A.update(AST_B)
-        assert AST_A.data == [FakeNode('1'), FakeNode('3')]
+    class Test_update:
+        def test_update_removes_nodes(self):
+            AST_A = asttree.AbstractSyntaxTree()
+            AST_A.data = [FakeNode('1'), FakeNode('2'), FakeNode('3')]
 
-    def test_update_adds_nodes(self):
-        AST_A = asttree.AbstractSyntaxTree()
-        AST_A.data = [FakeNode('1'), FakeNode('2')]
+            AST_B = asttree.AbstractSyntaxTree()
+            AST_B.data = [FakeNode('1'), FakeNode('3')]
 
-        AST_B = asttree.AbstractSyntaxTree()
-        AST_B.data = [FakeNode('1'), FakeNode('2'), FakeNode('3')]
+            AST_A.update(AST_B)
+            assert AST_A.data == [FakeNode('1'), FakeNode('3')]
 
-        AST_A.update(AST_B)
-        assert AST_A.data == [FakeNode('1'), FakeNode('2'), FakeNode('3')]
+        def test_update_adds_nodes(self):
+            AST_A = asttree.AbstractSyntaxTree()
+            AST_A.data = [FakeNode('1'), FakeNode('2')]
 
-    def test_update_performs_nodeupdate(self):
-        AST_A = asttree.AbstractSyntaxTree()
-        AST_A.data = [FakeNode('1')]
+            AST_B = asttree.AbstractSyntaxTree()
+            AST_B.data = [FakeNode('1'), FakeNode('2'), FakeNode('3')]
 
-        AST_B = asttree.AbstractSyntaxTree()
-        AST_B.data = [FakeNode('1')]
+            AST_A.update(AST_B)
+            assert AST_A.data == [FakeNode('1'), FakeNode('2'), FakeNode('3')]
 
-        AST_A.update(AST_B)
-        assert AST_A[0].update.called_with(AST_B[0])
+        def test_update_performs_nodeupdate(self):
+            AST_A = asttree.AbstractSyntaxTree()
+            AST_A.data = [FakeNode('1')]
 
-    def test_update_performs_nodeupdate_when_order_mixed(self):
-        AST_A = asttree.AbstractSyntaxTree()
-        AST_A.data = [FakeNode('1'), FakeNode('2')]
+            AST_B = asttree.AbstractSyntaxTree()
+            AST_B.data = [FakeNode('1')]
 
-        AST_B = asttree.AbstractSyntaxTree()
-        AST_B.data = [FakeNode('2'), FakeNode('1')]
+            AST_A.update(AST_B)
+            assert AST_A[0].update.called_with(AST_B[0])
 
-        AST_A.update(AST_B)
-        assert AST_A[0].update.called_with(AST_B[1])
-        assert AST_A[1].update.called_with(AST_B[0])
+        def test_update_performs_nodeupdate_when_order_mixed(self):
+            AST_A = asttree.AbstractSyntaxTree()
+            AST_A.data = [FakeNode('1'), FakeNode('2')]
 
-    def test_update_keeps_new_order(self):
-        AST_A = asttree.AbstractSyntaxTree()
-        AST_A.data = [FakeNode('1'), FakeNode('2')]
+            AST_B = asttree.AbstractSyntaxTree()
+            AST_B.data = [FakeNode('2'), FakeNode('1')]
 
-        AST_B = asttree.AbstractSyntaxTree()
-        AST_B.data = [FakeNode('2'), FakeNode('1')]
+            AST_A.update(AST_B)
+            assert AST_A[0].update.called_with(AST_B[1])
+            assert AST_A[1].update.called_with(AST_B[0])
 
-        AST_A.update(AST_B)
-        assert AST_A.data == [FakeNode('2'), FakeNode('1')]
+        def test_update_keeps_new_order(self):
+            AST_A = asttree.AbstractSyntaxTree()
+            AST_A.data = [FakeNode('1'), FakeNode('2')]
 
-    def test_get_completed_taskchains(self):
-        """ Retrieve all top-level task-nodes whose self/children are all completed.
-        """
-        complete_node = mock.Mock()
-        complete_node.is_complete = mock.Mock(return_value=True)
+            AST_B = asttree.AbstractSyntaxTree()
+            AST_B.data = [FakeNode('2'), FakeNode('1')]
 
-        incomplete_node = mock.Mock()
-        incomplete_node.is_complete = mock.Mock(return_value=False)
+            AST_A.update(AST_B)
+            assert AST_A.data == [FakeNode('2'), FakeNode('1')]
 
-        AST = asttree.AbstractSyntaxTree()
-        AST.data = [complete_node, incomplete_node]
+    class Test_get_completed_taskchains:
+        def test_filters_incompleted_child_taskchains(self):
+            """ Retrieve all top-level task-nodes whose self/children are all completed.
+            """
+            complete_node = mock.Mock()
+            complete_node.is_complete = mock.Mock(return_value=True)
 
-        completed = AST.get_completed_taskchains()
-        assert completed.data == [complete_node]
+            incomplete_node = mock.Mock()
+            incomplete_node.is_complete = mock.Mock(return_value=False)
 
-    def test_archive_completed_tasks_only(self):
-        data = [mock.Mock(), mock.Mock(), mock.Mock()]
-        completed = [data[1]]
+            AST = asttree.AbstractSyntaxTree()
+            AST.data = [complete_node, incomplete_node]
 
-        AST = asttree.AbstractSyntaxTree()
-        AST.data = data[:]
-        with mock.patch(
-            '{}.AbstractSyntaxTree.get_completed_taskchains'.format(asttree.__name__),
-            return_value=completed
-        ):
-            archive_ast = AST.archive_completed()
+            completed = AST.get_completed_taskchains()
+            assert completed.data == [complete_node]
 
-        assert archive_ast.data == [data[1]]
-        assert AST.data == [data[0], data[2]]
+    class Test_archive_completed:
+        def test_only_completed_taskchains_archived(self):
+            data = [mock.Mock(), mock.Mock(), mock.Mock()]
+            completed = [data[1]]
 
-    def render(self, renderer):
-        tree = asttree.AbstractSyntaxTree([
-            astnode.Node(
-                _id='',
-                ntype='task',
-                name='task A',
-                data={
-                    'status': 'todo',
-                    'created': None,
-                    'finished': False,
-                    'modified': None,
-                },
-            )
-        ])
-        tree.render(renderer)
+            AST = asttree.AbstractSyntaxTree()
+            AST.data = data[:]
+            with mock.patch(
+                '{}.AbstractSyntaxTree.get_completed_taskchains'.format(asttree.__name__),
+                return_value=completed
+            ):
+                archive_ast = AST.archive_completed()
+
+            assert archive_ast.data == [data[1]]
+            assert AST.data == [data[0], data[2]]
+
+
