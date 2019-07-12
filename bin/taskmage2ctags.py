@@ -2,14 +2,8 @@
 import argparse
 import os
 import sys
-import uuid
 import re
 import collections
-_bindir = os.path.dirname(os.path.abspath(__file__))
-_plugindir = os.path.abspath('{}/../plugin'.format(_bindir))
-sys.path.insert(0, _plugindir)
-from taskmage2.parser import iostream, parsers
-from taskmage2.asttree import asttree, astnode, renderers
 
 
 # TODO: incomplete we don't have a renderer for ctags yet
@@ -17,35 +11,6 @@ from taskmage2.asttree import asttree, astnode, renderers
 
 
 # reads the json file on disk
-
-
-def render_tags_using_renderer(filepath, lexer_name):
-    """ renders tags from the json-serialized format
-
-    Args:
-        lexer_name (str): ``(ex: 'mtask', 'tasklist', 'taskdetails')``
-            name of the lexer to use to deserialized the file contents
-    """
-    # build AST that starts with the filepath we are reading from
-    ast = asttree.AbstractSyntaxTree([
-        astnode.Node(
-            _id=uuid.uuid4().hex.upper(),
-            ntype='file',
-            name=filepath,
-        )
-    ])
-
-    # if the file exists on disk, add the file's AST
-    # as children of our 'file' Node
-    if os.path.isfile(filepath):
-        with open(filepath, 'r') as fd_py:
-            fd = iostream.FileDescriptor(fd_py)
-            file_ast = parsers.parse(fd, lexer_name)
-            ast[0].children = file_ast
-
-    # now render the tagfile contents
-    tags = ast.render(renderers.Ctags)
-    return tags
 
 
 def get_header_regex():
