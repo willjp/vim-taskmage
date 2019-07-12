@@ -81,6 +81,8 @@ def get_header_regex():
 
 
 def render_tags_using_regex(filepath):
+    filepath = os.path.abspath(filepath)
+
     # get header
     ctags_header = (
         '!_TAG_FILE_ENCODING	utf-8\n'
@@ -88,6 +90,7 @@ def render_tags_using_regex(filepath):
         '!_TAG_FILE_SORTED	1\n'
     )
 
+    ctags_entries = []
     with open(filepath, 'r') as fd:
 
         # get sections
@@ -116,17 +119,31 @@ def render_tags_using_regex(filepath):
                 )
 
         # get line-numbers for sections
-        #fd.seek(0)
-        #lineno = 1  # ctags line nums  1-indexed
-        #for match in matches:
-        #    while fd.tell() < match.match_start_pos:
-        #        ch = fd.peek()
-        #        if ch == '\n':
-        #            lineno += 1
-        #        fd.seek(1, whence=1)
-        #    print(lineno, match.name)
+        fd.seek(0)
+        lineno = 1  # ctags line nums  1-indexed
+        for match in matches:
+            while fd.tell() < match.match_start_pos:
+                ch = fd.read(1)
+                if ch == '\n':
+                    lineno += 1
+            if not match.type:
+                type_char = 's'
+            elif match.type == 'file':
+                raise NotImplementedError('todo')
+            ctags_entry = get_ctags_entry(match.name, filepath, match.regex, type_char, lineno)
+            ctags_entries.append(ctags_entry)
 
-    return matches
+    rendered_tags = ctags_header + '\n'.join(ctags_entries)
+    return rendered_tags
+
+
+def get_ctags_entry(name, filepath, line_regex, type_char, lineno, parents=None):
+    if not parents:
+        entry = '{}\t{}\t{}\t{}\tline:{}'.format(
+            name, filepath, line_regex, type_char, lineno
+        )
+        return entry
+    raise NotImplementedError('todo')
 
 
 class CommandlineInterface(object):
@@ -154,10 +171,10 @@ class CommandlineInterface(object):
 
         rendered_tags = render_tags_using_regex(args.target_file)
         if args.file == '-':
-            sys.stdout.write('\n'.join(rendered_tags))
+            sys.stdout.write(rendered_tags)
         else:
             with open(args.file, 'w') as fd:
-                fd.write('\n'.join(rendered_tags))
+                fd.write(rendered_tags)
 
 
 if __name__ == '__main__':
