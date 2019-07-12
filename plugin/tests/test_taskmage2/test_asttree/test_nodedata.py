@@ -117,7 +117,7 @@ class Test_TaskData(object):
 
     class Test_finalize:
         def test_sets_modified_when_null(self):
-            taskdata = nodedata.TaskData(status='todo')
+            taskdata = nodedata.TaskData(status='todo', modified=None)
             now_dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
             new_taskdata = self.finalize(taskdata, now_dt)
             assert new_taskdata.modified == now_dt
