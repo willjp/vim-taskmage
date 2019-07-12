@@ -109,6 +109,8 @@ class TaskList(Renderer):
                 ]
 
         """
+        # TODO: now that all nodes contain a reference to their
+        #       parent node, this can probably be simplified
         node_renderer_map = {
             'file':    self._render_fileheader,
             'section': self._render_sectionheader,
@@ -389,6 +391,49 @@ class Mtask(Renderer):
                 'modified': modified,
             },
         }
+
+
+class Ctags(Renderer):
+    """ Renders a ctags `tags` file (that can be used by tagbar extension).
+    """
+
+    def render(self):
+        render = []
+
+        for node in self.ast:
+            render = self._render_node(render, node, indent=0)
+
+    def _render_ctags_fileheader(self):
+        lines = [
+            '!_TAG_FILE_ENCODING	utf-8',
+            '!_TAG_FILE_FORMAT	2',
+            '!_TAG_FILE_SORTED	1',
+        ]
+        return lines
+
+    def _render_node(self, render, node, indent=0):
+        node_renderer_map = {
+            'section': self._render_sectionheader,
+        }
+
+    def _render_sectionheader(self, node, parent, indent=0):
+        """
+
+        Returns:
+            str:
+
+                .. code-block:: ctags
+
+                    #name       filepath           regex that produced                               tag-type  line    hierarchy
+
+                    My Todos    path/file.mtask    /^{*768D3CDC543044488462C9CE6B823404*}My Todos$;" s         line:3  section:All Todos|My Todos
+
+        See Also:
+            * https://en.wikipedia.org/wiki/Ctags#Exuberant Ctags
+            * https://github.com/jszakmeister/rst2ctags
+        """
+        pass
+
 
 
 if __name__ == '__main__':

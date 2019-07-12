@@ -418,3 +418,71 @@ class Test_Mtask(object):
         mtask_str = '\n'.join(mtask.render())
         return json.loads(mtask_str)
 
+
+class Test_Ctags:
+    @classmethod
+    def setup_class(self):
+        self.ctags_header = (
+            '!_TAG_FILE_ENCODING	utf-8\n'
+            '!_TAG_FILE_FORMAT	2\n'
+            '!_TAG_FILE_SORTED	1\n'
+        )
+
+    def test_no_tags(self):
+        render = self.render([])
+        assert render == self.ctags_header
+
+    def test_section(self):
+        render = self.render([
+            astnode.Node(
+                _id='B307DD0B7C5E4ECD84CEF88AFDE4B9C8',
+                ntype='file',
+                name='/path/to/todo.mtask',
+                data={},
+                children=[
+                    astnode.Node(
+                        _id='E083C4632F0D41CCA4C9712F3D4BD980',
+                        ntype='section',
+                        name='cleanup',
+                        data={},
+                        children=None,
+                    ),
+                ]
+            )
+        ])
+        expected = (
+            self.ctags_header
+            + 'cleanup\t/path/to/todo.mtask\t/^{*B307DD0B7C5E4ECD84CEF88AFDE4B9C8*}cleanup$/;"\ts\tline:4\n'
+        )
+        # NOTE: this is going to fail... the AST can't know what line the
+        #       section is on... swing and a miss...
+        assert render == expected
+
+    def test_nested_section(self):
+        assert False
+
+    def render(self, ast):
+        """ Render parser_data using a TaskList renderer.
+
+        Args:
+            parser_data (list):
+                A list of nodes, as returned from :py:meth:`taskmage2.parser.parsers.Parser.parse` .
+
+                .. code-block:: python
+
+                    [
+                        Node('name':'home', 'type':'section', ... children=[
+                            Node('name':'laundry', ... children=[]),
+                            Node('name':'dishes', ... children=[]),
+                            ...
+                        ]),
+                        Node('name':'taskA', ...children=[])
+                    ]
+
+        Returns:
+            list:
+                A list of lines.
+        """
+        tasklist = renderers.Ctags(ast)
+        return tasklist.render()
+
