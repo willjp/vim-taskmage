@@ -2,11 +2,12 @@
 import argparse
 import os
 import sys
+import uuid
 _bindir = os.path.dirname(os.path.abspath(__file__))
 _plugindir = os.path.abspath('{}/../plugin'.format(_bindir))
 sys.path.insert(0, _plugindir)
 from taskmage2.parser import iostream, parsers
-from taskmage2.asttree import asttree
+from taskmage2.asttree import asttree, astnode, renderers
 
 
 # TODO: incomplete we don't have a renderer for ctags yet
@@ -15,16 +16,34 @@ from taskmage2.asttree import asttree
 
 # reads the json file on disk
 
-def render_tags(filepath):
-    # read file on disk
+
+def render_tags(filepath, lexer_name):
+    """ renders tags from the json-serialized format
+
+    Args:
+        lexer_name (str): ``(ex: 'mtask', 'tasklist', 'taskdetails')``
+            name of the lexer to use to deserialized the file contents
+    """
+    # build AST that starts with the filepath we are reading from
+    ast = asttree.AbstractSyntaxTree([
+        astnode.Node(
+            _id=uuid.uuid4().hex.upper(),
+            ntype='file',
+            name=filepath,
+        )
+    ])
+
+    # if the file exists on disk, add the file's AST
+    # as children of our 'file' Node
     if os.path.isfile(filepath):
         with open(filepath, 'r') as fd_py:
             fd = iostream.FileDescriptor(fd_py)
-            ast = parsers.parse(fd, 'mtask')
-    else:
-        ast = asttree.AbstractSyntaxTree()
+            file_ast = parsers.parse(fd, lexer_name)
+            ast[0].children = file_ast
 
-    tags = file_ast.render(renderers.Ctags)
+    # now render the tagfile contents
+    tags = ast.render(renderers.Ctags)
+    return tags
 
 
 class CommandlineInterface(object):
@@ -38,6 +57,10 @@ class CommandlineInterface(object):
             '-f', '--file',
             default='tags'
         )
+        self.parser.add_argument(
+            '-l', '--lexer',
+            default='mtask',
+        )
         # ignored for now
         self.parser.add_argument(
             '--sro',
@@ -46,7 +69,7 @@ class CommandlineInterface(object):
     def parse_args(self):
         args = self.parser.parse_args()
 
-        rendered_tags = render_tags(args.target_file)
+        rendered_tags = render_tags(args.target_file, args.lexer)
         if args.file == '-':
             sys.stdout.write('\n'.join(rendered_tags))
         else:

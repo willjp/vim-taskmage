@@ -396,12 +396,37 @@ class Mtask(Renderer):
 class Ctags(Renderer):
     """ Renders a ctags `tags` file (that can be used by tagbar extension).
     """
+    def __init__(self, ast):
+        super(Ctags, self).__init__(ast)
 
     def render(self):
         render = []
+        render.extend(self._render_ctags_fileheader())
 
         for node in self.ast:
-            render = self._render_node(render, node, indent=0)
+            render = self._render_node(render, node)
+        return render
+
+    def _render_node(self, render, node, filepath=None):
+        node_renderer_map = {
+            'section': self._render_sectionheader,
+        }
+
+        # remember the last-encountered 'file' node
+        # (ctags requires that you know the file each ctags-type appeared in)
+        # (beyond that, we do not keep track of file for ctags)
+        if node.type == 'file':
+            filepath = node.name
+        else:
+            if node.type in node_renderer_map:
+                rendered = node_renderer_map[node.type](node, filepath)
+                render.extend(rendered)
+
+        # children
+        for child in node.children:
+            render = self._render_node(render, child, filepath)
+
+        return render
 
     def _render_ctags_fileheader(self):
         lines = [
@@ -411,16 +436,12 @@ class Ctags(Renderer):
         ]
         return lines
 
-    def _render_node(self, render, node, indent=0):
-        node_renderer_map = {
-            'section': self._render_sectionheader,
-        }
-
-    def _render_sectionheader(self, node, parent, indent=0):
+    def _render_sectionheader(self, node, filepath):
         """
 
         Returns:
-            str:
+            list:
+                A list of newlines
 
                 .. code-block:: ctags
 
@@ -432,7 +453,17 @@ class Ctags(Renderer):
             * https://en.wikipedia.org/wiki/Ctags#Exuberant Ctags
             * https://github.com/jszakmeister/rst2ctags
         """
-        pass
+        # we cannot record tags for sections that are not associated to a file
+        if not filepath:
+            return []
+
+        if not node.parent:
+            tagline = '{}\t{}\t/^{}$;"\ts'.format(
+                node.name, filepath, node.name,
+            )
+            return [tagline]
+
+        return []
 
 
 

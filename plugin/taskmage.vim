@@ -42,8 +42,8 @@ endfunc
 
 let g:tagbar_type_taskmage = {
         \ 'ctagstype': 'taskmage',
-        \ 'ctagsbin': '~/.vim/bundle/vim-taskmage/bin/create_fake_ctags.py',
-        \ 'ctagsargs': '-f - --sro »',
+        \ 'ctagsbin': '~/.vim/bundle/vim-taskmage/bin/taskmage2ctags.py',
+        \ 'ctagsargs': '-f - --sro » --lexer tasklist',
         \ 'kinds': [
             \ 's:sections'
         \ ],
