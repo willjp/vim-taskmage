@@ -35,6 +35,26 @@ function! TaskMageSaveEnd()
 endfunc
 
 
+" =============
+" Configuration
+" =============
+
+
+let g:tagbar_type_taskmage = {
+        \ 'ctagstype': 'taskmage',
+        \ 'ctagsbin': '~/.vim/bundle/vim-taskmage/bin/create_fake_ctags.py',
+        \ 'ctagsargs': '-f - --sro »',
+        \ 'kinds': [
+            \ 's:sections'
+        \ ],
+        \ 'kind2scope': {
+            \ 's': 'section'
+        \ },
+        \ 'sro' : '»',
+        \ 'sort': 0,
+    \ }
+
+
 " ========
 " Commands
 " ========
