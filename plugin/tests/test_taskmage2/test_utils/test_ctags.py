@@ -106,9 +106,31 @@ class Test_get_header_regex:
         assert match.group('type') == ''
 
 
+class Test_render_tagfile:
+    pass
+
+
 class Test_find_header_matches:
-    def test(self):
-        assert False
+    def test_finds_match(self):
+        text = (
+            '{*8ED87AC2D52F4734BAFCB7BDAA923DA4*}My Header\n'
+            '========='
+        )
+        matches = ctags.find_header_matches(text)
+        assert len(matches) == 1
+
+    def test_no_matches_returns_empty_list(self):
+        text = ''
+        matches = ctags.find_header_matches(text)
+        assert matches == []
+
+    def test_rejects_headers_without_underline_matching_title_length(self):
+        text = (
+            'My Header\n'
+            '====='
+        )
+        matches = ctags.find_header_matches(text)
+        assert matches == []
 
 
 class Test_get_header_ctags_entries:
