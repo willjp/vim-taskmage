@@ -91,10 +91,10 @@ class Node(object):
 
     def __repr__(self):
         # get parentid
-        #if self.parent:
-        #    parentid = self.parent.id
-        #else:
-        #    parentid = 'None'
+        if self.parent:
+            parentid = self.parent.id
+        else:
+            parentid = 'None'
         parentid = 'None'
 
         # string representation

@@ -7,6 +7,12 @@
     - pytest-cov configuration
     - bugfix modified being set for all tasks every change
     - tests divided into nested-test classes per function
+1.1.0: 
+    - astnode.Node() has public attr 'parent'
+    - parser sets parent attribute on astnode.Node()
+    - bin/taskmage2ctags.py creates ctags file for tagbar
+    - taskmage.vim defines new tagbar_type for taskmage
+    - parentid added to astnode.Node()'s __repr__
 
 # TODO: vader.vim setup to test vim_plugin.py
 # TODO: travis?
