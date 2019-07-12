@@ -4,6 +4,10 @@ TaskMage
 .. image:: https://travis-ci.com/willjp/vim-taskmage.svg?branch=master
     :target: https://travis-ci.com/willjp/vim-taskmage
 
+.. image:: https://codecov.io/gh/willjp/vim-taskmage/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/willjp/vim-taskmage
+
+
 A simple plaintext task manager, allowing you to edit tasks in
 plaintext lists (quick to edit, no metadata clutter), and store metadata in 
 json files (for genrating reports, searching by date, etc). Inspired by git 
