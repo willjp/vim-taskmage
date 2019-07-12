@@ -29,10 +29,10 @@ def handle_presave_mtask():
     # convert vim-buffer to Mtask
     fd = iostream.VimBuffer(vim.current.buffer)
     buffer_ast = parsers.parse(fd, 'tasklist')
-    buffer_ast.finalize()
 
     # merge overtop of savedfile if exists
     if not os.path.isfile(vim.current.buffer.name):
+        buffer_ast.finalize()
         render = buffer_ast.render(renderers.Mtask)
     else:
         with open(vim.current.buffer.name, 'r') as fd_py:
