@@ -2,5 +2,11 @@
     - rewrite of original taskmage, cleaner code, AST-like parsing
 1.0.1: 
     - run tests from setup.py
-1.0.2: # unreleased
-# TODO: fix date always being updated..  
+1.0.2:
+    - pytest setup.py integration
+    - pytest-cov configuration
+    - bugfix modified being set for all tasks every change
+    - tests divided into nested-test classes per function
+
+# TODO: vader.vim setup to test vim_plugin.py
+# TODO: travis?
