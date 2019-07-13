@@ -133,9 +133,13 @@ class Test_find_header_matches:
         assert matches == []
 
 
-class Test_get_header_ctags_entries:
-    def test(self):
+class Test_get_header_line_numbers:
+    def test_obtains_first_match_lineno(self):
         assert False
+
+    def test_obtains_second_match_lineno(self):
+        assert False
+
 
 
 class Test_get_ctags_entry:

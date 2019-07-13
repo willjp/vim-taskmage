@@ -45,10 +45,16 @@ def render_tagfile(filepath):
         '!_TAG_FILE_SORTED	1\n'
     )
 
+    ctags_entries = []
     with open(filepath, 'r') as fd:
         file_contents = fd.read()
         header_matches = find_header_matches(file_contents)
-        ctags_entries = get_header_ctags_entries(fd, filepath, header_matches)
+        numbered_header_matches = get_header_match_line_numbers(fd, header_matches)
+
+    for match in numbered_header_matches:
+        ctags_entries.append(
+            get_ctags_entry(match.name, filepath, match.regex, match.type, match.lineno)
+        )
 
     rendered_tags = ctags_header + '\n'.join(ctags_entries)
     return rendered_tags
@@ -116,8 +122,10 @@ def find_header_matches(text):
     return matches
 
 
-def get_header_ctags_entries(fd, filepath, header_matches):
-    ctags_entries = []
+def get_header_match_line_numbers(fd, header_matches):
+    numbered_header_matches = []
+    numbered_section_match = collections.namedtuple('section_match_w_lineno', ['name', 'type', 'regex', 'match_start_pos', 'lineno'])
+
     # get line-numbers for sections
     fd.seek(0)
     lineno = 1  # ctags line nums  1-indexed
@@ -126,16 +134,25 @@ def get_header_ctags_entries(fd, filepath, header_matches):
             ch = fd.read(1)
             if ch == '\n':
                 lineno += 1
-        if not match.type:
-            type_char = 's'
-        elif match.type == 'file':
-            raise NotImplementedError('todo')
-        ctags_entry = get_ctags_entry(match.name, filepath, match.regex, type_char, lineno)
-        ctags_entries.append(ctags_entry)
-    return ctags_entries
+        numbered_header_matches.append(
+            numbered_section_match(
+                name=match.name,
+                type=match.type,
+                regex=match.regex,
+                match_start_pos=match.match_start_pos,
+                lineno=lineno,
+            )
+        )
+    return numbered_header_matches
 
 
-def get_ctags_entry(name, filepath, line_regex, type_char, lineno, parents=None):
+def get_ctags_entry(name, filepath, line_regex, ntype, lineno, parents=None):
+    # sections have no identifier (ex: 'file::My Header')
+    if not ntype:
+        type_char = 's'
+    elif ntype == 'file':
+        raise NotImplementedError('todo')
+
     if not parents:
         entry = '{}\t{}\t{}\t{}\tline:{}'.format(
             name, filepath, line_regex, type_char, lineno
