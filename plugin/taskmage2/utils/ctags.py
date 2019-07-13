@@ -62,7 +62,18 @@ class CtagsFile(UserList):
 
 
 class CtagsEntry(object):
-    pass
+    """ Interface for CtagsHeaderEntries
+    """
+    @property
+    def entry_regex(self):
+        raise NotImplementedError()
+
+    @classmethod
+    def find_entries(cls, text, filepath=None):
+        raise NotImplementedError()
+
+    def render(self):
+        raise NotImplementedError()
 
 
 class CtagsHeaderEntry(CtagsEntry):
@@ -168,7 +179,7 @@ class CtagsHeaderEntry(CtagsEntry):
         """
         entries = cls._get_header_entries(text)
         cls._set_header_entries_lineno(text, entries)
-        cls._set_header_parents(entries)
+        cls._set_header_entries_parents(entries)
         cls._set_entries_filepath(entries, filepath)
 
         return entries
@@ -218,7 +229,7 @@ class CtagsHeaderEntry(CtagsEntry):
         return ctags_entries
 
     @classmethod
-    def _set_header_entries_lineno(text, ctag_entries):
+    def _set_header_entries_lineno(cls, text, ctag_entries):
         """ Adds line-numbers to :py:obj:`CtagsHeaderEntry` objects given a list of
         entries in the order they occurred, and the text they were obtained from.
 
@@ -276,6 +287,7 @@ class CtagsHeaderEntry(CtagsEntry):
             # add this section as a parent
             ch_stack[u_ch] = {'name': entry.name, 'indent': indent}
 
+    @classmethod
     def _set_entries_filepath(cls, ctag_entries, filepath):
         if filepath:
             filepath = os.path.abspath(filepath)
@@ -283,7 +295,7 @@ class CtagsHeaderEntry(CtagsEntry):
             filepath = 'none'
 
         filepath = os.path.abspath(filepath)
-        for entry in entries:
+        for entry in ctag_entries:
             entry.filepath = filepath
 
 
