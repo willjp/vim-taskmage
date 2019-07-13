@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 import os
+import functools
 
 import vim
 
 from taskmage2.parser import lexers, iostream, parsers
 from taskmage2.asttree import renderers
-from taskmage2.project import projects
+from taskmage2.project import projects, taskfiles
 
 
 def handle_open_mtask():
@@ -114,4 +115,42 @@ def open_counterpart(open_command=None):
 
     counterpart = project.get_counterpart(vimfile)
     vim.command("{} {}".format(open_command, counterpart))
+
+
+def search(searchterm):
+    # get project
+    vimfile = os.path.abspath(vim.current.buffer.name)
+    project = projects.Project()
+    project.load(vimfile)
+
+    # get taskfiles
+    taskfiles_ = project.iter_taskfiles()
+
+    # get tasks
+    taskfilters = [
+        functools.partial(taskfiles.TaskFilter.search, searchterm),
+    ]
+
+    # NOTE: unfortunately to pull out the line-number, I'll need to
+    #       render each file.
+    #
+    #       I wonder if there is a way for me to prompt quickfix
+    #       to jump to a regex-match within a file when an item is
+    #       selected...
+    #
+    #       failing that, I might just need to implement my own quickfix
+    #       variation...
+
+    # clear qflist
+    vim.command('call setqflist([])')
+    for taskfile in taskfiles_:
+        tasks = taskfile.filter_tasks(taskfilters)
+
+        quickfix_items = []
+        for task in tasks:
+            item = "{{'filename': '{}', 'text': '{}'}}".format(str(taskfile), task['name'])
+            quickfix_items.append(item)
+        vim.command("call setqflist([], 'a', {'items': [" + ', '.join(quickfix_items) + "]})")
+    vim.command('copen')
+
 

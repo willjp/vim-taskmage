@@ -1,5 +1,6 @@
 import os
 import json
+import fnmatch
 from taskmage2.utils import functional
 
 
@@ -32,3 +33,11 @@ class TaskFile(object):
             yield task
 
 
+class TaskFilter(object):
+    @staticmethod
+    def fnmatch(search, task):
+        return fnmatch.fnmatch(task.get('name', ''), search)
+
+    @staticmethod
+    def search(searchterm, task):
+        return searchterm in task.get('name', '')
