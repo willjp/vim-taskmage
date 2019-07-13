@@ -7,7 +7,7 @@
     - pytest-cov configuration
     - bugfix modified being set for all tasks every change
     - tests divided into nested-test classes per function
-1.1.0: # unreleased
+1.1.0:
     - astnode.Node() has public attr 'parent'
     - parser sets parent attribute on astnode.Node()
     - bin/taskmage2ctags.py creates ctags file for tagbar
@@ -16,4 +16,7 @@
     - new utils.ctags file and tests
 
 # TODO: vader.vim setup to test vim_plugin.py
-# TODO: travis?
+# TODO: cleanup horrible code in utils.ctags
+# TODO: update README/vim-help to include information about tagbar support
+# TODO: finish --iro flag in tagbar support
+# TODO: order tasks by date (at least in console, if not properly within vim)
