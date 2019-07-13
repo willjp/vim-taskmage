@@ -1,6 +1,11 @@
+import os
 import re
 import six
+import taskmage2
 from taskmage2.utils import ctags
+
+_taskmagedir = os.path.dirname(os.path.abspath(taskmage2.__file__))
+_test_resources = os.path.abspath('{}/../tests/test_resources'.format(_taskmagedir))
 
 
 class Test_get_header_regex:
@@ -108,7 +113,23 @@ class Test_get_header_regex:
 
 
 class Test_render_tagfile:
-    pass
+    def test(self):
+        filepath = '{}/mixed_headers.tasklist'.format(_test_resources)
+        tags = ctags.render_tagfile(filepath)
+        expects = (
+            '!_TAG_FILE_ENCODING	utf-8\n'
+            + '!_TAG_FILE_FORMAT	2\n'
+            + '!_TAG_FILE_SORTED	1\n'
+            + 'section 1\t{}\t/^section 1$/;"\ts\tline:5\n'.format(filepath)
+            + 'section 1.a\t{}\t/^section 1.a$/;"\ts\tline:10\tsection:section 1\n'.format(filepath)
+            + 'section 1.b\t{}\t/^section 1.b$/;"\ts\tline:15\tsection:section 1\n'.format(filepath)
+            + 'section 2\t{}\t/^section 2$/;"\ts\tline:20\n'.format(filepath)
+            + 'section 2.a\t{}\t/^section 2.a$/;"\ts\tline:23\tsection:section 2\n'.format(filepath)
+        )
+        print(tags)
+        print('-----')
+        print(expects)
+        assert tags == expects
 
 
 class Test_find_header_matches:

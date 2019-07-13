@@ -83,7 +83,7 @@ def render_tagfile(filepath):
         u_ch = match.underline_char
         if u_ch in ch_stack:
             indent = ch_stack[u_ch]['indent']
-            [ch_stack.pop(k) for k in ch_stack if ch_stack[k]['indent'] >= indent]
+            [ch_stack.pop(k) for k in list(ch_stack.keys()) if ch_stack[k]['indent'] >= indent]
         else:
             indent = len(ch_stack)
 
