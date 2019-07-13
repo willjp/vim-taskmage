@@ -83,7 +83,7 @@ def render_tagfile(filepath):
 
 
 def find_header_matches(text):
-    """ Finds headers in a taskmage tasklist (rst-inspired).
+    r""" Finds headers in a taskmage tasklist (rst-inspired).
 
     Args:
         text (str):
