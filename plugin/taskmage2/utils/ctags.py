@@ -4,6 +4,9 @@ import re
 import collections
 
 
+# TODO: this entire module is way to coupled.
+
+
 def get_header_regex():
     """ Regex that will match ReStructuredText headers
     (regardless of whether they are section, file, or a different nodetype).
@@ -36,6 +39,25 @@ def get_header_regex():
 
 
 def render_tagfile(filepath):
+    """
+
+    Args:
+        filepath (str):
+            filepath of a taskmage-tasklist file (restructuredtext-ish).
+
+    Returns:
+        str:
+            the contents of a ctags `tags` file.
+
+            ::
+
+                !_TAG_FILE_ENCODING	utf-8
+                !_TAG_FILE_FORMAT	2
+                !_TAG_FILE_SORTED	1
+                My Header\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:5
+                My SubHeader\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:13\tsection:My Header|My SubHeader'
+
+    """
     filepath = os.path.abspath(filepath)
 
     # get header
@@ -123,6 +145,31 @@ def find_header_matches(text):
 
 
 def get_header_match_line_numbers(fd, header_matches):
+    """ Adds line-numbers to `header_matches`
+
+    Notes:
+        searches a file-descriptor for match-start-positions in `header_matches` ,
+        keeping track of newlines .
+
+    Args:
+        fd (io.IOBase):
+            file-descriptor that was used to obtain `header_matches`
+
+        header_matches (list):
+            Output of :py:func:`find_header_matches`
+
+    Returns:
+        list:
+            Same output as :py:func:`find_header_matches` but with an additional `lineno` field.
+
+            .. code-block:: python
+
+                [
+                    section_match(name='All Todos', type='section', regex='/^...', match_start_pos=30, lineno=5),
+                    ...
+                ]
+
+    """
     numbered_header_matches = []
     numbered_section_match = collections.namedtuple('section_match_w_lineno', ['name', 'type', 'regex', 'match_start_pos', 'lineno'])
 
@@ -147,6 +194,12 @@ def get_header_match_line_numbers(fd, header_matches):
 
 
 def get_ctags_entry(name, filepath, line_regex, ntype, lineno, parents=None):
+    """ Returns a ctags entry for the header.
+
+    Returns:
+        str: ``'My Header\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:5'``
+
+    """
     # sections have no identifier (ex: 'file::My Header')
     if not ntype:
         type_char = 's'
