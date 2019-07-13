@@ -38,6 +38,10 @@ def get_header_regex():
     return section_regex
 
 
+# TODO: pass an object, or dictionary around in this method
+#       instead of this horrible mess.
+
+
 def render_tagfile(filepath):
     """
 
