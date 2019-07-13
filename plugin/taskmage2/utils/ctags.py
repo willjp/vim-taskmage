@@ -161,4 +161,3 @@ def get_ctags_entry(name, filepath, line_regex, ntype, lineno, parents=None):
     raise NotImplementedError('todo')
 
 
-

@@ -1,4 +1,5 @@
 import re
+import six
 from taskmage2.utils import ctags
 
 
@@ -135,11 +136,40 @@ class Test_find_header_matches:
 
 class Test_get_header_line_numbers:
     def test_obtains_first_match_lineno(self):
-        assert False
+        text = (
+            '* task A\n'
+            '* task B\n'
+            '{*8ED87AC2D52F4734BAFCB7BDAA923DA4*}My Header\n'
+            '========='
+        )
+        header_matches = ctags.find_header_matches(text)
+        matches = self.find_header_matches(text, header_matches)
+        assert len(matches) == 1
+        assert matches[0].lineno == 3
 
     def test_obtains_second_match_lineno(self):
-        assert False
+        text = (
+            '* task A\n'
+            '* task B\n'
+            '{*8ED87AC2D52F4734BAFCB7BDAA923DA4*}My Header\n'
+            '=========\n'
+            '\n'
+            '* subtask A\n'
+            '* subtask B\n'
+            '\n'
+            'Header 2\n'
+            '--------\n'
+        )
+        header_matches = ctags.find_header_matches(text)
+        matches = self.find_header_matches(text, header_matches)
+        assert len(matches) == 2
+        assert matches[1].lineno == 9
 
+    def find_header_matches(self, text, header_matches):
+        fd = six.StringIO(text)
+        fd.seek(0)
+        numbered_matches = ctags.get_header_match_line_numbers(fd, header_matches)
+        return numbered_matches
 
 
 class Test_get_ctags_entry:
