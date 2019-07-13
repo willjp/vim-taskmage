@@ -4,7 +4,7 @@ import re
 import collections
 
 
-# TODO: this entire module is way to coupled.
+# TODO: this entire module is way to coupled, especially `render_tagfile()`
 
 
 def get_header_regex():
@@ -73,10 +73,28 @@ def render_tagfile(filepath):
         header_matches = find_header_matches(file_contents)
         numbered_header_matches = get_header_match_line_numbers(fd, header_matches)
 
+    # keep track of parents
+    ch_stack = {}  # {'=': {'name':'My Header', 'indent': 0}, '-': {'name': 'SubHeader', 'indent': 1}}
     for match in numbered_header_matches:
+        u_ch = match.underline_char
+        if u_ch in ch_stack:
+            indent = ch_stack[u_ch]['indent']
+            [ch_stack.pop(k) for k in ch_stack if ch_stack[k]['indent'] >= indent]
+        else:
+            indent = len(ch_stack)
+
+        # get list of parent names, in order of indent
+        parent_info = [(ch_stack[k]['name'], ch_stack[k]['indent']) for k in ch_stack]
+        parent_info.sort(key=lambda x: x[1])
+        parents = [p[0] for p in parent_info]
+
+        # produce ctags entry
         ctags_entries.append(
-            get_ctags_entry(match.name, filepath, match.regex, match.type, match.lineno)
+            get_ctags_entry(match.name, filepath, match.regex, match.type, match.lineno, parents)
         )
+
+        # add this section as a parent
+        ch_stack[u_ch] = {'name': match.name, 'indent': indent}
 
     rendered_tags = ctags_header + '\n'.join(ctags_entries)
     return rendered_tags
@@ -121,7 +139,7 @@ def find_header_matches(text):
     """
     # get sections
     matches = []
-    section_match = collections.namedtuple('section_match', ['name', 'type', 'regex', 'match_start_pos'])
+    section_match = collections.namedtuple('section_match', ['name', 'type', 'regex', 'match_start_pos', 'underline_char'])
     regex = get_header_regex()
 
     for match in re.finditer(regex, text, re.MULTILINE):
@@ -139,6 +157,7 @@ def find_header_matches(text):
                     type=match.group('type'),
                     regex=line_regex,
                     match_start_pos=match.start(),
+                    underline_char=match.group('underline')[0],
                 )
             )
     return matches
@@ -171,7 +190,7 @@ def get_header_match_line_numbers(fd, header_matches):
 
     """
     numbered_header_matches = []
-    numbered_section_match = collections.namedtuple('section_match_w_lineno', ['name', 'type', 'regex', 'match_start_pos', 'lineno'])
+    numbered_section_match = collections.namedtuple('section_match_w_lineno', ['name', 'type', 'regex', 'match_start_pos', 'underline_char', 'lineno'])
 
     # get line-numbers for sections
     fd.seek(0)
@@ -187,6 +206,7 @@ def get_header_match_line_numbers(fd, header_matches):
                 type=match.type,
                 regex=match.regex,
                 match_start_pos=match.match_start_pos,
+                underline_char=match.underline_char,
                 lineno=lineno,
             )
         )
@@ -196,21 +216,30 @@ def get_header_match_line_numbers(fd, header_matches):
 def get_ctags_entry(name, filepath, line_regex, ntype, lineno, parents=None):
     """ Returns a ctags entry for the header.
 
+    Args:
+        parent (list, optional):
+            A list of parent section-names (in order)
+
     Returns:
         str: ``'My Header\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:5'``
 
     """
     # sections have no identifier (ex: 'file::My Header')
-    if not ntype:
-        type_char = 's'
-    elif ntype == 'file':
-        raise NotImplementedError('todo')
+    #if not ntype:
+    #    type_char = 's'
+    #elif ntype == 'file':
+    #    raise NotImplementedError('todo')
+
+    # NOTE: for now, we'll treat all nodetypes as sections.
+    type_char = 's'
+
+    entry = '{}\t{}\t{}\t{}\tline:{}'.format(
+        name, filepath, line_regex, type_char, lineno
+    )
 
     if not parents:
-        entry = '{}\t{}\t{}\t{}\tline:{}'.format(
-            name, filepath, line_regex, type_char, lineno
-        )
         return entry
-    raise NotImplementedError('todo')
+    entry += '\tsection:{}'.format('|'.join(parents))
+    return entry
 
 
