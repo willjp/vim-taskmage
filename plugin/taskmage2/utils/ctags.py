@@ -147,7 +147,7 @@ def find_header_matches(text):
     regex = get_header_regex()
 
     for match in re.finditer(regex, text, re.MULTILINE):
-        if len(match.group('name')) == len(match.group('underline')):
+        if len(match.group('name')) <= len(match.group('underline')):
             uuid = match.group('uuid') or ''
             line_regex = (
                 '/^'

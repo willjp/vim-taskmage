@@ -124,11 +124,8 @@ class Test_render_tagfile:
             + 'section 1.a\t{}\t/^section 1.a$/;"\ts\tline:10\tsection:section 1\n'.format(filepath)
             + 'section 1.b\t{}\t/^section 1.b$/;"\ts\tline:15\tsection:section 1\n'.format(filepath)
             + 'section 2\t{}\t/^section 2$/;"\ts\tline:20\n'.format(filepath)
-            + 'section 2.a\t{}\t/^section 2.a$/;"\ts\tline:23\tsection:section 2\n'.format(filepath)
+            + 'section 2.a\t{}\t/^section 2.a$/;"\ts\tline:23\tsection:section 2'.format(filepath)
         )
-        print(tags)
-        print('-----')
-        print(expects)
         assert tags == expects
 
 
