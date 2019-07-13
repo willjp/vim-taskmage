@@ -173,5 +173,15 @@ class Test_get_header_line_numbers:
 
 
 class Test_get_ctags_entry:
-    def test(self):
-        assert False
+    def test_section(self):
+        entry = ctags.get_ctags_entry(
+            name='My Header',
+            filepath='/path/to/todo.mtask',
+            line_regex='/^My Header$/;"',
+            ntype='',  # sections do not have a prefix
+            lineno=5,
+        )
+        expected = 'My Header\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:5'
+        assert entry == expected
+
+
