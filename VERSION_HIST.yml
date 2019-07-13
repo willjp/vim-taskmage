@@ -14,9 +14,10 @@
     - taskmage.vim defines new tagbar_type for taskmage
     - parentid added to astnode.Node()'s __repr__
     - new utils.ctags file and tests
+1.1.1:
+    - cleanup/modularization of utils.ctags
 
 # TODO: vader.vim setup to test vim_plugin.py
-# TODO: cleanup horrible code in utils.ctags
 # TODO: update README/vim-help to include information about tagbar support
 # TODO: finish --iro flag in tagbar support
 # TODO: order tasks by date (at least in console, if not properly within vim)
