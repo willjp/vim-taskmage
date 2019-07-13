@@ -77,6 +77,10 @@ class Project(object):
 
     @staticmethod
     def find(path):
+        """
+        Returns:
+            str: absolute path to taskmage project root
+        """
         path = filesystem.format_path(os.path.abspath(path))
 
         # /src/project/.taskmage
