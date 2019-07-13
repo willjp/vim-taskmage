@@ -33,54 +33,54 @@ class Test_Project(object):
 
     def test_load_sets_root(self):
         with mock.patch('{}.Project.find'.format(ns), return_value='/src/project'):
-            project = projects.Project()
+            project = projects.Project(None)
             project.load('/src/project')
         assert project.root == '/src/project'
 
     def test_is_project_path(self):
-        project = projects.Project()
+        project = projects.Project(None)
         project._root = '/src/project'
         is_project_path = project.is_project_path('/src/project/subdir/file.mtask')
         assert is_project_path is True
 
     def test_is_not_project_path(self):
-        project = projects.Project()
+        project = projects.Project(None)
         project._root = '/src/project'
         is_project_path = project.is_project_path('/src/subdir/file.mtask')
         assert is_project_path is False
 
     def test_is_archived_path(self):
-        project = projects.Project()
+        project = projects.Project(None)
         project._root = '/src/project'
         is_archived_path = project.is_archived_path('/src/project/.taskmage/subdir/file.mtask')
         assert is_archived_path is True
 
     def test_is_not_archived_path(self):
-        project = projects.Project()
+        project = projects.Project(None)
         project._root = '/src/project'
         is_archived_path = project.is_archived_path('/src/project/subdir/file.mtask')
         assert is_archived_path is False
 
     def test_is_active_path(self):
-        project = projects.Project()
+        project = projects.Project(None)
         project._root = '/src/project'
         is_active_path = project.is_active_path('/src/project/subdir/file.mtask')
         assert is_active_path is True
 
     def test_is_not_active_path(self):
-        project = projects.Project()
+        project = projects.Project(None)
         project._root = '/src/project'
         is_active_path = project.is_active_path('/src/project/.taskmage/subdir/file.mtask')
         assert is_active_path is False
 
     def test_get_archived_path(self):
-        project = projects.Project()
+        project = projects.Project(None)
         project._root = '/src/project'
         archived_path = project.get_archived_path('/src/project/subdir/file.mtask')
         assert archived_path == '/src/project/.taskmage/subdir/file.mtask'
 
     def test_get_active_path(self):
-        project = projects.Project()
+        project = projects.Project(None)
         project._root = '/src/project'
         archived_path = project.get_active_path('/src/project/.taskmage/subdir/file.mtask')
         assert archived_path == '/src/project/subdir/file.mtask'

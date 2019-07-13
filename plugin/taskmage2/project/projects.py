@@ -2,17 +2,18 @@ import os
 import shutil
 import tempfile
 
-from taskmage2.utils import filesystem
+from taskmage2.utils import filesystem, functional
 from taskmage2.asttree import asttree, renderers
 from taskmage2.parser import iostream, parsers
+from taskmage2.project import taskfiles
 
 
 class Project(object):
-    def __init__(self, root=None):
+    def __init__(self, root='.'):
         """ Constructor.
 
         Args:
-            path (str): ``(ex: '/src/project/subdir/file.mtask', '/src/project', '/src/project/.taskmage' )``
+            path (str, optional): ``(ex: None, '/src/project/subdir/file.mtask', '/src/project', '/src/project/.taskmage' )``
                 Path to your projectroot, or a file/directory within
                 your taskmage project root.
 
@@ -213,6 +214,54 @@ class Project(object):
             return self.get_active_path(filepath)
         else:
             return self.get_archived_path(filepath)
+
+    def filter_taskfiles(self, filters):
+        """ Returns a list of all taskfiles in project, filtered by provided `filters` .
+
+        Args:
+            filters (list):
+                List of functions that accept an absolute-path to a taskfile,
+                and return True (keep) or False (remove)
+
+        Returns:
+            Iterable:
+                iterable of project taskfiles (after all filters applied to them).
+
+                .. code-block:: python
+
+                    [
+                        TaskFile('/path/to/todos/file1.mtask'),
+                        TaskFile('/path/to/todos/file2.mtask'),
+                        TaskFile('/path/to/todos/file3.mtask'),
+                        ...
+                    ]
+
+        """
+        return functional.multifilter(filters, self.iter_taskfiles())
+
+    def iter_taskfiles(self):
+        """ Iterates over all `*.mtask` files in project (both completed and uncompleted).
+
+        Returns:
+            Iterable:
+                iterable of all project taskfiles
+
+                .. code-block:: python
+
+                    [
+                        TaskFile('/path/to/todos/file1.mtask'),
+                        TaskFile('/path/to/todos/file2.mtask'),
+                        TaskFile('/path/to/todos/file3.mtask'),
+                        ...
+                    ]
+
+        """
+        for (root, dirnames, filenames) in os.walk(self.root):
+            for filename in filenames:
+                if not filename.endswith('.mtask'):
+                    continue
+                filepath = '{}/{}'.format(root, filename)
+                yield taskfiles.TaskFile(filepath)
 
     def _archive_completed(self, filepath):
         (active_ast, archive_ast) = self._archive_completed_as_ast(filepath)
