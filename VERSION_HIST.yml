@@ -23,6 +23,8 @@
     - taskfiles.TaskFile.iter_tasks()
     - taskfiles.TaskFile.filter_tasks()
     - utils.functional.multifilter()
+    - taskfiles.TaskFilter -- static methods for common taskfilters
+    - new :TaskMageSearch vim command
 
 # TODO: vader.vim setup to test vim_plugin.py
 # TODO: update README/vim-help to include information about tagbar support
