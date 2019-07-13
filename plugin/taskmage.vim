@@ -39,10 +39,9 @@ endfunc
 " Configuration
 " =============
 
-
 let g:tagbar_type_taskmage = {
         \ 'ctagstype': 'taskmage',
-        \ 'ctagsbin': '~/.vim/bundle/vim-taskmage/bin/taskmage2ctags.py',
+        \ 'ctagsbin': s:scriptroot . '/../bin/taskmage2ctags.py',
         \ 'ctagsargs': '-f - --sro » --lexer tasklist',
         \ 'kinds': [
             \ 's:sections'
