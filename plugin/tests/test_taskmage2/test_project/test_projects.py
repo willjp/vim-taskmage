@@ -3,7 +3,7 @@ import os
 import mock
 import pytest
 
-from taskmage2 import projects
+from taskmage2.project import projects
 
 
 ns = projects.__name__

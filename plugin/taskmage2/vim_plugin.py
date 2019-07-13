@@ -5,7 +5,7 @@ import vim
 
 from taskmage2.parser import lexers, iostream, parsers
 from taskmage2.asttree import renderers
-from taskmage2 import projects
+from taskmage2.project import projects
 
 
 def handle_open_mtask():
