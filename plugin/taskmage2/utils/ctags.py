@@ -1,249 +1,283 @@
 import os
-import sys
 import re
-import collections
+
+import six
+
+from taskmage2.vendor.six.moves import UserList
 
 
-# TODO: this entire module is way to coupled, especially `render_tagfile()`
+class CtagsFile(UserList):
+    def __init__(self, data=None):
+        if data is None:
+            data = []
+        super(CtagsFile, self).__init__(data)
+        self.data = data
 
+    def load_file(self, filepath):
+        with open(filepath, 'r') as fd:
+            contents = fd.read()
+        self.load_text(contents, filepath)
 
-def get_header_regex():
-    """ Regex that will match ReStructuredText headers
-    (regardless of whether they are section, file, or a different nodetype).
+    def load_text(self, text, filepath=None):
+        """ Finds CtagEntries within text.
 
-    Notes:
-        identifies the following named groups
+        Args:
+            text (str):
+                Taskmage Tasks in tasklist format. (ReStructuredText-inspired)
+        """
+        self.data = []
+        self.data.extend(CtagsHeaderEntry.find_entries(text, filepath))
+        # ... other entry types...
 
-        ::
+    def render(self):
+        """ Renders the current entries within this CtagsFile instance.
 
-            {*B98D2124E2DA4DD19D6CEA0A787E3BB2*}file::My Awesome Title
-            ================
+        Returns:
+            str:
+                the contents of a ctags `tags` file.
 
-            # matches
-            uuid      = 'B98D2124E2DA4DD19D6CEA0A787E3BB2'   # may or may not be present
-            type      = 'file'                               # not set for 'section' type, set for 'file' type
-            name      = 'My Awesome Title'
-            underline = '================'
+                ::
 
-    """
-    underline_chars = ['=', '-', '`', ':', "'", '"', '~', '^', '_', '*', '+', '#', '<,' '>']
-    uuid_regex = '[A-Z0-9]{32}'
-    underline_regex = '[{}]'.format(''.join([re.escape(x) for x in underline_chars]))
-    section_regex = (
-        '^(' + re.escape('{*') + '(?P<uuid>' + uuid_regex + ')' + re.escape('*}') + ')?'   # {*FF128D3EF6044AE7B038BEFDF03555C0*}
-        + '(?P<type>([a-z]+' + '(?=' + re.escape('::') + '))?)'                            # file::
-        + '(?P<name>[^\n]+)[ \t]*$\n'                                                      # My Section Name\n
-        + '(?P<underline>' + underline_regex + '+)[ \t]*$'                                 # ===============
-    )
-    return section_regex
+                    !_TAG_FILE_ENCODING	utf-8
+                    !_TAG_FILE_FORMAT	2
+                    !_TAG_FILE_SORTED	1
+                    My Header\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:5
+                    My SubHeader\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:13\tsection:My Header|My SubHeader'
 
-
-# TODO: pass an object, or dictionary around in this method
-#       instead of this horrible mess.
-
-
-def render_tagfile(filepath):
-    """
-
-    Args:
-        filepath (str):
-            filepath of a taskmage-tasklist file (restructuredtext-ish).
-
-    Returns:
-        str:
-            the contents of a ctags `tags` file.
-
-            ::
-
-                !_TAG_FILE_ENCODING	utf-8
-                !_TAG_FILE_FORMAT	2
-                !_TAG_FILE_SORTED	1
-                My Header\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:5
-                My SubHeader\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:13\tsection:My Header|My SubHeader'
-
-    """
-    filepath = os.path.abspath(filepath)
-
-    # get header
-    ctags_header = (
-        '!_TAG_FILE_ENCODING	utf-8\n'
-        '!_TAG_FILE_FORMAT	2\n'
-        '!_TAG_FILE_SORTED	1\n'
-    )
-
-    ctags_entries = []
-    with open(filepath, 'r') as fd:
-        file_contents = fd.read()
-        header_matches = find_header_matches(file_contents)
-        numbered_header_matches = get_header_match_line_numbers(fd, header_matches)
-
-    # keep track of parents
-    ch_stack = {}  # {'=': {'name':'My Header', 'indent': 0}, '-': {'name': 'SubHeader', 'indent': 1}}
-    for match in numbered_header_matches:
-        u_ch = match.underline_char
-        if u_ch in ch_stack:
-            indent = ch_stack[u_ch]['indent']
-            [ch_stack.pop(k) for k in list(ch_stack.keys()) if ch_stack[k]['indent'] >= indent]
-        else:
-            indent = len(ch_stack)
-
-        # get list of parent names, in order of indent
-        parent_info = [(ch_stack[k]['name'], ch_stack[k]['indent']) for k in ch_stack]
-        parent_info.sort(key=lambda x: x[1])
-        parents = [p[0] for p in parent_info]
-
-        # produce ctags entry
-        ctags_entries.append(
-            get_ctags_entry(match.name, filepath, match.regex, match.type, match.lineno, parents)
+        """
+        ctags_header = (
+            '!_TAG_FILE_ENCODING	utf-8\n'
+            '!_TAG_FILE_FORMAT	2\n'
+            '!_TAG_FILE_SORTED	1\n'
         )
-
-        # add this section as a parent
-        ch_stack[u_ch] = {'name': match.name, 'indent': indent}
-
-    rendered_tags = ctags_header + '\n'.join(ctags_entries)
-    return rendered_tags
+        entries_str = '\n'.join([e.render() for e in self.data])
+        render = ctags_header + entries_str
+        return render
 
 
-def find_header_matches(text):
-    r""" Finds headers in a taskmage tasklist (rst-inspired).
-
-    Args:
-        text (str):
-            A TaskMage mtask file rendered as a tasklist file (restructuredtext-ish)
-
-            .. code-block:: ReStructuredText
-
-                All Todos
-                =========
-
-                {*679C2485E0E24B5687EEBB9D5AC3B7C1*}Saved Todos
-                -----------
-
-                * {*F05D37A337DF42448E7E229B35F3F021*} clean kitchen
-                x wash dishes
-
-    Returns:
-        list:
-            A list of named-tuples with matches
-
-            .. code-block:: python
-
-                [
-                    section_match(name='All Todos', type='section', regex='/^...', match_start_pos=30),
-                    ...
-                ]
-
-            ::
-
-                name:             name of section
-                type:             (section|file)
-                regex:            '/^\{\*[A-Z0-9]{32}\*\}name of section$/;'   # ctagsfile regex entry
-                match_start_pos:  30                                           # position of first character in match
-
-    """
-    # get sections
-    matches = []
-    section_match = collections.namedtuple('section_match', ['name', 'type', 'regex', 'match_start_pos', 'underline_char'])
-    regex = get_header_regex()
-
-    for match in re.finditer(regex, text, re.MULTILINE):
-        if len(match.group('name')) <= len(match.group('underline')):
-            uuid = match.group('uuid') or ''
-            line_regex = (
-                '/^'
-                + uuid
-                + match.group('name')
-                + '$/;"'
-            )
-            matches.append(
-                section_match(
-                    name=match.group('name'),
-                    type=match.group('type'),
-                    regex=line_regex,
-                    match_start_pos=match.start(),
-                    underline_char=match.group('underline')[0],
-                )
-            )
-    return matches
+class CtagsEntry(object):
+    pass
 
 
-def get_header_match_line_numbers(fd, header_matches):
-    """ Adds line-numbers to `header_matches`
+class CtagsHeaderEntry(CtagsEntry):
+    def __init__(self, uuid_=None, name=None, ntype=None, filepath=None, start_pos=None, uline_char=None, lineno=None, parents=None):
+        if parents is None:
+            parents = []
+        if filepath is None:
+            filepath = 'none'
 
-    Notes:
-        searches a file-descriptor for match-start-positions in `header_matches` ,
-        keeping track of newlines .
+        self.uuid = uuid_
+        self.name = name
+        self.ntype = ntype
+        self.filepath = filepath
+        self.start_pos = start_pos
+        self.uline_char = uline_char
+        self.lineno = lineno
+        self.parents = parents
 
-    Args:
-        fd (io.IOBase):
-            file-descriptor that was used to obtain `header_matches`
+    def render(self):
+        """ Renders this instance as a ctags-entry line.
 
-        header_matches (list):
-            Output of :py:func:`find_header_matches`
+        Returns:
+            str: ``'My Header\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:5'``
+        """
+        # NOTE: for now, we'll treat all nodetypes as sections.
+        #       later, check 'self.ntype'
+        type_char = 's'
 
-    Returns:
-        list:
-            Same output as :py:func:`find_header_matches` but with an additional `lineno` field.
-
-            .. code-block:: python
-
-                [
-                    section_match(name='All Todos', type='section', regex='/^...', match_start_pos=30, lineno=5),
-                    ...
-                ]
-
-    """
-    numbered_header_matches = []
-    numbered_section_match = collections.namedtuple('section_match_w_lineno', ['name', 'type', 'regex', 'match_start_pos', 'underline_char', 'lineno'])
-
-    # get line-numbers for sections
-    fd.seek(0)
-    lineno = 1  # ctags line nums  1-indexed
-    for match in header_matches:
-        while fd.tell() < match.match_start_pos:
-            ch = fd.read(1)
-            if ch == '\n':
-                lineno += 1
-        numbered_header_matches.append(
-            numbered_section_match(
-                name=match.name,
-                type=match.type,
-                regex=match.regex,
-                match_start_pos=match.match_start_pos,
-                underline_char=match.underline_char,
-                lineno=lineno,
-            )
+        entry = '{}\t{}\t{}\t{}\tline:{}'.format(
+            self.name, self.filepath, self.entry_regex, type_char, self.lineno
         )
-    return numbered_header_matches
+        if not self.parents:
+            return entry
 
-
-def get_ctags_entry(name, filepath, line_regex, ntype, lineno, parents=None):
-    """ Returns a ctags entry for the header.
-
-    Args:
-        parent (list, optional):
-            A list of parent section-names (in order)
-
-    Returns:
-        str: ``'My Header\t/path/to/todo.mtask\t/^My Header$/;"\ts\tline:5'``
-
-    """
-    # sections have no identifier (ex: 'file::My Header')
-    #if not ntype:
-    #    type_char = 's'
-    #elif ntype == 'file':
-    #    raise NotImplementedError('todo')
-
-    # NOTE: for now, we'll treat all nodetypes as sections.
-    type_char = 's'
-
-    entry = '{}\t{}\t{}\t{}\tline:{}'.format(
-        name, filepath, line_regex, type_char, lineno
-    )
-
-    if not parents:
+        entry += '\tsection:{}'.format('|'.join(self.parents))
         return entry
-    entry += '\tsection:{}'.format('|'.join(parents))
-    return entry
+
+    @property
+    def entry_regex(self):
+        r""" Ctags Entry regex for line (as written in the `tags` file)
+
+        Returns:
+            str: ``'/^\{\*[A-Z0-9]{32}\*\}name of section$/;'``
+        """
+        if not self.uuid:
+            line_regex = '/^' + self.name + '$/;"'
+            return line_regex
+
+        line_regex = (
+            '/^'
+            + re.escape('{*')
+            + self.uuid
+            + re.escape('*}')
+            + self.name
+            + '$/;"'
+        )
+        return line_regex
+
+    @staticmethod
+    def match_regex():
+        """ Regex that will match ReStructuredText headers
+        (regardless of whether they are section, file, or a different nodetype).
+
+        Notes:
+            identifies the following named groups
+
+            ::
+
+                {*B98D2124E2DA4DD19D6CEA0A787E3BB2*}file::My Awesome Title
+                ================
+
+                # matches
+                uuid      = 'B98D2124E2DA4DD19D6CEA0A787E3BB2'   # may or may not be present
+                type      = 'file'                               # not set for 'section' type, set for 'file' type
+                name      = 'My Awesome Title'
+                underline = '================'
+
+        """
+        underline_chars = ['=', '-', '`', ':', "'", '"', '~', '^', '_', '*', '+', '#', '<,' '>']
+        uuid_regex = '[A-Z0-9]{32}'
+        underline_regex = '[{}]'.format(''.join([re.escape(x) for x in underline_chars]))
+        section_regex = (
+            '^(' + re.escape('{*') + '(?P<uuid>' + uuid_regex + ')' + re.escape('*}') + ')?'   # {*FF128D3EF6044AE7B038BEFDF03555C0*}
+            + '(?P<type>([a-z]+' + '(?=' + re.escape('::') + '))?)'                            # file::
+            + '(?P<name>[^\n]+)[ \t]*$\n'                                                      # My Section Name\n
+            + '(?P<underline>' + underline_regex + '+)[ \t]*$'                                 # ===============
+        )
+        return section_regex
+
+    @classmethod
+    def find_entries(cls, text, filepath=None):
+        """ Extracts a list of :py:obj:`CtagsHeaderEntry` objects from text in the tasklist format
+        (ReStructuredText inspired).
+
+        Returns:
+            CtagsFile:
+                list of CtagsHeaderEntries.
+
+                .. code-block:: python
+
+                    [CtagsHeaderEntry(...), CtagsHeaderEntry(...), ...]
+
+        """
+        entries = cls._get_header_entries(text)
+        cls._set_header_entries_lineno(text, entries)
+        cls._set_header_parents(entries)
+        cls._set_entries_filepath(entries, filepath)
+
+        return entries
+
+    @classmethod
+    def _get_header_entries(cls, text):
+        r""" Finds headers in a taskmage tasklist (rst-inspired).
+
+        Args:
+            text (str):
+                A TaskMage mtask file rendered as a tasklist file (restructuredtext-ish)
+
+                .. code-block:: ReStructuredText
+
+                    All Todos
+                    =========
+
+                    {*679C2485E0E24B5687EEBB9D5AC3B7C1*}Saved Todos
+                    -----------
+
+                    * {*F05D37A337DF42448E7E229B35F3F021*} clean kitchen
+                    x wash dishes
+
+        Returns:
+            list:
+                A list of named-tuples with matches
+
+                .. code-block:: python
+
+                    [CtagsHeaderEntry(...), CtagsHeaderEntry(...), ...]
+
+        """
+        # get sections
+        ctags_entries = []
+        regex = cls.match_regex()
+
+        for match in re.finditer(regex, text, re.MULTILINE):
+            if len(match.group('name')) <= len(match.group('underline')):
+                entry = CtagsHeaderEntry(
+                    uuid_=match.group('uuid'),
+                    name=match.group('name'),
+                    ntype=match.group('type'),
+                    start_pos=match.start(),
+                    uline_char=match.group('underline')[0]
+                )
+                ctags_entries.append(entry)
+        return ctags_entries
+
+    @classmethod
+    def _set_header_entries_lineno(text, ctag_entries):
+        """ Adds line-numbers to :py:obj:`CtagsHeaderEntry` objects given a list of
+        entries in the order they occurred, and the text they were obtained from.
+
+        Args:
+            text (str):
+                A TaskMage mtask file rendered as a tasklist file (restructuredtext-ish)
+
+                .. code-block:: ReStructuredText
+
+                    All Todos
+                    =========
+
+                    {*679C2485E0E24B5687EEBB9D5AC3B7C1*}Saved Todos
+                    -----------
+
+                    * {*F05D37A337DF42448E7E229B35F3F021*} clean kitchen
+                    x wash dishes
+
+            ctag_entries (list):
+                List of :py:obj:`CtagsHeaderEntry` objects
+
+        """
+        fd = six.StringIO(text)
+        fd.seek(0)
+
+        # get line-numbers for sections
+        lineno = 1  # ctags line nums  1-indexed
+        for entry in ctag_entries:
+            while fd.tell() < entry.start_pos:
+                ch = fd.read(1)
+                if ch == '\n':
+                    lineno += 1
+            entry.lineno = lineno
+
+    @classmethod
+    def _set_header_entries_parents(cls, ctag_entries):
+        # keep track of parents
+        ch_stack = {}  # {'=': {'name':'My Header', 'indent': 0}, '-': {'name': 'SubHeader', 'indent': 1}}
+        for entry in ctag_entries:
+            u_ch = entry.uline_char
+            if u_ch in ch_stack:
+                indent = ch_stack[u_ch]['indent']
+                [ch_stack.pop(k) for k in list(ch_stack.keys()) if ch_stack[k]['indent'] >= indent]
+            else:
+                indent = len(ch_stack)
+
+            # get list of parent names, in order of indent
+            parent_info = [(ch_stack[k]['name'], ch_stack[k]['indent']) for k in ch_stack]
+            parent_info.sort(key=lambda x: x[1])
+            parents = [p[0] for p in parent_info]
+
+            # assign parents
+            entry.parents = parents
+
+            # add this section as a parent
+            ch_stack[u_ch] = {'name': entry.name, 'indent': indent}
+
+    def _set_entries_filepath(cls, ctag_entries, filepath):
+        if filepath:
+            filepath = os.path.abspath(filepath)
+        else:
+            filepath = 'none'
+
+        filepath = os.path.abspath(filepath)
+        for entry in entries:
+            entry.filepath = filepath
 
 

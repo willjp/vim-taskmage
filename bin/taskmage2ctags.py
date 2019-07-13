@@ -34,12 +34,15 @@ class CommandlineInterface(object):
     def parse_args(self):
         args = self.parser.parse_args()
 
-        rendered_tags = ctags.render_tagfile(args.target_file)
+        ctagsfile = ctags.CtagsFile()
+        ctagsfile.load_file(args.target_file)
+        render = ctagsfile.render()
+
         if args.file == '-':
-            sys.stdout.write(rendered_tags)
+            sys.stdout.write(render)
         else:
             with open(args.file, 'w') as fd:
-                fd.write(rendered_tags)
+                fd.write(render)
 
 
 if __name__ == '__main__':

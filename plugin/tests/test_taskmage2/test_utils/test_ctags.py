@@ -135,12 +135,12 @@ class Test_find_header_matches:
             '{*8ED87AC2D52F4734BAFCB7BDAA923DA4*}My Header\n'
             '========='
         )
-        matches = ctags.find_header_matches(text)
+        matches = ctags.get_header_entries(text)
         assert len(matches) == 1
 
     def test_no_matches_returns_empty_list(self):
         text = ''
-        matches = ctags.find_header_matches(text)
+        matches = ctags.get_header_entries(text)
         assert matches == []
 
     def test_rejects_headers_without_underline_matching_title_length(self):
@@ -148,7 +148,7 @@ class Test_find_header_matches:
             'My Header\n'
             '====='
         )
-        matches = ctags.find_header_matches(text)
+        matches = ctags.get_header_entries(text)
         assert matches == []
 
 
@@ -160,7 +160,7 @@ class Test_get_header_line_numbers:
             '{*8ED87AC2D52F4734BAFCB7BDAA923DA4*}My Header\n'
             '========='
         )
-        header_matches = ctags.find_header_matches(text)
+        header_matches = ctags.get_header_entries(text)
         matches = self.find_header_matches(text, header_matches)
         assert len(matches) == 1
         assert matches[0].lineno == 3
@@ -178,7 +178,7 @@ class Test_get_header_line_numbers:
             'Header 2\n'
             '--------\n'
         )
-        header_matches = ctags.find_header_matches(text)
+        header_matches = ctags.get_header_entries(text)
         matches = self.find_header_matches(text, header_matches)
         assert len(matches) == 2
         assert matches[1].lineno == 9
@@ -186,7 +186,7 @@ class Test_get_header_line_numbers:
     def find_header_matches(self, text, header_matches):
         fd = six.StringIO(text)
         fd.seek(0)
-        numbered_matches = ctags.get_header_match_line_numbers(fd, header_matches)
+        numbered_matches = ctags.set_header_entries_lineno(fd, header_matches)
         return numbered_matches
 
 
