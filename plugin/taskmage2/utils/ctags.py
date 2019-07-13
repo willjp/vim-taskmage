@@ -177,15 +177,15 @@ class CtagsHeaderEntry(CtagsEntry):
                     [CtagsHeaderEntry(...), CtagsHeaderEntry(...), ...]
 
         """
-        entries = cls._get_header_entries(text)
-        cls._set_header_entries_lineno(text, entries)
-        cls._set_header_entries_parents(entries)
+        entries = cls._find_entries(text)
+        cls._set_entries_lineno(text, entries)
+        cls._set_entries_parents(entries)
         cls._set_entries_filepath(entries, filepath)
 
         return entries
 
     @classmethod
-    def _get_header_entries(cls, text):
+    def _find_entries(cls, text):
         r""" Finds headers in a taskmage tasklist (rst-inspired).
 
         Args:
@@ -229,7 +229,7 @@ class CtagsHeaderEntry(CtagsEntry):
         return ctags_entries
 
     @classmethod
-    def _set_header_entries_lineno(cls, text, ctag_entries):
+    def _set_entries_lineno(cls, text, ctag_entries):
         """ Adds line-numbers to :py:obj:`CtagsHeaderEntry` objects given a list of
         entries in the order they occurred, and the text they were obtained from.
 
@@ -265,7 +265,7 @@ class CtagsHeaderEntry(CtagsEntry):
             entry.lineno = lineno
 
     @classmethod
-    def _set_header_entries_parents(cls, ctag_entries):
+    def _set_entries_parents(cls, ctag_entries):
         # keep track of parents
         ch_stack = {}  # {'=': {'name':'My Header', 'indent': 0}, '-': {'name': 'SubHeader', 'indent': 1}}
         for entry in ctag_entries:

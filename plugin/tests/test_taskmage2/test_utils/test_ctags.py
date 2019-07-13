@@ -131,18 +131,18 @@ class Test_CtagsHeaderEntry:
             match = re.search(self.regex, text, re.MULTILINE)
             assert match.group('type') == ''
 
-    class Test__get_header_entries:
+    class Test__find_entries:
         def test_finds_match(self):
             text = (
                 '{*8ED87AC2D52F4734BAFCB7BDAA923DA4*}My Header\n'
                 '========='
             )
-            matches = ctags.CtagsHeaderEntry._get_header_entries(text)
+            matches = ctags.CtagsHeaderEntry._find_entries(text)
             assert len(matches) == 1
 
         def test_no_matches_returns_empty_list(self):
             text = ''
-            matches = ctags.CtagsHeaderEntry._get_header_entries(text)
+            matches = ctags.CtagsHeaderEntry._find_entries(text)
             assert matches == []
 
         def test_rejects_headers_without_underline_matching_title_length(self):
@@ -150,10 +150,10 @@ class Test_CtagsHeaderEntry:
                 'My Header\n'
                 '====='
             )
-            matches = ctags.CtagsHeaderEntry._get_header_entries(text)
+            matches = ctags.CtagsHeaderEntry._find_entries(text)
             assert matches == []
 
-    class Test__get_header_entries_lineno:
+    class Test__set_entries_lineno:
         def test_obtains_first_match_lineno(self):
             text = (
                 '* task A\n'
@@ -171,7 +171,7 @@ class Test_CtagsHeaderEntry:
                     uline_char='=',
                 )
             ]
-            ctags.CtagsHeaderEntry._set_header_entries_lineno(text, entries)
+            ctags.CtagsHeaderEntry._set_entries_lineno(text, entries)
             assert len(entries) == 1
             assert entries[0].lineno == 3
 
@@ -205,7 +205,7 @@ class Test_CtagsHeaderEntry:
                     uline_char='-',
                 )
             ]
-            ctags.CtagsHeaderEntry._set_header_entries_lineno(text, entries)
+            ctags.CtagsHeaderEntry._set_entries_lineno(text, entries)
             assert len(entries) == 2
             assert entries[1].lineno == 9
 
