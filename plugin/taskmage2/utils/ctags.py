@@ -14,6 +14,12 @@ class CtagsFile(UserList):
         self.data = data
 
     def load_file(self, filepath):
+        """ Load ctag entries from the contents of a file (in tasklist format- restructuredtext).
+
+        Args:
+            filepath (str):
+                path to a file
+        """
         with open(filepath, 'r') as fd:
             contents = fd.read()
         self.load_text(contents, filepath)

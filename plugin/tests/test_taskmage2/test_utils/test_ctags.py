@@ -11,7 +11,7 @@ _test_resources = os.path.abspath('{}/../tests/test_resources'.format(_taskmaged
 class Test_get_header_regex:
     @classmethod
     def setup_class(self):
-        self.regex = ctags.get_header_regex()
+        self.regex = ctags.CtagsHeaderEntry.match_regex()
 
     def test_no_headers_no_match(self):
         text = (
