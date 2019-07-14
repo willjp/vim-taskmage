@@ -3,7 +3,7 @@ import argparse
 import os
 import sys
 _bindir = os.path.dirname(os.path.abspath(__file__))
-_plugindir = os.path.abspath('{}/../plugin')
+_plugindir = os.path.abspath('{}/../plugin'.format(_bindir))
 sys.path.insert(0, _plugindir)
 from taskmage2.utils import ctags
 
