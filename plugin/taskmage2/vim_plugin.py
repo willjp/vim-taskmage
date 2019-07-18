@@ -9,6 +9,9 @@ from taskmage2.asttree import renderers
 from taskmage2.project import projects, taskfiles
 
 
+_search_buffer = 'taskmage-search'
+
+
 def handle_open_mtask():
     """ converts buffer from Mtask(JSON) to TaskList(rst)
     """
@@ -175,10 +178,10 @@ def search2(searchterm):
     #       quickfix window, but jumping to a line with a
     #       UUID instead of a line-number.
 
-    vim.command('badd taskmage-search')
-    vim.command('split sb taskmage-search')
-    #vim.command('map <buffer> <Enter> "ayy:   let sel=@a<CR>: call TaskMageOpenSearchItem(sel)<CR>')
-    vim.command('map <buffer> <Enter> :py taskmage2.vim_plugin._open_taskmage_search_item()')
+    vim.command('badd {}'.format(_search_buffer))
+    vim.command('split sb {}'.format(_search_buffer))
+    # vim.command('map <buffer> <Enter> "ayy:   let sel=@a<CR>: call TaskMageOpenSearchItem(sel)<CR>')
+    vim.command('map <buffer> <Enter> :py taskmage2.vim_plugin._open_search_buffer_result()<CR>')
 
     # clear qflist
     for taskfile in taskfiles_:
@@ -188,5 +191,31 @@ def search2(searchterm):
     vim.command('setlocal nomodifiable')
 
 
-def _open_taskmage_search_item():
-    print(vim.current.buffer.line)
+def _close_search_buffer():
+    vim.command(':q!')
+    vim.command('bd {}'.format(_search_buffer))
+
+
+def _open_search_buffer_result():
+    """
+    Notes:
+        Each line is formatted as follows.
+
+        ::
+
+            ||/absolute/path|uuid|description of task
+
+    """
+    line = vim.current.line
+
+    # TODO: define a viml command to create/close buffer. then we can properly
+    #       handle filereadable() and delete().
+    _close_search_buffer()
+
+    # TODO: instead of 'g/{regex}/#' which give a choice of matches,
+    #       use the vim buffer list to search for the line-number,
+    #       and then jump to that line. (no preview window in between).
+    (_, _, filepath, uuid, nodename) = line.split('|')
+    vim.command(':e {}'.format(filepath))
+    vim.command('g/{{\\*{}\\*}}/#'.format(uuid))
+
