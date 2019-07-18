@@ -151,6 +151,9 @@ function! taskmage#searchbuffer#open_searchresult()
     " open file at UUID
     let l:filepath = l:line_parts[0]
     let l:uuid = l:line_parts[1]
+
+    " return to previous window, and open searchresult
+    :wincmd p
     let l:cmds = printf('edit +/{\\*%s\\*} %s', l:uuid, l:filepath)
     exec l:cmds
 endfunction
