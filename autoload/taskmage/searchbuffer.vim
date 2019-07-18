@@ -136,7 +136,7 @@ function! taskmage#searchbuffer#open_searchresult()
     endif
 
     " ignore if search-buffer not focused
-    if bufwinnr(b:bufname) != bufwinnr(expand('%'))
+    if bufwinnr(s:bufname) != bufwinnr(expand('%'))
         return
     endif
 

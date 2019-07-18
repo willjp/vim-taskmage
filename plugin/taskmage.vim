@@ -66,7 +66,6 @@ command          TaskMageToggle            py taskmage2.vim_plugin.open_counterp
 command          TaskMageSplit             py taskmage2.vim_plugin.open_counterpart('split')
 command          TaskMageVSplit            py taskmage2.vim_plugin.open_counterpart('vsplit')
 command -nargs=1 TaskMageSearch            py taskmage2.vim_plugin.search('<args>')
-command -nargs=1 TaskMageSearch2           py taskmage2.vim_plugin.search2('<args>')
 
 
 " ========

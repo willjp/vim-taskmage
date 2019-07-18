@@ -121,8 +121,12 @@ def open_counterpart(open_command=None):
 
 
 def search(searchterm):
-    """ DEPRECATED! using loclist means we would need to pre-render each jsonfile
-    to get the line-number. YUCK.
+    """ Searches 'name' field of all tasks (complete and incomplete),
+    dumps results in taskmage's searchbuffer.
+
+    Args:
+        searchterm (str):
+            if word is contained within task's name, it is added to the list.
     """
     # get project
     vimfile = os.path.abspath(vim.current.buffer.name)
@@ -132,49 +136,10 @@ def search(searchterm):
     # get taskfiles
     taskfiles_ = project.iter_taskfiles()
 
-    # get tasks
+    # get tasks (and format as lines)
     taskfilters = [
         functools.partial(taskfiles.TaskFilter.search, searchterm),
     ]
-
-    # NOTE: unfortunately to pull out the line-number, I'll need to
-    #       render each file.
-    #
-    #       I wonder if there is a way for me to prompt quickfix
-    #       to jump to a regex-match within a file when an item is
-    #       selected...
-    #
-    #       failing that, I might just need to implement my own quickfix
-    #       variation...
-
-    # clear qflist
-    vim.command('call setqflist([])')
-    for taskfile in taskfiles_:
-        tasks = taskfile.filter_tasks(taskfilters)
-
-        quickfix_items = []
-        for task in tasks:
-            item = "{{'filename': '{}', 'text': '{}'}}".format(str(taskfile), task['name'])
-            quickfix_items.append(item)
-        vim.command("call setqflist([], 'a', {'items': [" + ', '.join(quickfix_items) + "]})")
-    vim.command('copen')
-
-
-def search2(searchterm):
-    # get project
-    vimfile = os.path.abspath(vim.current.buffer.name)
-    project = projects.Project()
-    project.load(vimfile)
-
-    # get taskfiles
-    taskfiles_ = project.iter_taskfiles()
-
-    # get tasks
-    taskfilters = [
-        functools.partial(taskfiles.TaskFilter.search, searchterm),
-    ]
-
-    # format lines
     lines = []
     for taskfile in taskfiles_:
         for task in taskfile.filter_tasks(taskfilters):
