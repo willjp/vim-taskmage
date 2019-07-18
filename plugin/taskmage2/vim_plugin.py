@@ -4,7 +4,7 @@ import functools
 
 import vim
 
-from taskmage2.parser import lexers, iostream, parsers
+from taskmage2.parser import iostream, parsers
 from taskmage2.asttree import renderers
 from taskmage2.project import projects, taskfiles
 
@@ -121,6 +121,9 @@ def open_counterpart(open_command=None):
 
 
 def search(searchterm):
+    """ DEPRECATED! using loclist means we would need to pre-render each jsonfile
+    to get the line-number. YUCK.
+    """
     # get project
     vimfile = os.path.abspath(vim.current.buffer.name)
     project = projects.Project()
@@ -171,51 +174,14 @@ def search2(searchterm):
         functools.partial(taskfiles.TaskFilter.search, searchterm),
     ]
 
-    # NOTE: left off trying to add 'enter'
-    #       command to buffer
-    #
-    #       goals here are essentially recreating
-    #       quickfix window, but jumping to a line with a
-    #       UUID instead of a line-number.
-
-    vim.command('badd {}'.format(_search_buffer))
-    vim.command('split sb {}'.format(_search_buffer))
-    # vim.command('map <buffer> <Enter> "ayy:   let sel=@a<CR>: call TaskMageOpenSearchItem(sel)<CR>')
-    vim.command('map <buffer> <Enter> :py taskmage2.vim_plugin._open_search_buffer_result()<CR>')
-
-    # clear qflist
+    # format lines
+    lines = []
     for taskfile in taskfiles_:
         for task in taskfile.filter_tasks(taskfilters):
-            line = "put = '\|\|{}\|{}\|{}'".format(str(taskfile), task['_id'], task['name'])
-            vim.command(line)
-    vim.command('setlocal nomodifiable')
+            lines.append(r'||{}|{}|{}'.format(str(taskfile), task['_id'], task['name']))
 
+    # populate taskmage-search buffer with results
+    vim.command('let contents = pyeval("{}")'.format(lines))
+    vim.command('call taskmage#searchbuffer#set_contents(contents)')
 
-def _close_search_buffer():
-    vim.command(':q!')
-    vim.command('bd {}'.format(_search_buffer))
-
-
-def _open_search_buffer_result():
-    """
-    Notes:
-        Each line is formatted as follows.
-
-        ::
-
-            ||/absolute/path|uuid|description of task
-
-    """
-    line = vim.current.line
-
-    # TODO: define a viml command to create/close buffer. then we can properly
-    #       handle filereadable() and delete().
-    _close_search_buffer()
-
-    # TODO: instead of 'g/{regex}/#' which give a choice of matches,
-    #       use the vim buffer list to search for the line-number,
-    #       and then jump to that line. (no preview window in between).
-    (_, _, filepath, uuid, nodename) = line.split('|')
-    vim.command(':e {}'.format(filepath))
-    vim.command('g/{{\\*{}\\*}}/#'.format(uuid))
 
