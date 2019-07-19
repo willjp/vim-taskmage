@@ -17,6 +17,8 @@ endfunction
 
 
 function! taskmage#searchbuffer#bufnr()
+    """ Returns the buffer-number
+    """
     return bufnr(s:bufname)
 endfunction
 
@@ -66,6 +68,8 @@ endfunction
 
 
 function! taskmage#searchbuffer#focus_window()
+    """ Focuses SearchBuffer Window.
+    """
     exec printf('%d wincmd w', bufwinnr(s:bufname))
 endfunction
 
@@ -94,8 +98,12 @@ endfunction
 
 
 function! taskmage#searchbuffer#set_contents(lines)
-    " remember prev window
-    let l:prev_winnr = bufwinnr(expand('%'))
+    """ Opens SearchBuffer, sets contents, restores window-focus.
+    """
+
+    " remember prev window bufname
+    " (bufwinnr is unreliable, changes)
+    let l:prev_bufname = bufname('%')
 
     " set new contents
     call taskmage#searchbuffer#open()
@@ -104,7 +112,7 @@ function! taskmage#searchbuffer#set_contents(lines)
     call setline(1, a:lines)
 
     " restore prev window
-    exec printf('%d wincmd w', l:prev_winnr)
+    exec printf('%d wincmd w', bufwinnr(l:prev_bufname))
 endfunction
 
 

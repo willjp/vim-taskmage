@@ -69,5 +69,19 @@ Execute (keeps searchbuffer focus):
 # set contents()
 # ==============
 
+Execute (creates window):
+  call taskmage#searchbuffer#set_contents(['a', 'b', 'c'])
+  Assert bufwinnr(taskmage#searchbuffer#name()) >= 0
+
+Execute (restores focus):
+  e new
+  call taskmage#searchbuffer#set_contents([])
+  AssertEqual 'new', bufname('%')
+
+Execute (clears existing contents):
+  call taskmage#searchbuffer#open()
+  call setline(1, ['1', '2', 'c'])
+  call taskmage#searchbuffer#set_contents(['a', 'b', 'c'])
+  AssertEqual ['a', 'b', 'c'], getline(1, 3)
 
 
