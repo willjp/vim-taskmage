@@ -2,11 +2,6 @@
 let s:bufname = 'taskmage-search'
 
 
-" TODO: syntax (show relative-path from taskmageproject (if exists))
-" TODO: syntax (hide uuid)
-" TODO: syntax color file differently from match
-
-
 function! taskmage#searchbuffer#name()
     """ Get name of searchbuffer
     " Returns:
