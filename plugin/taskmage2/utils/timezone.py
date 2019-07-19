@@ -1,4 +1,5 @@
 import datetime
+import time
 import re
 
 
@@ -24,6 +25,45 @@ def parse_utc_iso8601(datestr):
         tzinfo=UTC(),
     )
     return dt
+
+
+class LocalTimezone(datetime.tzinfo):
+    """
+    Notes:
+        copied from the official python docs.
+    """
+    std_offset = datetime.timedelta(seconds=-time.timezone)
+
+    if time.daylight:
+        dst_offset = datetime.timedelta(seconds=-time.altzone)
+    else:
+        dst_offset = std_offset
+
+    dst_diff = dst_offset - std_offset
+    zero = datetime.timedelta(0)
+
+    def utcoffset(self, dt):
+        if self._isdst(dt):
+            return self.dst_offset
+        else:
+            return self.std_offset
+
+    def dst(self, dt):
+        if self._isdst(dt):
+            return self.dst_diff
+        else:
+            return self.zero
+
+    def tzname(self, dt):
+        return time.tzname[self._isdst(dt)]
+
+    def _isdst(self, dt):
+        tt = (dt.year, dt.month, dt.day,
+              dt.hour, dt.minute, dt.second,
+              dt.weekday(), 0, 0)
+        stamp = time.mktime(tt)
+        tt = time.localtime(stamp)
+        return tt.tm_isdst > 0
 
 
 class UTC(datetime.tzinfo):
