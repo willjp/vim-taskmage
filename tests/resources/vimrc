@@ -1,0 +1,40 @@
+
+
+function! s:install_dependencies()
+
+    " plugins to install
+    let s:plugin_urls = [
+        \ 'https://github.com/junegunn/vader.vim',
+        \ 'https://github.com/junegunn/jellybeans.vim',
+    \ ]
+
+    " create tempdir for plugins
+    if !filereadable('.test_deps')
+        call mkdir('.test_deps')
+    endif
+    
+    " install plugins
+    for s:plugin_url in s:plugin_urls
+        let s:plugin_path = printf('.test_deps/%s', fnamemodify(s:plugin_url, ':t'))
+        echom s:plugin_path
+        if !filereadable(s:plugin_path)
+            silent !git clone https://github.com/gmarik/Vundle.vim $HOME/.vim/bundle/Vundle.vim
+        endif
+    endfor
+endfunction
+
+call s:install_dependencies()
+
+" plugin settings
+filetype off
+set rtp+=.test_deps/vader.vim
+set rtp+=~/.vim/bundle/jellybeans.vim
+set rtp+=.
+
+" vader settings
+filetype plugin indent on
+syntax enable
+
+" personal settings
+colorscheme jellybeans
+map <leader>q :q<CR>
