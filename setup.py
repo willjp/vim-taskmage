@@ -29,7 +29,8 @@ class VimTest(setuptools.Command):
 
     def run(self):
         self._install_requirements()
-        cmds = ['vim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']
+        #cmds = ['vim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']    # interactive
+        cmds = ['vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']  # output to console
         subprocess.call(cmds, universal_newlines=True)
 
     def _install_requirements(self):
