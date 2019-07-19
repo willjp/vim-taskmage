@@ -6,6 +6,7 @@ import vim
 
 from taskmage2.parser import iostream, parsers
 from taskmage2.asttree import renderers
+from taskmage2.parser import fmtdata
 from taskmage2.project import projects, taskfiles
 from taskmage2.utils import timezone
 
@@ -187,6 +188,12 @@ def _format_searchresult(filepath, node_dict):
             '||/path/to/file.mtask|988D1C7D019D469E8767821FCB50F301|2019-01-01 1:00| do something'
 
     """
+    desc = node_dict['name'].split('\n')[0]
+    if 'status' in node_dict['data']:
+        status = node_dict['data']['status']
+        status_ch = fmtdata.TaskList.statuschar(status)
+        desc = '{} {}'.format(status_ch, desc)
+
     modified_str = ''
     if 'modified' in node_dict['data']:
         modified = timezone.parse_utc_iso8601(node_dict['data']['modified'])
@@ -197,7 +204,7 @@ def _format_searchresult(filepath, node_dict):
         filepath=str(filepath),
         uuid=node_dict['_id'],
         modified=modified_str,
-        desc=node_dict['name'].split('\n')[0],
+        desc=desc,
     )
     return result
 
