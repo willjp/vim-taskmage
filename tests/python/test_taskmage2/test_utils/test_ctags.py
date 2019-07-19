@@ -1,6 +1,5 @@
 import os
 import re
-import six
 import taskmage2
 from taskmage2.utils import ctags
 
