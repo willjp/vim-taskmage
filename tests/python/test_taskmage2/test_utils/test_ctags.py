@@ -5,7 +5,7 @@ import taskmage2
 from taskmage2.utils import ctags
 
 _taskmagedir = os.path.dirname(os.path.abspath(taskmage2.__file__))
-_test_resources = os.path.abspath('{}/../tests/test_resources'.format(_taskmagedir))
+_test_resources = os.path.abspath('{}/../../tests/resources'.format(_taskmagedir))
 
 
 class Test_CtagsFile:
