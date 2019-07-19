@@ -47,5 +47,27 @@ Execute (focus does nothing when searchbuffer already focused):
 # clear()
 # =======
 
+Execute (clears buffer):
+  call taskmage#searchbuffer#open()
+  call setline(1, ['a', 'b', 'c'])
+  call taskmage#searchbuffer#clear()
+  AssertEqual '', getline(1)
+
+Execute (restores non-searchbuffer focus):
+  call taskmage#searchbuffer#open()
+  vs new
+  call taskmage#searchbuffer#clear()
+  AssertEqual 'new', bufname('%')
+
+Execute (keeps searchbuffer focus):
+  call taskmage#searchbuffer#open()
+  call taskmage#searchbuffer#clear()
+  AssertEqual taskmage#searchbuffer#name(), bufname('%')
+
+
+# ==============
+# set contents()
+# ==============
+
 
 

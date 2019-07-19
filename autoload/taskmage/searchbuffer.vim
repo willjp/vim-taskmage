@@ -74,29 +74,22 @@ function! taskmage#searchbuffer#clear()
     """ Clears SearchBuffer's contents
     """
 
-    " remember previous windownr
-    let l:created_temp_buffer = 0
-    let l:prev_winnr = bufwinnr(expand('%'))
-
-    " if buffer exists, but not in window, show in
-    " window so we can clear the buffer.
+    " if window does not exist, ignore.
     if !taskmage#searchbuffer#win_exists()
-        exec printf('sp %s', s:bufname)
-        let l:created_temp_buffer = 1
+        return
     endif
+
+    " remember previous windownr
+    let l:prev_winnr = bufwinnr(expand('%'))
 
     " focus window, remove contents
     call taskmage#searchbuffer#focus_window()
     exec '0'
     exec printf('delete %d', line('$'))
 
-    " close window, if we created a temp window
-    if l:created_temp_buffer == 1
-        close
-    endif
-
-    " restore previous windownr
+    " restore previous window selection
     exec printf('%d wincmd w', l:prev_winnr)
+
 endfunction
 
 
