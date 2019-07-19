@@ -128,6 +128,12 @@ function! taskmage#searchbuffer#set_contents(lines)
 endfunction
 
 
+function! taskmage#searchbuffer#append_line(line)
+    call taskmage#searchbuffer#focus_window()
+    call setline(getline('.'), a:line)
+endfunction
+
+
 function! taskmage#searchbuffer#open_searchresult()
     """ Opens file referred to by current line.
     "

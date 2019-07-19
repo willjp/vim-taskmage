@@ -29,6 +29,26 @@ class Project(object):
         if root:
             self.load(root)
 
+    @classmethod
+    def from_path(cls, filepath):
+        """ Instantiates a new Project, loaded using `filepath`.
+
+        Args:
+            path (str): ``(ex: '/src/project/subdir/file.mtask', '/src/project', '/src/project/.taskmage' )``
+                Path to your projectroot, or a file/directory within
+                your taskmage project root.
+
+                .. code-block:: python
+
+                    '/src/project'
+                    '/src/project/subdir/file.mtask'
+                    '/src/project/.taskmage'
+
+        """
+        project = Project()
+        project.load(filepath)
+        return project
+
     @property
     def root(self):
         """ The root directory of a project. Contains ``.taskmage`` directory.
@@ -111,6 +131,7 @@ class Project(object):
                     '/src/project/.taskmage'
 
         """
+        path = os.path.abspath(path)
         projectroot = self.find(path)
         self._root = projectroot
 

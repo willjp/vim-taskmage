@@ -7,6 +7,7 @@ import vim
 from taskmage2.parser import iostream, parsers
 from taskmage2.asttree import renderers
 from taskmage2.project import projects, taskfiles
+from taskmage2.utils import timezone
 
 
 _search_buffer = 'taskmage-search'
@@ -69,8 +70,7 @@ def archive_completed_tasks():
     vim.command('w')
 
     # archive completed tasks on disk
-    project = projects.Project()
-    project.load(vimfile)
+    project = projects.Project.from_path(vimfile)
     project.archive_completed(vimfile)
 
     # reload from disk
@@ -113,40 +113,99 @@ def open_counterpart(open_command=None):
 
     # load project
     vimfile = os.path.abspath(vim.current.buffer.name)
-    project = projects.Project()
-    project.load(vimfile)
+    project = projects.Project.from_path(vimfile)
 
+    # open counterpart
     counterpart = project.get_counterpart(vimfile)
     vim.command("{} {}".format(open_command, counterpart))
 
 
-def search(searchterm):
-    """ Searches 'name' field of all tasks (complete and incomplete),
-    dumps results in taskmage's searchbuffer.
+def search_keyword(searchterm):
+    """ Lists all tasks whose `name` contains the word `searchterm` in the search-buffer.
 
     Args:
         searchterm (str):
             if word is contained within task's name, it is added to the list.
     """
     # get project
-    vimfile = os.path.abspath(vim.current.buffer.name)
-    project = projects.Project()
-    project.load(vimfile)
+    project = projects.Project.from_path(vim.current.buffer.name)
 
     # get taskfiles
     taskfiles_ = project.iter_taskfiles()
 
     # get tasks (and format as lines)
-    taskfilters = [
-        functools.partial(taskfiles.TaskFilter.search, searchterm),
-    ]
+    taskfilters = [functools.partial(taskfiles.TaskFilter.search, searchterm)]
     lines = []
     for taskfile in taskfiles_:
         for task in taskfile.filter_tasks(taskfilters):
-            lines.append(r'||{}|{}|{}'.format(str(taskfile), task['_id'], task['name']))
+            line = _format_searchresult(str(taskfile), task)
+            lines.append(line)
 
+    # show/populate searchbuffer
+    _set_searchbuffer_contents(lines)
+
+
+def search_latest():
+    """ Lists tasks sorted by modified-date in descending order in the search-buffer.
+    """
+    # get project
+    project = projects.Project.from_path(vim.current.buffer.name)
+
+    # get taskfiles
+    taskfiles_ = project.iter_taskfiles()
+
+    # get tasks (and format as lines)
+    tasks_w_filepath = []  # [{...}, ..]
+    for taskfile in taskfiles_:
+        for task in taskfile.iter_tasks():
+            if not task['data'].get('modified', None):
+                continue
+            task['filepath'] = taskfile
+            tasks_w_filepath.append(task)
+
+    # sort tasks by date-modified
+    tasks_w_filepath.sort(key=lambda x: x['data']['modified'], reverse=True)
+    lines = [_format_searchresult(t['filepath'], t) for t in tasks_w_filepath]
+
+    # show/populate searchbuffer
+    _set_searchbuffer_contents([])
+    bufnr = vim.eval('taskmage#searchbuffer#bufnr()')
+    vim.buffers[int(bufnr)][:] = lines
+
+
+def _format_searchresult(filepath, node_dict):
+    """ Formats a node for the search-buffer.
+
+    Args:
+        filepath (str):
+            absolute filepath to the file containing the node_dict
+
+        node_dict (dict):
+            a node dictionary. See :py:mod:`taskmage2.asttree.nodedata`
+
+    Returns:
+        str:
+
+            '||/path/to/file.mtask|988D1C7D019D469E8767821FCB50F301|(2019-01-01 1:00) do something'
+
+    """
+    taskname = node_dict['name'].split('\n')[0]
+
+    if 'modified' in node_dict['data']:
+        modified = timezone.parse_utc_iso8601(node_dict['data']['modified'])
+        modified_local = modified.astimezone(timezone.LocalTimezone())
+        description = '({}) {}'.format(
+            modified_local.strftime('%Y-%m-%d %H:%M'), taskname,
+        )
+    else:
+        description = taskname
+
+    result = r'||{}|{}|{}'.format(str(filepath), node_dict['_id'], description)
+    return result
+
+
+def _set_searchbuffer_contents(lines):
     # populate taskmage-search buffer with results
+    vim.command('call taskmage#searchbuffer#close()')
     vim.command('let contents = pyeval("{}")'.format(lines))
     vim.command('call taskmage#searchbuffer#set_contents(contents)')
-
-
