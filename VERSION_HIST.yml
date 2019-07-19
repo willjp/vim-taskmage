@@ -25,7 +25,9 @@
     - utils.functional.multifilter()
     - taskfiles.TaskFilter -- static methods for common taskfilters
     - new :TaskMageSearch vim command
+    - new :TaskMageLatest vim command
     - corrects bad setup of importpath in bin/taskmage2ctags.py
+    - utils.timezone.LocalTimezone()
 
 # TODO: vader.vim setup to test vim_plugin.py
 # TODO: update README/vim-help to include information about tagbar support
