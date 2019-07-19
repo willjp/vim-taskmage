@@ -184,21 +184,21 @@ def _format_searchresult(filepath, node_dict):
     Returns:
         str:
 
-            '||/path/to/file.mtask|988D1C7D019D469E8767821FCB50F301|(2019-01-01 1:00) do something'
+            '||/path/to/file.mtask|988D1C7D019D469E8767821FCB50F301|2019-01-01 1:00| do something'
 
     """
-    taskname = node_dict['name'].split('\n')[0]
-
+    modified_str = ''
     if 'modified' in node_dict['data']:
         modified = timezone.parse_utc_iso8601(node_dict['data']['modified'])
         modified_local = modified.astimezone(timezone.LocalTimezone())
-        description = '({}) {}'.format(
-            modified_local.strftime('%Y-%m-%d %H:%M'), taskname,
-        )
-    else:
-        description = taskname
+        modified_str = modified_local.strftime('%Y-%m-%d %H:%M')
 
-    result = r'||{}|{}|{}'.format(str(filepath), node_dict['_id'], description)
+    result = r'||{filepath}|{uuid}|({modified})| {desc}'.format(
+        filepath=str(filepath),
+        uuid=node_dict['_id'],
+        modified=modified_str,
+        desc=node_dict['name'].split('\n')[0],
+    )
     return result
 
 

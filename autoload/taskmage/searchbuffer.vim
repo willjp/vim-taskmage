@@ -61,6 +61,7 @@ function! taskmage#searchbuffer#open()
     " buffer key-mappings
     map <buffer> <Enter> :call taskmage#searchbuffer#open_searchresult()<CR>
 
+    setlocal ft=taskmage-searchresult
 endfunction
 
 
