@@ -1,0 +1,51 @@
+Before (delete window):
+  try
+    let bufwin = bufwinnr(taskmage#searchbuffer#name())
+    exec printf('%s wincmd c', bufwin)
+  catch
+  endtry
+
+
+# ========
+# exists()
+# ========
+Execute (win_exists() false before creation):
+  AssertEqual taskmage#searchbuffer#win_exists(),  0
+
+Execute (exists() true after creation):
+  call taskmage#searchbuffer#open()
+  AssertEqual taskmage#searchbuffer#win_exists(),  1
+
+Execute (exists() false after close):
+  call taskmage#searchbuffer#open()
+  call taskmage#searchbuffer#close()
+  AssertEqual taskmage#searchbuffer#win_exists(),  0
+
+
+# ==============
+# focus_window()
+# ==============
+
+Execute (focus from other window):
+  call taskmage#searchbuffer#open()
+  vs new
+  call taskmage#searchbuffer#focus_window()
+  AssertEqual taskmage#searchbuffer#name(), bufname('%')
+
+Execute (focus does nothing when window does not exist):
+  let start_winnr = bufwinnr(bufname('%'))
+  call taskmage#searchbuffer#focus_window()
+  let end_winnr = bufwinnr(bufname('%'))
+  AssertEqual start_winnr, end_winnr
+
+Execute (focus does nothing when searchbuffer already focused):
+  call taskmage#searchbuffer#open()
+  AssertEqual taskmage#searchbuffer#name(), bufname('%')
+
+
+# =======
+# clear()
+# =======
+
+
+

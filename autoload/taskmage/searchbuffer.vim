@@ -21,16 +21,6 @@ function! taskmage#searchbuffer#bufnr()
 endfunction
 
 
-function! taskmage#searchbuffer#exists()
-    """ Check if SearchBuffer already exists.
-    " Returns:
-    "   int: 0(false), 1(true)
-    """
-    let l:buffer_exists = bufname(s:bufname) != ''
-    return l:buffer_exists
-endfunction
-
-
 function! taskmage#searchbuffer#win_exists()
     """ Check if SearchBuffer already exists.
     " Returns:
@@ -45,7 +35,7 @@ function! taskmage#searchbuffer#open()
     """ Create SearchBuffer (if not exists)
     """
     " exit early if buffer already exists
-    if taskmage#searchbuffer#exists()
+    if taskmage#searchbuffer#win_exists()
         return
     endif
 
@@ -70,10 +60,7 @@ function! taskmage#searchbuffer#close()
     """
     if taskmage#searchbuffer#win_exists()
         let l:winnr = bufwinnr(s:bufname)
-        exec printf(%s close', l:winnr)
-    endif
-    if taskmage#searchbuffer#exists()
-        bdel s:bufname
+        exec printf('%s close', l:winnr)
     endif
 endfunction
 
@@ -90,11 +77,6 @@ function! taskmage#searchbuffer#clear()
     " remember previous windownr
     let l:created_temp_buffer = 0
     let l:prev_winnr = bufwinnr(expand('%'))
-
-    " exit if not exists
-    if !taskmage#searchbuffer#exists()
-        return
-    endif
 
     " if buffer exists, but not in window, show in
     " window so we can clear the buffer.
