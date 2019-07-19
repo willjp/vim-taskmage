@@ -1,0 +1,8 @@
+Given (sample text):
+  a
+  b
+  c
+
+Execute (line1):
+  AssertEqual getline(1), 'a'
+

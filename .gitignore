@@ -7,4 +7,5 @@ examples/.ptaskmgr/*.ptask
 .codemod.*
 .ropeproject
 .coverage
+.test_deps/*
 coverage.xml
