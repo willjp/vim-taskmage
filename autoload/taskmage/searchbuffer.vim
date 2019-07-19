@@ -26,7 +26,7 @@ function! taskmage#searchbuffer#exists()
     " Returns:
     "   int: 0(false), 1(true)
     """
-    let l:buffer_exists = !bufname(s:bufname) == ''
+    let l:buffer_exists = bufname(s:bufname) != ''
     return l:buffer_exists
 endfunction
 
@@ -67,6 +67,10 @@ endfunction
 function! taskmage#searchbuffer#close()
     """ Closes SearchBuffer (ignores if already closed)
     """
+    if taskmage#searchbuffer#win_exists()
+        let l:winnr = bufwinnr(s:bufname)
+        exec printf(%s close', l:winnr)
+    endif
     if taskmage#searchbuffer#exists()
         bdel s:bufname
     endif
@@ -101,7 +105,7 @@ function! taskmage#searchbuffer#clear()
     " focus window, remove contents
     call taskmage#searchbuffer#focus_window()
     exec '0'
-    exec printf('delete %d', lines('$'))
+    exec printf('delete %d', line('$'))
 
     " close window, if we created a temp window
     if l:created_temp_buffer == 1
