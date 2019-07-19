@@ -168,9 +168,7 @@ def search_latest():
     lines = [_format_searchresult(t['filepath'], t) for t in tasks_w_filepath]
 
     # show/populate searchbuffer
-    _set_searchbuffer_contents([])
-    bufnr = vim.eval('taskmage#searchbuffer#bufnr()')
-    vim.buffers[int(bufnr)][:] = lines
+    _set_searchbuffer_contents(lines)
 
 
 def _format_searchresult(filepath, node_dict):
@@ -205,7 +203,7 @@ def _format_searchresult(filepath, node_dict):
 
 
 def _set_searchbuffer_contents(lines):
-    # populate taskmage-search buffer with results
-    vim.command('call taskmage#searchbuffer#close()')
-    vim.command('let contents = pyeval("{}")'.format(lines))
-    vim.command('call taskmage#searchbuffer#set_contents(contents)')
+    vim.command('call taskmage#searchbuffer#open()')
+    vim.command('call taskmage#searchbuffer#clear()')
+    bufnr = vim.eval('taskmage#searchbuffer#bufnr()')
+    vim.buffers[int(bufnr)][:] = lines
