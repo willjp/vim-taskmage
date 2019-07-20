@@ -1,5 +1,20 @@
 
+
 let s:bufname = 'taskmage-search'
+"       Name of the searchbuffer
+" ex:   'taskmage-search'
+
+
+let s:taskmage_postpopenfile_cmds_stack = {}
+"       when user presses <Enter> on a line in the searchbuffer, 
+"       a command is queued to run after that file has opened *AND* rendered
+"       from .mtask to the .tasklist format. 
+"
+"       This prevents race-conditions between the rendering, and the queued
+"       command.
+"
+" ex:   {abspath: [cmds, cmds, ...], ...}
+
 
 
 function! taskmage#searchbuffer#name()
@@ -140,10 +155,43 @@ function! taskmage#searchbuffer#open_searchresult()
     let l:filepath = l:line_parts[0]
     let l:uuid = l:line_parts[1]
 
-    " return to previous window, and open searchresult
+    " return to previous window 
     :wincmd p
-    let l:cmds = printf('edit +/{\\*%s\\*} %s', l:uuid, l:filepath)
-    exec l:cmds
+
+    " open searchresult
+    " NOTE: cannot simply use   ``:e +/match  file``, race-condition
+
+    " queue an open-regex line job
+    let l:cmds = printf('+/{\*%s\*}', l:uuid)
+    call taskmage#searchbuffer#put_postcmds(l:filepath, l:cmds)
+
+
+    " after file is finished being converted from mtask to tasklist,
+    " `s:taskmage_postpopenfile_cmds_stack` is checked for commands for the
+    " freshly opened file. If a command exists in the stack, it is pop'd/run
+    exec 'edit ' . l:filepath
+
 endfunction
 
 
+function! taskmage#searchbuffer#put_postcmds(filepath, cmds)
+    """ Queues a job to run after the file has opened
+    """
+    if !has_key(s:taskmage_postpopenfile_cmds_stack, a:filepath)
+        let s:taskmage_postpopenfile_cmds_stack[a:filepath] = []
+    endif
+    call add(s:taskmage_postpopenfile_cmds_stack[a:filepath], a:cmds)
+endfunction
+
+
+function! taskmage#searchbuffer#pop_and_run_postcmds()
+    """ If current file has a job queued, pops/runs the job at index 0.
+    """
+    let l:abspath = expand('%:p')
+    if !has_key(s:taskmage_postpopenfile_cmds_stack, l:abspath)
+        return
+    endif
+
+    let l:post_cmds = remove(s:taskmage_postpopenfile_cmds_stack[l:abspath], 0)
+    exec l:post_cmds
+endfunction

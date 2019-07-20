@@ -24,6 +24,7 @@ def handle_open_mtask():
         render = ast.render(renderers.TaskList)
 
     vim.current.buffer[:] = render
+    vim.command('call taskmage#searchbuffer#pop_and_run_postcmds()')
     return render
 
 
