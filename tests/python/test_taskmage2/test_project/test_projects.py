@@ -3,8 +3,10 @@ import os
 import mock
 import pytest
 
-from taskmage2.project import projects
+from taskmage2.project import projects, taskfiles
 
+_this_package_dir = os.path.dirname(os.path.abspath(__file__))
+_tests_dir = os.path.abspath('{}/../../..'.format(_this_package_dir))
 
 ns = projects.__name__
 
@@ -87,8 +89,17 @@ class Test_Project(object):
 
     class Test_iter_taskfiles:
         def test(self):
-            # TODO
-            assert False
+            sample_project_dir = '{}/resources/sample_project'.format(_tests_dir)
+            project = projects.Project.from_path(sample_project_dir)
+            result = list(project.iter_taskfiles())
+
+            expects = [
+                taskfiles.TaskFile('{}/work.mtask'.format(sample_project_dir)),
+                taskfiles.TaskFile('{}/home.mtask'.format(sample_project_dir)),
+                taskfiles.TaskFile('{}/.taskmage/home.mtask'.format(sample_project_dir)),
+            ]
+
+            assert result == expects
 
     class Test_filter_taskfiles:
         def test(self):
