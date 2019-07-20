@@ -29,6 +29,19 @@ class Project(object):
         if root:
             self.load(root)
 
+    def __repr__(self):
+        """
+        Returns:
+            str: ``<Project(path/to/project) at 0x7ff6b33106a0>``
+        """
+        if self.root:
+            relpath = os.path.relpath(self.root)
+        else:
+            relpath = 'None'
+
+        repr_ = '<Project({}) at {}>'.format(relpath, hex(id(self)))
+        return repr_
+
     @classmethod
     def from_path(cls, filepath):
         """ Instantiates a new Project, loaded using `filepath`.

@@ -15,6 +15,15 @@ class TaskFile(object):
     def __str__(self):
         return self._filepath
 
+    def __repr__(self):
+        """
+        Returns:
+            str: ``<TaskFile(path/to/todo.mtask) at 0x7ff6b33106a0>``
+        """
+        relpath = os.path.relpath(self.filepath)
+        repr_ = '<TaskFile({}) at {})>'.format(relpath, hex(id(self)))
+        return repr_
+
     def __eq__(self, other):
         return self.filepath == other.filepath
 
