@@ -32,6 +32,10 @@ from a console - if a line is returned, your vim was built with python support.
     vim --version | find /I "+python"  # windows
 
 
+Tagbar (https://github.com/majutsushi/tagbar) integration is supported, but
+requires a system-installed python interpreter.
+
+
 Install
 -------
 
