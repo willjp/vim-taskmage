@@ -94,8 +94,8 @@ class Test_Project(object):
         def test(self):
             assert False
 
-#    def test_archive_completed_tasks(self):
-#        assert False
+    def test_archive_completed_tasks(self):
+        assert False
 
     def find(self, path, root):
         """
