@@ -103,7 +103,18 @@ class Test_Project(object):
 
     class Test_filter_taskfiles:
         def test(self):
-            assert False
+            sample_project_dir = '{}/resources/sample_project'.format(_tests_dir)
+            project = projects.Project.from_path(sample_project_dir)
+
+            def is_home_dot_mtask(taskfile):
+                return taskfile.filepath.endswith('home.mtask')
+
+            result = list(project.filter_taskfiles([is_home_dot_mtask]))
+            expects = [
+                taskfiles.TaskFile('{}/home.mtask'.format(sample_project_dir)),
+                taskfiles.TaskFile('{}/.taskmage/home.mtask'.format(sample_project_dir)),
+            ]
+            assert result == expects
 
     def test_archive_completed_tasks(self):
         assert False

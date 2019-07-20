@@ -245,8 +245,8 @@ class Project(object):
 
         Args:
             filters (list):
-                List of functions that accept an absolute-path to a taskfile,
-                and return True (keep) or False (remove)
+                List of functions that accepts a :py:obj:`taskmage2.project.taskfiles.TaskFile`
+                as an argument, and returns True (keep) or False (remove)
 
         Returns:
             Iterable:
