@@ -70,47 +70,120 @@ class VimTest(setuptools.Command):
 class VimCoverage(setuptools.Command):
     """ ``python setup.py vimtest`` installs vader/jellybeans vim plugins and executes tests.
 
+    Notes:
+        Requires that you have installed covimerage:
+
     Example:
 
         .. code-block:: bash
 
-            python setup.py vimcoverage                # print coverage to stdout
-            python setup.py vimcoverage --action=xml   # write vim-coverage.xml
-            python setup.py vimcoverage --action=run   # print coverage to stdout
+            python setup.py vim-coverage                # print coverage to stdout
+            python setup.py vim-coverage --action=run   # print coverage to stdout
 
     """
     description = 'print vimfile test-coverage (using covimerage)'
-    user_options = [
-        ('xml', None, 'writes vim-coverage.xml instead of printng to stdout'),
-    ]
-
-    def __init__(self, *args, **kwargs):
-        setuptools.Command.__init__(self, *args, **kwargs)
-        self.requirements = VimRequirements()
+    user_options = []
+    requirements = VimRequirements()
 
     def initialize_options(self):
-        self.xml = False
+        pass
 
     def finalize_options(self):
         pass
 
     def run(self):
-        self.requirements.install()
-        if self.xml:
-            self._run_xml()
-        else:
-            self._run_coverage()
+        sys.exit(self.run_static())
 
-    def _run_coverage(self):
+    @classmethod
+    def run_static(cls):
+        cls.requirements.install()
+        cls._check_path_for_covimerage()
+        returncode = cls._run_coverage()
+        return returncode
+
+    @classmethod
+    def _check_path_for_covimerage(cls):
+        try:
+            import covimerage
+        except(ImportError):
+            print('WARNING: covimerage is not installed, command may fail\n'
+                  'run:  pip install covimerage')
+
+    @classmethod
+    def _run_coverage(cls):
         cmds = ['covimerage', 'run',
                 '--source', 'autoload',
                 '--source', 'plugin',
                 'vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']
-        sys.exit(subprocess.call(cmds, universal_newlines=True))
+        returncode = subprocess.call(cmds, universal_newlines=True)
+        return returncode
 
     def _run_xml(self):
         cmds = ['covimerage', 'xml']
         subprocess.call(cmds, universal_newlines=True)
+
+
+class PythonCoverage(setuptools.Command):
+    """ ``python setup.py py-coverage`` prints python-core coverage.
+
+    Notes:
+        Requires that you have installed covimerage:
+
+    Example:
+
+        .. code-block:: bash
+
+            python setup.py py-coverage                # print coverage to stdout
+
+    """
+    description = 'print python-file test-coverage (using pytest-cov)'
+    user_options = []
+
+    def __init__(self, *args, **kwargs):
+        setuptools.Command.__init__(self, *args, **kwargs)
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        sys.exit(self.run_static())
+
+    @staticmethod
+    def run_static():
+        cmds = [sys.executable, 'setup.py', 'test', '--addopts', '--cov']
+        returncode = subprocess.call(cmds, universal_newlines=True)
+        return returncode
+
+
+class TotalCoverage(setuptools.Command):
+    description = 'get combined coverage of both python AND vim files'
+    user_options = [
+        ('xml', None, 'in addition to measuring both source-coverage types, produces coverage.xml file'),
+    ]
+
+    def initialize_options(self):
+        self.xml = False
+
+    def finalize_options(self):
+        self.xml = '--xml' in sys.argv
+
+    def run(self):
+        VimCoverage.run_static()
+        PythonCoverage.run_static()
+
+        # combine both coverage files into one
+        cmds = ['coverage', 'combine', '.coverage', '.coverage_covimerage']
+        returncode = subprocess.call(cmds, universal_newlines=True)
+        if returncode != 0:
+            print('ERROR: covarage command failed: {}'.format(repr(cmds)))
+
+        # (optionally) render xml file
+        if self.xml:
+            cmds = ['coverage', 'xml']
+            sys.exit(subprocess.call(cmds, universal_newlines=True))
 
 
 # see python setup.py --help-commands for all commands
@@ -126,9 +199,12 @@ setuptools.setup(
     tests_require=[
         'pytest',
         'pytest-cov',
+        'mock',
     ],
     cmdclass={
         'vimtest': VimTest,
-        'vimcoverage': VimCoverage,
+        'vim_coverage': VimCoverage,
+        'py_coverage': PythonCoverage,
+        'coverage': TotalCoverage,
     }
 )
