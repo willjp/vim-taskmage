@@ -17,6 +17,8 @@ class Test_timezones:
 
         utc_offset = utcnow.utcoffset()
         local_offset = localnow.utcoffset()
+        print(utc_offset)
+        print(local_offset)
         assert utc_offset != local_offset
 
     def test_time_arithmetric_works(self):
