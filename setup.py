@@ -40,6 +40,10 @@ class VimRequirements(object):
             subprocess.call(cmds, universal_newlines=True)
 
 
+# =============
+# Test Commands
+# =============
+
 class VimTest(setuptools.Command):
     """ ``python setup.py vimtest`` installs vader/jellybeans vim plugins and executes tests.
     """
@@ -47,10 +51,7 @@ class VimTest(setuptools.Command):
     user_options = [
         ('interactive', 'i', 'instead of printing to stdout, runs vader interactively in vim')
     ]
-
-    def __init__(self, *args, **kwargs):
-        setuptools.Command.__init__(self, *args, **kwargs)
-        self.requirements = VimRequirements()
+    requirements = VimRequirements()
 
     def initialize_options(self):
         self.interactive = False
@@ -59,13 +60,46 @@ class VimTest(setuptools.Command):
         pass
 
     def run(self):
-        self.requirements.install()
-        if self.interactive:
+        sys.exit(self.run_static(self.interactive))
+
+    @classmethod
+    def run_static(cls, interactive=False):
+        cls.requirements.install()
+        if interactive:
             cmds = ['vim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']
         else:
             cmds = ['vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']  # output to console
-        sys.exit(subprocess.call(cmds, universal_newlines=True))
+        returncode = subprocess.call(cmds, universal_newlines=True)
+        return returncode
 
+
+class TotalTest(setuptools.Command):
+    description = 'run tests for both vim and python'
+    user_options = []
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        # run python tests
+        cmds = [sys.executable, 'setup.py', 'test_python']
+        py_returncode = subprocess.call(cmds, universal_newlines=True)
+
+        # run vim tests
+        vim_returncode = VimTest.run_static()
+
+        # return fail if any of the above failed.
+        if any([x != 0 for x in (py_returncode, vim_returncode)]):
+            sys.exit(1)
+        sys.exit(0)
+
+
+# ======================
+# Test-Coverage Commands
+# ======================
 
 class VimCoverage(setuptools.Command):
     """ ``python setup.py vimtest`` installs vader/jellybeans vim plugins and executes tests.
@@ -153,7 +187,7 @@ class PythonCoverage(setuptools.Command):
 
     @staticmethod
     def run_static():
-        cmds = [sys.executable, 'setup.py', 'test', '--addopts', '--cov']
+        cmds = [sys.executable, 'setup.py', 'test_python', '--addopts', '--cov']
         returncode = subprocess.call(cmds, universal_newlines=True)
         return returncode
 
@@ -202,9 +236,12 @@ setuptools.setup(
         'mock',
     ],
     cmdclass={
-        'vimtest': VimTest,
-        'vim_coverage': VimCoverage,
-        'py_coverage': PythonCoverage,
+        # test_python (configured in setup.cfg)
+        'test_vim': VimTest,
+        'test': TotalTest,
+
+        'coverage_vim': VimCoverage,
+        'coverage_python': PythonCoverage,
         'coverage': TotalCoverage,
     }
 )
