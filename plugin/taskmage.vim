@@ -31,7 +31,6 @@ endfunc
 function! TaskMageSaveEnd()
     " converts saved-Mtask(json) back to TaskList(rst), restores cursor-pos 
     py taskmage2.vim_plugin.handle_postsave_mtask()
-    call winrestview(s:saved_view)
 endfunc
 
 
