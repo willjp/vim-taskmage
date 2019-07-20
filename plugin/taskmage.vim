@@ -77,7 +77,6 @@ command          TaskMageLatest            py taskmage2.vim_plugin.search_latest
 " AutoCmds
 " ========
 
-"autocmd BufRead             *.mtask  py taskmage2.vim_plugin.handle_open_mtask()
 autocmd BufReadCmd          *.mtask  py taskmage2.vim_plugin.handle_open_mtask()
 autocmd BufNewFile,BufRead  *.mtask  set filetype=taskmage
 autocmd BufWritePre         *.mtask  call TaskMageSaveStart()
