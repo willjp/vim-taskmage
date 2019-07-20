@@ -23,14 +23,19 @@ endif
 " =========
 
 function! TaskMageSaveStart()
-    " saves cursor-pos, converts TaskList(rst)-to-Mtask(json)
+    " saves cursor-pos
     let s:saved_view = winsaveview()
+
+    " converts TaskList(rst)-to-Mtask(json)
     py taskmage2.vim_plugin.handle_presave_mtask()
 endfunc
 
 function! TaskMageSaveEnd()
     " converts saved-Mtask(json) back to TaskList(rst), restores cursor-pos 
     py taskmage2.vim_plugin.handle_postsave_mtask()
+
+    " restore cursor postion
+    call winrestview(s:saved_view)
 endfunc
 
 
