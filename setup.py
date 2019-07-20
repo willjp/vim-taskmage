@@ -44,22 +44,26 @@ class VimTest(setuptools.Command):
     """ ``python setup.py vimtest`` installs vader/jellybeans vim plugins and executes tests.
     """
     description = 'run vimfile tests (using Vader.vim)'
-    user_options = []
+    user_options = [
+        ('interactive', 'i', 'instead of printing to stdout, runs vader interactively in vim')
+    ]
 
     def __init__(self, *args, **kwargs):
         setuptools.Command.__init__(self, *args, **kwargs)
         self.requirements = VimRequirements()
 
     def initialize_options(self):
-        pass
+        self.interactive = False
 
     def finalize_options(self):
         pass
 
     def run(self):
         self.requirements.install()
-        #cmds = ['vim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']    # interactive
-        cmds = ['vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']  # output to console
+        if self.interactive:
+            cmds = ['vim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']
+        else:
+            cmds = ['vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']  # output to console
         subprocess.call(cmds, universal_newlines=True)
 
 
