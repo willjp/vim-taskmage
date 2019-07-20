@@ -1,7 +1,9 @@
 import os
 import json
 import fnmatch
+import shutil
 from taskmage2.utils import functional
+from taskmage2.asttree import renderers
 
 
 class TaskFile(object):
@@ -32,6 +34,30 @@ class TaskFile(object):
     def read(self):
         with open(self.filepath, 'r') as fd:
             return fd.read()
+
+    def write(self, ast):
+        """
+        Args:
+            ast (taskmage2.asttree.asttree.AbstractSyntaxTree):
+                writes an AST to a taskfile
+        """
+        filecontents = ast.render(renderers.Mtask)
+        filedir = os.path.dirname(self.filepath)
+
+        if not os.path.isdir(filedir):
+            os.makedirs(filedir)
+
+        with open(self.filepath, 'w') as fd:
+            fd.write('\n'.join(filecontents))
+
+    def copyfile(self, filepath):
+        # create directory if not exists
+        filedir = os.path.dirname(self.filepath)
+        if not os.path.isdir(filedir):
+            os.makedirs(filedir)
+
+        # copy the file
+        shutil.copyfile(self.filepath, filepath)
 
     def iter_tasks(self):
         """ Iterator that yields task dictionaries contained within taskfile.

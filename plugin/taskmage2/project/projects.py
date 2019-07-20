@@ -289,31 +289,28 @@ class Project(object):
                 yield taskfiles.TaskFile(filepath)
 
     def _archive_completed(self, filepath):
+        """
+
+        Args:
+            filepath (str):
+                absolute path to a .mtask file.
+        """
         (active_ast, archive_ast) = self._archive_completed_as_ast(filepath)
+        archive_path = self.get_archived_path(filepath)
 
-        # render ASTs
-        active_mtask_contents = active_ast.render(renderers.Mtask)
-        archive_mtask_contents = archive_ast.render(renderers.Mtask)
-
-        # create tempdir (prevent writing bad data)
         tempdir = tempfile.mkdtemp()
-        active_tempfile = '{}/active.mtask'.format(tempdir)
-        archive_tempfile = '{}/archive.mtask'.format(tempdir)
         try:
-            # write contents to tempfiles
-            with open(active_tempfile, 'w') as fd:
-                fd.write('\n'.join(active_mtask_contents))
-            with open(archive_tempfile, 'w') as fd:
-                fd.write('\n'.join(archive_mtask_contents))
+            # create tempfile objects
+            active_taskfile = taskfiles.TaskFile('{}/active.mtask'.format(tempdir))
+            archive_taskfile = taskfiles.TaskFile('{}/archive.mtask'.format(tempdir))
 
-            # overwrite real files
-            archive_path = self.get_archived_path(filepath)
-            archive_dir = os.path.dirname(archive_path)
-            if not os.path.isdir(archive_dir):
-                os.makedirs(archive_dir)
+            # write tempfiles
+            active_taskfile.write(active_ast)
+            archive_taskfile.write(archive_ast)
 
-            shutil.copyfile(archive_tempfile, archive_path)
-            shutil.copyfile(active_tempfile, filepath)
+            # (if successful) overwrite real files
+            active_taskfile.copyfile(filepath)
+            archive_taskfile.copyfile(archive_path)
         finally:
             # delete tempdir
             if os.path.isdir(tempdir):
