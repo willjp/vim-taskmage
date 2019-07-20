@@ -43,7 +43,8 @@ class Project(object):
         return repr_
 
     def __hash__(self):
-        return hash(repr(self))
+        hashstr = '<taskmage2.project.projects.Project({})>'.format(str(self.root))
+        return hash(hashstr)
 
     @classmethod
     def from_path(cls, filepath):

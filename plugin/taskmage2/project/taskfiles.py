@@ -25,7 +25,8 @@ class TaskFile(object):
         return repr_
 
     def __hash__(self):
-        return hash(repr(self))
+        hashstr = '<taskmage2.project.taskfiles.TaskFile({})>'.format(str(self.filepath))
+        return hash(hashstr)
 
     def __eq__(self, other):
         return self.filepath == other.filepath

@@ -158,3 +158,19 @@ class Test_TaskFile:
             finally:
                 if os.path.isdir(tempdir):
                     shutil.rmtree(tempdir)
+
+    class Test__hash__:
+        def test_taskfiles_with_same_file_share_hash_value(self):
+            taskfile_a = taskfiles.TaskFile('todo.mtask')
+            taskfile_b = taskfiles.TaskFile('todo.mtask')
+            assert hash(taskfile_a) == hash(taskfile_b)
+
+        def test_taskfiles_with_different_file_do_not_share_hash_value(self):
+            taskfile_a = taskfiles.TaskFile('todo.mtask')
+            taskfile_b = taskfiles.TaskFile('other.mtask')
+            assert hash(taskfile_a) != hash(taskfile_b)
+
+        def test_taskfile_hash_is_different_from_string(self):
+            taskfile = taskfiles.TaskFile('todo.mtask')
+            assert hash(taskfile) != hash(taskfile.filepath)
+

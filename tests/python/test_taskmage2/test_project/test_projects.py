@@ -7,6 +7,7 @@ from taskmage2.project import projects, taskfiles
 
 _this_package_dir = os.path.dirname(os.path.abspath(__file__))
 _tests_dir = os.path.abspath('{}/../../..'.format(_this_package_dir))
+_sample_project_dir = '{}/resources/sample_project'.format(_tests_dir)
 
 ns = projects.__name__
 
@@ -117,15 +118,14 @@ class Test_Project(object):
 
     class Test_iter_taskfiles:
         def test(self):
-            sample_project_dir = '{}/resources/sample_project'.format(_tests_dir)
-            project = projects.Project.from_path(sample_project_dir)
-            result = list(project.iter_taskfiles())
+            project = projects.Project.from_path(_sample_project_dir)
+            result = set(project.iter_taskfiles())
 
-            expects = [
-                taskfiles.TaskFile('{}/work.mtask'.format(sample_project_dir)),
-                taskfiles.TaskFile('{}/home.mtask'.format(sample_project_dir)),
-                taskfiles.TaskFile('{}/.taskmage/home.mtask'.format(sample_project_dir)),
-            ]
+            expects = {
+                taskfiles.TaskFile('{}/work.mtask'.format(_sample_project_dir)),
+                taskfiles.TaskFile('{}/home.mtask'.format(_sample_project_dir)),
+                taskfiles.TaskFile('{}/.taskmage/home.mtask'.format(_sample_project_dir)),
+            }
 
             assert result == expects
 
@@ -144,3 +144,17 @@ class Test_Project(object):
             ]
             assert result == expects
 
+    class Test__hash__:
+        def test_projects_with_same_file_share_hash_value(self):
+            project_a = projects.Project(None)
+            project_b = projects.Project(None)
+            assert hash(project_a) == hash(project_b)
+
+        def test_projects_with_different_file_do_not_share_hash_value(self):
+            project_a = projects.Project(None)
+            project_b = projects.Project(_sample_project_dir)
+            assert hash(project_a) != hash(project_b)
+
+        def test_project_hash_is_different_from_string(self):
+            project = projects.Project(_sample_project_dir)
+            assert hash(project) != hash(project.root)
