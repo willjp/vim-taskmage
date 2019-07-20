@@ -161,15 +161,20 @@ function! taskmage#searchbuffer#open_searchresult()
     " open searchresult
     " NOTE: cannot simply use   ``:e +/match  file``, race-condition
 
+    exec printf('edit +/{\\*%s\\*} %s', l:uuid, l:filepath)
+
+
+    "=======================
+
     " queue an open-regex line job
-    let l:cmds = printf('+/{\*%s\*}', l:uuid)
-    call taskmage#searchbuffer#put_postcmds(l:filepath, l:cmds)
+    "let l:cmds = printf('+/{\*%s\*}', l:uuid)
+    "call taskmage#searchbuffer#put_postcmds(l:filepath, l:cmds)
 
 
     " after file is finished being converted from mtask to tasklist,
     " `s:taskmage_postpopenfile_cmds_stack` is checked for commands for the
     " freshly opened file. If a command exists in the stack, it is pop'd/run
-    exec 'edit ' . l:filepath
+    "exec 'edit ' . l:filepath
 
 endfunction
 

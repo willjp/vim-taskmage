@@ -25,6 +25,7 @@ def handle_open_mtask():
 
     vim.current.buffer[:] = render
     vim.command('call taskmage#searchbuffer#pop_and_run_postcmds()')
+    vim.command('set filetype=taskmage')
     return render
 
 
