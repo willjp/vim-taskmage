@@ -41,14 +41,15 @@ class TaskFile(object):
             ast (taskmage2.asttree.asttree.AbstractSyntaxTree):
                 writes an AST to a taskfile
         """
-        filecontents = ast.render(renderers.Mtask)
+        filecontents_list = ast.render(renderers.Mtask)
+        filecontents = '\n'.join(filecontents_list)
         filedir = os.path.dirname(self.filepath)
 
         if not os.path.isdir(filedir):
             os.makedirs(filedir)
 
         with open(self.filepath, 'w') as fd:
-            fd.write('\n'.join(filecontents))
+            fd.write(filecontents)
 
     def copyfile(self, filepath):
         # create directory if not exists

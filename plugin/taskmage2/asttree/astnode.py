@@ -137,7 +137,6 @@ class Node(object):
                 return child
         raise KeyError('no child exists with id/index: {}'.format(repr(index)))
 
-
     @property
     def id(self):
         return self.__id

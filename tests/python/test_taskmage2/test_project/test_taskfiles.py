@@ -1,7 +1,18 @@
 from taskmage2.project import taskfiles
+from taskmage2.asttree import asttree, astnode
+from taskmage2.utils import timezone
+import os
+import shutil
+import tempfile
 import json
+import datetime
 
 import mock
+
+ns = taskfiles.__name__
+
+
+current_dt = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
 
 
 def get_taskfile(data):
@@ -101,3 +112,52 @@ class Test_TaskFile:
             result = list(taskfile.filter_tasks([name_is_task_A]))
             expects = [filedata[0]]
             assert result == expects
+
+    class Test_write:
+        ast_tree = asttree.AbstractSyntaxTree([
+            astnode.Node(
+                _id='533C54F7A87A4AAB99296D213314FB2D',
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'modified': current_dt,
+                    'created': current_dt,
+                    'finished': False,
+                },
+            )
+        ])
+        mtask_tree = [
+            {
+                "indent": 0,
+                "_id":   "533C54F7A87A4AAB99296D213314FB2D",
+                "name":  "task A",
+                "parent": None,
+                "type": "task",
+                "data": {"status": "todo",
+                         "finished": False,
+                         "modified": "1970-01-01T00:00:00+00:00",
+                         "created": "1970-01-01T00:00:00+00:00"},
+            }
+        ]
+        current_dt = current_dt
+
+        def test(self):
+            """ This is a very evil test.. I need to figure out how to clean this up.
+            """
+            tempdir = tempfile.mkdtemp()
+            filepath = '{}/file.mtask'.format(tempdir)
+            taskfile = taskfiles.TaskFile(filepath)
+            try:
+                mock_open = mock.mock_open()
+                with mock.patch(ns + '.open', mock_open, create=True):
+                    taskfile.write(self.ast_tree)
+                    written_data = mock_open().write.call_args[0][0]
+                    data = json.loads(written_data)
+                    assert data == self.mtask_tree
+            finally:
+                if os.path.isdir(tempdir):
+                    shutil.rmtree(tempdir)
+
+    class Test_copyfile:
+        pass
