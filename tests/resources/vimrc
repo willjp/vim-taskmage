@@ -2,7 +2,7 @@ filetype off
 
 " plugin settings
 set rtp+=.test_deps/vader.vim
-set rtp+=~/.vim/bundle/jellybeans.vim
+set rtp+=.test_deps/jellybeans.vim
 set rtp+=.
 
 " vader settings
