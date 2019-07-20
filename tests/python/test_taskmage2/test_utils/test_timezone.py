@@ -11,9 +11,16 @@ class Test_parse_utc_iso8610:
 
 
 class Test_timezones:
+    def test_utc_offsets_differ(self):
+        utcnow = datetime.datetime.now(timezone.UTC())
+        localnow = utcnow.astimezone(timezone.LocalTimezone())
+
+        utc_offset = utcnow.utcoffset()
+        local_offset = localnow.utcoffset()
+        assert utc_offset != local_offset
+
     def test_time_arithmetric_works(self):
         utcnow = datetime.datetime.now(timezone.UTC())
         localnow = utcnow.astimezone(timezone.LocalTimezone())
         difference = localnow - utcnow
-        assert utcnow.utcoffset() != localnow.utcoffset()
         assert difference == datetime.timedelta(seconds=0)
