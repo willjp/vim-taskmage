@@ -14,7 +14,7 @@ json files (for genrating reports, searching by date, etc). Inspired by git
 and taskwarrior.
 
 
-.. image:: ./media/screenshot.png
+.. image:: ./media/demo.gif
 
 
 Install
