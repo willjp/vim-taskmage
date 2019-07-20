@@ -144,8 +144,3 @@ class Test_Project(object):
             ]
             assert result == expects
 
-    class Test_archive_completed_tasks:
-        def test_archive_completed_tasks(self):
-            assert False
-
-
