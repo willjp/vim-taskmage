@@ -1,4 +1,5 @@
 import datetime
+import mock
 from taskmage2.utils import timezone
 
 
@@ -12,14 +13,19 @@ class Test_parse_utc_iso8610:
 
 class Test_timezones:
     def test_utc_offsets_differ(self):
-        utcnow = datetime.datetime.now(timezone.UTC())
-        localnow = utcnow.astimezone(timezone.LocalTimezone())
+        # NOTE: mocking non-dst UTC-offset in case someone (or a CI server)
+        #       is using UTC as their timezone.
+        mock_std_offset = mock.PropertyMock(return_value=datetime.timedelta(hours=-4))
+        with mock.patch(
+            'taskmage2.utils.timezone.LocalTimezone.std_offset',
+            new_callable=mock_std_offset,
+        ):
+            utcnow = datetime.datetime.now(timezone.UTC())
+            localnow = utcnow.astimezone(timezone.LocalTimezone())
 
-        utc_offset = utcnow.utcoffset()
-        local_offset = localnow.utcoffset()
-        print(utcnow)
-        print(localnow)
-        assert utc_offset != local_offset
+            utc_offset = utcnow.utcoffset()
+            local_offset = localnow.utcoffset()
+            assert utc_offset != local_offset
 
     def test_time_arithmetric_works(self):
         utcnow = datetime.datetime.now(timezone.UTC())
