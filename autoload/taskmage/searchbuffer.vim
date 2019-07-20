@@ -165,12 +165,10 @@ function! taskmage#searchbuffer#open_searchresult()
     "       prev command:
     "           exec printf('edit +/{\\*%s\\*} %s', l:uuid, l:filepath)
 
-    exec printf('edit +/{\\*%s\\*} %s', l:uuid, l:filepath)
-
     " queue an open-regex line job, runs after file is opened/rendered to .tasklist
-    "let l:cmds = printf('+/{\*%s\*}', l:uuid)
-    "call taskmage#searchbuffer#put_postcmds(l:filepath, l:cmds)
-    "exec 'edit ' . l:filepath
+    let l:cmds = printf('+/{\*%s\*}', l:uuid)
+    call taskmage#searchbuffer#put_postcmds(l:filepath, l:cmds)
+    exec 'edit ' . l:filepath
 
 endfunction
 
