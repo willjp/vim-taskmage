@@ -6,6 +6,6 @@ install:
     - pip install codecov
     - pip install covimerage
 script:
-    - python setup.py test --addopts -vv --cov
+    - python setup.py test --addopts --cov
     - python setup.py vimtest
     - codecov --token=836e8801-c039-4f16-8b36-717f92ff7664
