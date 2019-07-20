@@ -26,9 +26,18 @@ class TaskFile(object):
         tasks = functional.multifilter(filters, self.iter_tasks())
         return tasks
 
-    def iter_tasks(self):
+    def read(self):
         with open(self.filepath, 'r') as fd:
-            tasks = json.loads(fd.read())
+            return fd.read()
+
+    def iter_tasks(self):
+        """ Iterator that yields task dictionaries contained within taskfile.
+
+        Yields:
+            dict:
+                see :py:mod:`taskmage2.asttree.nodedata`
+        """
+        tasks = json.loads(self.read())
         for task in tasks:
             yield task
 
