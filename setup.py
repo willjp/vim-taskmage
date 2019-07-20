@@ -12,30 +12,17 @@ import taskmage2
 __version__ = taskmage2.__version__
 
 
-class VimTest(setuptools.Command):
-    """ ``python setup.py vimtest`` installs vader/jellybeans vim plugins and executes tests.
-    """
-    user_options = []
-    tests_require = [
+class VimRequirements(object):
+    requirements = [
         'https://github.com/junegunn/vader.vim',
         'https://github.com/nanotech/jellybeans.vim',
     ]
 
-    def initialize_options(self):
-        pass
-
-    def finalize_options(self):
-        pass
-
-    def run(self):
-        self._install_requirements()
-        #cmds = ['vim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']    # interactive
-        cmds = ['vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']  # output to console
-        subprocess.call(cmds, universal_newlines=True)
-
-    def _install_requirements(self):
+    def install(self):
+        """ Installs vim requirements defined in :py:attr:`requirements` .
+        """
         self._create_testdeps_dir()
-        for url in self.tests_require:
+        for url in self.requirements:
             self._clone_requirement(url)
 
     def _create_testdeps_dir(self):
@@ -53,6 +40,76 @@ class VimTest(setuptools.Command):
             subprocess.call(cmds, universal_newlines=True)
 
 
+class VimTest(setuptools.Command):
+    """ ``python setup.py vimtest`` installs vader/jellybeans vim plugins and executes tests.
+    """
+    description = 'run vimfile tests (using Vader.vim)'
+    user_options = []
+
+    def __init__(self, *args, **kwargs):
+        super(VimTest, self).__init__(*args, **kwargs)
+        self.requirements = VimRequirements()
+
+    def initialize_options(self):
+        pass
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        self.requirements.install()
+        #cmds = ['vim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']    # interactive
+        cmds = ['vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']  # output to console
+        subprocess.call(cmds, universal_newlines=True)
+
+
+class VimCoverage(setuptools.Command):
+    """ ``python setup.py vimtest`` installs vader/jellybeans vim plugins and executes tests.
+
+    Example:
+
+        .. code-block:: bash
+
+            python setup.py vimcoverage                # print coverage to stdout
+            python setup.py vimcoverage --action=xml   # write vim-coverage.xml
+            python setup.py vimcoverage --action=run   # print coverage to stdout
+
+    """
+    description = 'print vimfile test-coverage (using covimerage)'
+    user_options = [
+        ('xml', None, 'writes vim-coverage.xml instead of printng to stdout'),
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super(VimCoverage, self).__init__(*args, **kwargs)
+        self.requirements = VimRequirements()
+
+    def initialize_options(self):
+        self.xml = False
+
+    def finalize_options(self):
+        pass
+
+    def run(self):
+        self.requirements.install()
+        if self.xml:
+            self._run_xml()
+        else:
+            self._run_coverage()
+
+    def _run_coverage(self):
+        cmds = ['covimerage', 'run',
+                '--source', 'autoload',
+                '--source', 'plugin',
+                'vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']
+        subprocess.call(cmds, universal_newlines=True)
+
+    def _run_xml(self):
+        cmds = ['covimerage', 'xml']
+        subprocess.call(cmds, universal_newlines=True)
+
+
+# see python setup.py --help-commands for all commands
 setuptools.setup(
     name='taskmage',
     version=__version__,
@@ -68,5 +125,6 @@ setuptools.setup(
     ],
     cmdclass={
         'vimtest': VimTest,
+        'vimcoverage': VimCoverage,
     }
 )

@@ -6,5 +6,6 @@
 .codemod.*
 .ropeproject
 .coverage
+.coverage_covimerage
 .test_deps/*
 coverage.xml
