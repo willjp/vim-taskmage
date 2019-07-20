@@ -42,6 +42,9 @@ class Project(object):
         repr_ = '<Project({}) at {}>'.format(relpath, hex(id(self)))
         return repr_
 
+    def __hash__(self):
+        return hash(repr(self))
+
     @classmethod
     def from_path(cls, filepath):
         """ Instantiates a new Project, loaded using `filepath`.

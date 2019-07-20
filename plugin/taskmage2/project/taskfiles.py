@@ -24,6 +24,9 @@ class TaskFile(object):
         repr_ = '<TaskFile({}) at {})>'.format(relpath, hex(id(self)))
         return repr_
 
+    def __hash__(self):
+        return hash(repr(self))
+
     def __eq__(self, other):
         return self.filepath == other.filepath
 
