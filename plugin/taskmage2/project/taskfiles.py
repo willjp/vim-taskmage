@@ -52,6 +52,8 @@ class TaskFile(object):
             fd.write(filecontents)
 
     def copyfile(self, filepath):
+        """ Copy this taskfile to another location (creating missing directories).
+        """
         # create directory if not exists
         filedir = os.path.dirname(self.filepath)
         if not os.path.isdir(filedir):
