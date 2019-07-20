@@ -195,3 +195,12 @@ function! taskmage#searchbuffer#pop_and_run_postcmds()
     let l:post_cmds = remove(s:taskmage_postpopenfile_cmds_stack[l:abspath], 0)
     exec l:post_cmds
 endfunction
+
+
+function! taskmage#searchbuffer#has_postcmds(filepath)
+    let l:abspath = fnamemodify(a:filepath, ':p')
+    if !has_key(s:taskmage_postpopenfile_cmds_stack, l:abspath)
+        return 0
+    endif
+    return len(s:taskmage_postpopenfile_cmds_stack[l:abspath])
+endfunction
