@@ -24,6 +24,17 @@ class Test_TaskFile:
         taskfile = taskfiles.TaskFile('/var/tmp/file.mtask')
         assert str(taskfile) == taskfile.filepath
 
+    class Test__eq__:
+        def test_equality(self):
+            taskfile_a = taskfiles.TaskFile('/var/tmp/a.mtask')
+            taskfile_b = taskfiles.TaskFile('/var/tmp/a.mtask')
+            assert taskfile_a == taskfile_b
+
+        def test_inequality(self):
+            taskfile_a = taskfiles.TaskFile('/var/tmp/a.mtask')
+            taskfile_b = taskfiles.TaskFile('/var/tmp/b.mtask')
+            assert taskfile_a != taskfile_b
+
     def test_iter_tasks(self):
         filedata = [
             {
