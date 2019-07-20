@@ -197,10 +197,20 @@ function! taskmage#searchbuffer#pop_and_run_postcmds()
 endfunction
 
 
-function! taskmage#searchbuffer#has_postcmds(filepath)
+function! taskmage#searchbuffer#get_postcmds(filepath)
     let l:abspath = fnamemodify(a:filepath, ':p')
     if !has_key(s:taskmage_postpopenfile_cmds_stack, l:abspath)
-        return 0
+        return []
     endif
-    return len(s:taskmage_postpopenfile_cmds_stack[l:abspath])
+    return deepcopy(s:taskmage_postpopenfile_cmds_stack[l:abspath])
+endfunction
+
+
+function! taskmage#searchbuffer#clear_postcmds()
+    let s:taskmage_postpopenfile_cmds_stack = {}
+endfunction
+
+
+function! taskmage#searchbuffer#postcmds()
+    return deepcopy(s:taskmage_postpopenfile_cmds_stack)
 endfunction

@@ -1,9 +1,13 @@
 Before (delete window):
+  " delete the window
   try
     let bufwin = bufwinnr(taskmage#searchbuffer#name())
     exec printf('%s wincmd c', bufwin)
   catch
   endtry
+
+  " clear the post-open job-queue betwen tests
+  call taskmage#searchbuffer#clear_postcmds()
 
 
 # ========
@@ -95,14 +99,11 @@ Execute (opens file):
   call taskmage#searchbuffer#open_searchresult()
   AssertEqual filepath, expand('%:p')
 
-Execute (opens line-number):
+Execute (opens line):
+  " NOTE: when buffer is read, 
   call taskmage#searchbuffer#open()
   let filepath = fnamemodify('tests/resources/example.mtask', ':p')
   call setline(1, printf('||%s|B2DA77994F614106A79AF52EA9DDFAE4|(2019-01-01 12:00)|* task B-2', filepath))
   call taskmage#searchbuffer#open_searchresult()
-  while taskmage#searchbuffer#has_postcmds(filepath)
-    " wait...
-  endwhile
+  exec printf('%d sleep', 1)
   AssertEqual 4, line('.')
-
-
