@@ -20,6 +20,8 @@ CONTENTS                           *taskmage-contents*
         3.3.Task Comments
         3.4.Task Sections
         3.5.Archiving Tasks
+    4.Plugin Integration...............taskmage-plugin-integration
+        4.1.TagBar
 
 ================================================================================
 INTRODUCTION                       *taskmage-intro*
@@ -160,7 +162,15 @@ command `:TaskMageArchiveCompleted`. Tasks are not deleted,
 they are stored under the hidden directory `.taskmage/`.
 
 
+================================================================================
+PLUGIN INTEGRATION                 *taskmage-usage*
+================================================================================
 
+TagBar:~
+
+The https://github.com/majutsushi/tagbar vim plugin is supported natively, but
+requires an externally installed python interpreter. The code is based on the
+excellent https://github.com/jszakmeister/rst2ctags .
 
 ================================================================================
 vim:tw=78:et:ft=help:norl

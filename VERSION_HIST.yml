@@ -16,7 +16,7 @@
     - new utils.ctags file and tests
 1.1.1:
     - cleanup/modularization of utils.ctags
-1.2.0: # unreleased
+1.2.0:
     - projects.Project() defaults to current directory unless `None` is passed to path
     - projects.Project.iter_taskfiles()
     - projects.Project.filter_taskfiles()
@@ -28,8 +28,11 @@
     - new :TaskMageLatest vim command
     - corrects bad setup of importpath in bin/taskmage2ctags.py
     - utils.timezone.LocalTimezone()
+    - vader.vim setup and tests
+    - combined vim/python test coverage
+    - changed setup.py commands (adds test_python, test_vim, test, coverage_python, coverage_vim, coverage)
+    - bugfix to tagbar support
 
-# TODO: vader.vim setup to test vim_plugin.py
 # TODO: update README/vim-help to include information about tagbar support
 # TODO: finish --iro flag in tagbar support
 # TODO: order tasks by date (at least in console, if not properly within vim)
