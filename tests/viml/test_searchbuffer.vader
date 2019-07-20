@@ -100,5 +100,9 @@ Execute (opens line-number):
   let filepath = fnamemodify('tests/resources/example.mtask', ':p')
   call setline(1, printf('||%s|B2DA77994F614106A79AF52EA9DDFAE4|(2019-01-01 12:00)|* task B-2', filepath))
   call taskmage#searchbuffer#open_searchresult()
+  while taskmage#searchbuffer#has_postcmds(filepath)
+    " wait...
+  endwhile
   AssertEqual 4, line('.')
+
 
