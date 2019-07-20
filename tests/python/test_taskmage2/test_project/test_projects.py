@@ -137,11 +137,11 @@ class Test_Project(object):
             def is_home_dot_mtask(taskfile):
                 return taskfile.filepath.endswith('home.mtask')
 
-            result = list(project.filter_taskfiles([is_home_dot_mtask]))
-            expects = [
+            result = set(project.filter_taskfiles([is_home_dot_mtask]))
+            expects = {
                 taskfiles.TaskFile('{}/home.mtask'.format(sample_project_dir)),
                 taskfiles.TaskFile('{}/.taskmage/home.mtask'.format(sample_project_dir)),
-            ]
+            }
             assert result == expects
 
     class Test__hash__:
