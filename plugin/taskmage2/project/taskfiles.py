@@ -13,6 +13,9 @@ class TaskFile(object):
     def __str__(self):
         return self._filepath
 
+    def __eq__(self, other):
+        return self.filepath == other.filepath
+
     @property
     def filepath(self):
         return self._filepath
