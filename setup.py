@@ -64,7 +64,7 @@ class VimTest(setuptools.Command):
             cmds = ['vim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']
         else:
             cmds = ['vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']  # output to console
-        subprocess.call(cmds, universal_newlines=True)
+        sys.exit(subprocess.call(cmds, universal_newlines=True))
 
 
 class VimCoverage(setuptools.Command):
@@ -106,7 +106,7 @@ class VimCoverage(setuptools.Command):
                 '--source', 'autoload',
                 '--source', 'plugin',
                 'vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']
-        subprocess.call(cmds, universal_newlines=True)
+        sys.exit(subprocess.call(cmds, universal_newlines=True))
 
     def _run_xml(self):
         cmds = ['covimerage', 'xml']
