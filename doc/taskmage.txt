@@ -10,13 +10,16 @@ CONTENTS                           *taskmage-contents*
 
     1.Introduction.....................taskmage-intro
         1.1.History
-    2.Usage............................taskmage-usage
-        2.1.Creating Projects
-        2.2.Task Syntax
-        2.3.Task Comments
-        2.4.Task Sections
-        2.5.Archiving Tasks
-    3.Commands.........................taskmage-commands
+    2.Commands.........................taskmage-commands
+        2.1.Project
+        2.1.Search
+        2.1.Active/Archived
+    3.Usage............................taskmage-usage
+        3.1.Creating Projects
+        3.2.Task Syntax
+        3.3.Task Comments
+        3.4.Task Sections
+        3.5.Archiving Tasks
 
 ================================================================================
 INTRODUCTION                       *taskmage-intro*
@@ -55,6 +58,33 @@ in folders, but keep a history and metadata like taskwarrior.
 This project is a bit of an experiment that attempts to merge the two 
 philosophies.
 
+================================================================================
+COMMANDS                           *taskmage-commands*
+================================================================================
+
+Project:~
+
+`:TaskMageArchiveCompleted`
+    Archive fully completed task-chains.
+
+`:TaskMageCreateProject`
+    Create a new taskmage project.
+
+
+Search:~
+`:TaskMageSearch <keyword>`
+   Search all tasks for a keyword.
+
+`:TaskMageLatest`
+   List all tasks sorted by modified-date.
+
+
+Active/Archived:~
+`:TaskMageToggle`
+`:TaskMageSplit`
+`:TaskMageVSplit`
+    Switches between the taskfile, and the
+    equivalent archive-taskfile.
 
 ================================================================================
 USAGE                              *taskmage-usage*
@@ -130,21 +160,6 @@ command `:TaskMageArchiveCompleted`. Tasks are not deleted,
 they are stored under the hidden directory `.taskmage/`.
 
 
-================================================================================
-COMMANDS                           *taskmage-commands*
-================================================================================
-
-`:TaskMageArchiveCompleted`
-    Archive fully completed task-chains.
-
-`:TaskMageCreateProject`
-    Create a new taskmage project.
-
-`:TaskMageToggle`
-`:TaskMageSplit`
-`:TaskMageVSplit`
-    Switches between the taskfile, and the
-    equivalent archive-taskfile.
 
 
 ================================================================================
