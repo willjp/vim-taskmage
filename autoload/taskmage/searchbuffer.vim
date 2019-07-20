@@ -161,7 +161,8 @@ function! taskmage#searchbuffer#open_searchresult()
     " open searchresult
     " NOTE: cannot simply use   ``:e +/match  file``, race-condition
 
-    exec printf('edit +/{\\*%s\\*} %s', l:uuid, l:filepath)
+    "exec printf('edit +/{\\*%s\\*} %s', l:uuid, l:filepath)
+    exec printf('edit +/{.%s.} %s', l:uuid, l:filepath)
 
 
     "=======================
