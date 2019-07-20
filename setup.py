@@ -47,7 +47,7 @@ class VimTest(setuptools.Command):
     user_options = []
 
     def __init__(self, *args, **kwargs):
-        super(VimTest, self).__init__(*args, **kwargs)
+        setuptools.Command.__init__(self, *args, **kwargs)
         self.requirements = VimRequirements()
 
     def initialize_options(self):
@@ -81,7 +81,7 @@ class VimCoverage(setuptools.Command):
     ]
 
     def __init__(self, *args, **kwargs):
-        super(VimCoverage, self).__init__(*args, **kwargs)
+        setuptools.Command.__init__(self, *args, **kwargs)
         self.requirements = VimRequirements()
 
     def initialize_options(self):
