@@ -45,7 +45,7 @@ class Project(object):
                     '/src/project/.taskmage'
 
         """
-        project = Project()
+        project = Project(root=None)
         project.load(filepath)
         return project
 
@@ -103,6 +103,10 @@ class Project(object):
             str: absolute path to taskmage project root
         """
         path = filesystem.format_path(os.path.abspath(path))
+
+        # is path root
+        if os.path.isdir('{}/.taskmage'.format(path)):
+            return path
 
         # /src/project/.taskmage
         if os.path.basename(path) == '.taskmage':
