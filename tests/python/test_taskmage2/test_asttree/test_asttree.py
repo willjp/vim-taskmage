@@ -29,6 +29,11 @@ def renderer():
 
 
 class Test_AbstractSyntaxTree(object):
+    class Test__init__:
+        def test_raises_typeerror_on_invalid_data(self):
+            with pytest.raises(TypeError):
+                asttree.AbstractSyntaxTree(['a', 'b'])
+
     class Test_render:
         def test_render_invalid_renderer(self):
             with pytest.raises(TypeError):
