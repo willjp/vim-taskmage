@@ -1,9 +1,11 @@
 import uuid
+import datetime
 
 import mock
 import pytest
 
 from taskmage2.asttree import astnode, nodedata
+from taskmage2.utils import timezone
 
 ns = astnode.__name__
 
@@ -30,6 +32,115 @@ class Test_Node(object):
                 finished=False,
                 modified=None,
             )
+
+        def test_task_nodetype(self):
+            dt = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            task = astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            assert task.type == 'task'
+            assert task.name == 'task A'
+
+        def test_section_nodetype(self):
+            task = astnode.Node(
+                _id=None,
+                ntype='section',
+                name='My Section',
+            )
+            assert task.type == 'section'
+            assert task.name == 'My Section'
+
+        def test_file_nodetype(self):
+            task = astnode.Node(
+                _id=None,
+                ntype='file',
+                name='path/to/file.mtask',
+            )
+            assert task.type == 'file'
+            assert task.name == 'path/to/file.mtask'
+
+    class Test__repr__:
+        def test_no_parent(self):
+            dt = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            task = astnode.Node(
+                _id='A910AC72BFF74C7185F3A9DACDE5B50B',
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            taskrepr = repr(task)
+            expects = 'Node(type=task, name=task A, id=A910AC72BFF74C7185F3A9DACDE5B50B, parentid=None)'
+
+            assert expects == taskrepr
+
+        def test_with_parent(self):
+            dt = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            parent = astnode.Node(
+                _id='6FE476CAD8774F8A874D1B5305867F4F',
+                ntype='section',
+                name='Section',
+            )
+            task = astnode.Node(
+                _id='A910AC72BFF74C7185F3A9DACDE5B50B',
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+                parent=parent,
+            )
+            taskrepr = repr(task)
+            expects = 'Node(type=task, name=task A, id=A910AC72BFF74C7185F3A9DACDE5B50B, parentid=6FE476CAD8774F8A874D1B5305867F4F)'
+
+            assert expects == taskrepr
+
+    class Test__eq__:
+        def test_task_equals(self):
+            dt = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            task_A = astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            task_A_copy = astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            assert task_A == task_A_copy
 
     class Test_touch:
         def test_assigns_id_if_missing(self):

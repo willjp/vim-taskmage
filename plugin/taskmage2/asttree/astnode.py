@@ -2,9 +2,9 @@ import uuid
 import sys
 
 from taskmage2.asttree import nodedata
-if sys.version_info[0] < 3:
+if sys.version_info[0] < 3:  # pragma: no cover
     from taskmage2.vendor import enum
-else:
+else: # pragma: no cover
     import enum
 
 
@@ -91,19 +91,14 @@ class Node(object):
 
     def __repr__(self):
         # get parentid
-        if self.parent:
-            parentid = self.parent.id
-        else:
-            parentid = 'None'
-        parentid = 'None'
+        parentid = getattr(self.parent, 'id', 'None')
 
         # string representation
-        return 'Node(id={}, type={}, name={}, parentid={}, data={})'.format(
-            self.__id,
-            self._type,
+        return 'Node(type={}, name={}, id={}, parentid={})'.format(
+            self._type.value,
             self.name,
+            self.__id,
             parentid,
-            self.data,
         )
 
     def __eq__(self, obj):
