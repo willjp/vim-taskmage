@@ -176,6 +176,69 @@ class Test_Node(object):
                 section = astnode.Node(ntype='section', name='Section')
                 section == 'Section'
 
+    class Test__neq__:
+        def test_equality(self):
+            dt = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            task_A = astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            task_A_copy = astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            result = task_A != task_A_copy
+            assert result is False
+
+        def test_inequality(self):
+            dt = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            task_A = astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            task_B = astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task B',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            assert task_A != task_B
+
+        def test_invalid_comparison(self):
+            with pytest.raises(TypeError):
+                section = astnode.Node(ntype='section', name='Section')
+                section != 'Section'
+
     class Test_touch:
         def test_assigns_id_if_missing(self):
             task = astnode.Node(
