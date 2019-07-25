@@ -301,6 +301,48 @@ class Test_Node(object):
                 )
                 node['invalid-id'].name
 
+    class Test_data:
+        def test_sets_data_obj(self):
+            dt = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            task = astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            new_data = nodedata.TaskData(status='done')
+            task.data = new_data
+            assert task.data == new_data
+
+        def test_sets_data_dict(self):
+            dt = datetime.datetime(1970, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
+            task = astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': dt,
+                    'finished': False,
+                    'modified': dt,
+                },
+                children=None,
+            )
+            new_data = {
+                'status': 'done',
+                'created': dt,
+                'finished': dt,
+                'modified': dt,
+            }
+
+            with pytest.raises(TypeError):
+                task.data = new_data
 
     class Test_touch:
         def test_assigns_id_if_missing(self):
@@ -379,6 +421,51 @@ class Test_Node(object):
             assert all([child.finalize.called for child in task.children])
 
     class Test_update:
+        def test_update_type_works(self):
+            params = dict(
+                _id='206BC92CC45D454792CEE22EF2E33CD6',
+                data={},
+                children=None,
+            )
+            node_A = astnode.Node(
+                ntype='section',
+                name='Section',
+                **params
+            )
+            node_B = astnode.Node(
+                ntype='file',
+                name='/path/to/file.mtask',
+                **params
+            )
+
+            node_A.update(node_B)
+            assert node_A.type == 'file'
+
+        def test_update_type_sets_modified(self):
+            params = dict(
+                _id='206BC92CC45D454792CEE22EF2E33CD6',
+                data={},
+                children=None,
+            )
+            node_A = astnode.Node(
+                ntype='section',
+                name='Section',
+                **params
+            )
+            node_B = astnode.Node(
+                ntype='file',
+                name='/path/to/file.mtask',
+                **params
+            )
+
+            node_A_data = mock.PropertyMock(spec=nodedata.FileData)
+            node_A_data.update = mock.Mock(return_value=node_A_data)
+            node_A_data.touch = mock.Mock(return_value=node_A_data)
+            with mock.patch.object(node_A, '_data', node_A_data):
+                node_A.update(node_B)
+
+            assert node_A_data.touch.called
+
         def test_update_with_nonmatching_id(self):
             params = dict(
                 ntype='task',

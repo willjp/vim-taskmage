@@ -143,10 +143,21 @@ class Node(object):
 
     @property
     def data(self):
+        """
+        Returns:
+            nodedata._NodeData:
+                nodedata class that corresponds with this nodetype.
+        """
         return self._data
 
     @data.setter
     def data(self, data):
+        """ replace this object's nodedata object.
+
+        Args:
+            data (nodedata._NodeData):
+                accepts a dict, or an already instantiated NodeData object.
+        """
         if not isinstance(data, type(self._data)):
             data_map = dict(self._data_map)
             data_cls = data_map[NodeType(self._type)]
@@ -207,12 +218,13 @@ class Node(object):
             changed = True
 
         # data.update() sets changed if it has changed
-        self.data = self.data.update(node.data)
+        _data = self.data.update(node.data)
 
         # update modified date
         if changed:
-            self.data = self.data.touch()
+            _data = _data.touch()
 
+        self.data = _data
         self.children = self._update_children(node)
 
     def _update_children(self, node):
