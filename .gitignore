@@ -9,3 +9,4 @@
 .coverage_covimerage
 .test_deps/*
 coverage.xml
+htmlcov/*

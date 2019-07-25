@@ -197,10 +197,12 @@ class TotalCoverage(setuptools.Command):
     description = 'get combined coverage of both python AND vim files'
     user_options = [
         ('xml', None, 'in addition to measuring both source-coverage types, produces coverage.xml file'),
+        ('html', None, 'in addition to measuring both source-coverage types, produces htmlcov directory'),
     ]
 
     def initialize_options(self):
         self.xml = False
+        self.html = False
 
     def finalize_options(self):
         self.xml = '--xml' in sys.argv
@@ -218,6 +220,10 @@ class TotalCoverage(setuptools.Command):
         # (optionally) render xml file
         if self.xml:
             cmds = ['coverage', 'xml']
+            sys.exit(subprocess.call(cmds, universal_newlines=True))
+
+        if self.html:
+            cmds = ['coverage', 'html']
             sys.exit(subprocess.call(cmds, universal_newlines=True))
 
 
