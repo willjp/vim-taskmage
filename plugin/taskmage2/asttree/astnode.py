@@ -104,9 +104,6 @@ class Node(object):
     def __eq__(self, obj):
         """ Tests equality of node, and it's children *ignoring it's parent* .
         """
-        if not isinstance(obj, Node):
-            raise TypeError('Invalid comparison')
-
         for attr in ('name', 'children', 'id', 'type', 'data'):
             if getattr(self, attr) != getattr(obj, attr):
                 return False
