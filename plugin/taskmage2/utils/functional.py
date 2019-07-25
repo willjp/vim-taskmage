@@ -14,7 +14,7 @@ def multifilter(filters, result):
     return result
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     def example():
         def above_ten(num):
             return num > 10

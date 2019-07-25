@@ -130,7 +130,7 @@ def parse(iostream, lexer):
     return AST
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     from taskmage2.parser import lexers, iostream
     from taskmage2.asttree import renderers
 

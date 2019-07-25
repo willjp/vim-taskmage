@@ -21,7 +21,7 @@ from taskmage2.parser import fmtdata
 # internal
 
 
-class Renderer(object):
+class Renderer(object):  # pragma: no cover
     """ Abstract-Base-class for all renderers. Renders a
     :py:obj:`taskmage2.parser.parsers.Parser` object into various formats.
     """
@@ -394,7 +394,7 @@ class Mtask(Renderer):
 
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     from taskmage2.parser import lexers, iostream, parser
 
     dirname = os.path.dirname(os.path.abspath(__file__))

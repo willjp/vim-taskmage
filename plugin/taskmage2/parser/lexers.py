@@ -871,7 +871,7 @@ def get_lexer(iostream, lexertype):
     return lexertype_map[lexertype](iostream)
 
 
-if __name__ == '__main__':
+if __name__ == '__main__':  # pragma: no cover
     from taskmage2.parser import iostream
 
     def ex_tasklist():
