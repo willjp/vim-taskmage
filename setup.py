@@ -187,7 +187,8 @@ class PythonCoverage(setuptools.Command):
 
     @staticmethod
     def run_static():
-        cmds = [sys.executable, 'setup.py', 'test_python', '--addopts', '--cov']
+        cmds = [sys.executable, 'setup.py', 'test_python',
+                '--addopts', '--cov=plugin/taskmage2']
         returncode = subprocess.call(cmds, universal_newlines=True)
         return returncode
 
