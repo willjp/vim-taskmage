@@ -239,6 +239,69 @@ class Test_Node(object):
                 section = astnode.Node(ntype='section', name='Section')
                 section != 'Section'
 
+    class Test__getitem__:
+        def test_get_by_index(self):
+            node = astnode.Node(
+                _id=None,
+                ntype='section',
+                name='Section 1',
+                children=[
+                    astnode.Node(
+                        _id=None,
+                        ntype='section',
+                        name='Section 1a',
+                    ),
+                    astnode.Node(
+                        _id=None,
+                        ntype='section',
+                        name='Section 1b',
+                    ),
+                ]
+            )
+            assert node[1].name == 'Section 1b'
+
+        def test_get_by_id(self):
+            node = astnode.Node(
+                _id='E22275B921714E99A5579056601EAF1F',
+                ntype='section',
+                name='Section 1',
+                children=[
+                    astnode.Node(
+                        _id='2676AF58D79C47A38F1A976A9C99ED7C',
+                        ntype='section',
+                        name='Section 1a',
+                    ),
+                    astnode.Node(
+                        _id='E4CF0C3DC7264F29968D2C81D386F7A7',
+                        ntype='section',
+                        name='Section 1b',
+                    ),
+                ]
+            )
+            assert node['2676AF58D79C47A38F1A976A9C99ED7C'].name == 'Section 1a'
+
+        def test_get_by_id_fails_with_keyerror(self):
+            with pytest.raises(KeyError):
+                node = astnode.Node(
+                    _id='E22275B921714E99A5579056601EAF1F',
+                    ntype='section',
+                    name='Section 1',
+                    children=[
+                        astnode.Node(
+                            _id='2676AF58D79C47A38F1A976A9C99ED7C',
+                            ntype='section',
+                            name='Section 1a',
+                        ),
+                        astnode.Node(
+                            _id='E4CF0C3DC7264F29968D2C81D386F7A7',
+                            ntype='section',
+                            name='Section 1b',
+                        ),
+                    ]
+                )
+                node['invalid-id'].name
+
+
     class Test_touch:
         def test_assigns_id_if_missing(self):
             task = astnode.Node(
