@@ -4,6 +4,10 @@ import mock
 from taskmage2.asttree import asttree, astnode, renderers
 
 
+class Not_A_Renderer(object):
+    pass
+
+
 class FakeNode(object):
     update = mock.Mock()
 
@@ -36,14 +40,23 @@ class Test_AbstractSyntaxTree(object):
 
     class Test_render:
         def test_render_invalid_renderer(self):
+            tree = asttree.AbstractSyntaxTree([
+                astnode.Node(
+                    _id='',
+                    ntype='task',
+                    name='task A',
+                    data={
+                        'status': 'todo',
+                        'created': None,
+                        'finished': False,
+                        'modified': None,
+                    },
+                )
+            ])
             with pytest.raises(TypeError):
-                self.render('invalid renderer')
+                tree.render(Not_A_Renderer)
 
         def test_render_valid(self, renderer):
-            self.render(renderer)
-            assert renderer.render_calls == 1
-
-        def render(self, renderer):
             tree = asttree.AbstractSyntaxTree([
                 astnode.Node(
                     _id='',
@@ -58,6 +71,8 @@ class Test_AbstractSyntaxTree(object):
                 )
             ])
             tree.render(renderer)
+
+            assert renderer.render_calls == 1
 
     class Test_touch:
         def test_children_run_touch(self):
