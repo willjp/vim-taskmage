@@ -49,7 +49,7 @@ class _NodeData(tuple):
     """
     def __new__(cls, data):
         if not isinstance(cls._attrs, tuple):
-            raise RuntimeError(
+            raise AttributeError(
                 'Each `_NodeData` must have a `cls._attrs` attribute '
                 'with a list of arguments in order'
             )
@@ -57,6 +57,7 @@ class _NodeData(tuple):
             raise RuntimeError(
                 'incorrect number of entries in `_NodeData`'
             )
+
         return tuple.__new__(cls, data)
 
     def __repr__(self):
@@ -82,14 +83,27 @@ class _NodeData(tuple):
         return True
 
     def as_dict(self):
+        """
+        Returns:
+            dict:
+                dictionary of attr-name to value
+
+                .. code-block:: python
+
+                    {
+                        'attribute1': 1,
+                        'attribute2': 2,
+                        ...
+                    }
+
+        """
         d = collections.OrderedDict()
         for i in range(len(self._attrs)):
             d[self._attrs[i]] = self[i]
         return d
 
-    def copy(self, *args, **kwds):
-        """
-        Create a duplicate object of this type,
+    def copy(self, *args, **kwargs):
+        """ Create a duplicate object of this type,
         optionally modifying it's arguments in the new
         object's constructor.
 
@@ -109,16 +123,25 @@ class _NodeData(tuple):
                 task(status='wip', finished=True)
 
         """
-        new_kwds = list(self.as_dict().items())
+        new_dict = self.as_dict()
 
-        if args:
-            new_kwds = new_kwds[len(args):]
+        # override args in copy
+        for i in range(len(args)):
+            key = self._attrs[i]
+            new_dict[key] = args[i]
 
-        new_kwds = collections.OrderedDict(new_kwds)
-        if kwds:
-            new_kwds.update(kwds)
+        # override kwargs in copy
+        for key in kwargs:
+            if key not in new_dict:
+                raise KeyError('NodeData._attrs does not contain key {}'.format(key))
+            new_dict[key] = kwargs[key]
 
-        return type(self)(*args, **new_kwds)
+        # rebuild copy-list from kwargs
+        data = []
+        for key in self._attrs:
+            data.append(new_dict[key])
+
+        return type(self)(data)
 
     def touch(self):
         """ Assigns default metadata to unassigned, updates modified-time.

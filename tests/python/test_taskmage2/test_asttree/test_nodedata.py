@@ -11,7 +11,130 @@ from taskmage2.utils import timezone
 ns = nodedata.__name__
 
 
-class Test_TaskData(object):
+class Test__NodeData:
+    class Test__init__:
+        def test_no_attrs_runs_without_except(self):
+            class MyData(nodedata._NodeData):
+                _attrs = tuple()
+            MyData(tuple())
+
+        def test_missing_attrs_tuple_raises_except(self):
+            class MyData(nodedata._NodeData):
+                pass
+
+            with pytest.raises(AttributeError):
+                data = (1, 2, 3)
+                MyData(data)
+
+        def test_incorrect_number_of_params_raises_except(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            with pytest.raises(RuntimeError):
+                data = (1, 2)
+                MyData(data)
+
+    class Test__repr__:
+        def test(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            mydata = MyData((1, 2, 3))
+            mydata_repr = repr(mydata)
+            expects = 'MyData(one=1, two=2, three=3)'
+            assert expects == mydata_repr
+
+    class Test__getattr__:
+        def test_valid_attr(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            mydata = MyData((1, 2, 3))
+            assert mydata.two == 2
+
+        def test_invalid_attr_raises_attributeerror(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            mydata = MyData((1, 2, 3))
+            with pytest.raises(AttributeError):
+                mydata.four
+
+    class Test__eq__:
+        def test_equality(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            data_A = MyData((1, 2, 3))
+            data_B = MyData((1, 2, 3))
+            assert data_A == data_B
+
+        def test_class_inequality(self):
+            class DataA(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            class DataB(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            data_A = DataA((1, 2))
+            data_B = DataB((1, 2))
+
+            with pytest.raises(TypeError):
+                data_A == data_B
+
+        def test_data_inequality(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            data_A = MyData((1, 2))
+            data_B = MyData((3, 4))
+            assert data_A != data_B
+
+    class Test_as_dict:
+        def test(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            data = MyData((1, 2))
+            assert data.as_dict() == {'one': 1, 'two': 2}
+
+    class Test_copy:
+        def test_exact_copy(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            data_a = MyData((1, 2))
+            data_b = data_a.copy()
+            assert data_a == data_b
+
+        def test_copy_modified_with_args(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            data_a = MyData((1, 2, 3))
+            data_b = data_a.copy(4, 5)
+            assert data_b != data_a
+            assert data_b.as_dict() == {
+                'one': 4,
+                'two': 5,
+                'three': 3,
+            }
+
+        def test_copy_modified_with_kwargs(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            data_a = MyData((1, 2, 3))
+            data_b = data_a.copy(three=6)
+            assert data_b != data_a
+            assert data_b.as_dict() == {
+                'one': 1,
+                'two': 2,
+                'three': 6,
+            }
+
+
+class Test_TaskData:
     class Test__init__:
         @pytest.mark.parametrize(
             'status', ('todo', 'skip', 'done', 'wip'),
