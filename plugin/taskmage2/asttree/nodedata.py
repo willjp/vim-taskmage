@@ -143,17 +143,17 @@ class _NodeData(tuple):
     def touch(self):
         """ Assigns default metadata to unassigned, updates modified-time.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def finalize(self):
         """ Finalizes null-fields on nodes where appropriate so node is ready to save.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def update(self, data):
         """ Creates a new nodedata object, with the merged contents of self, and the provided node-data.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
 
 class FileData(_NodeData):
