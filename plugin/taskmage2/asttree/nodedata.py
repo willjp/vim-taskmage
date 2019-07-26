@@ -363,17 +363,16 @@ class TaskData(_NodeData):
         if data.created:
             new_data['created'] = data.created
 
-        # if new data has a finished-status
-        if data.status not in ('done', 'skip'):
+        # finished-status
+        if data.status not in ('done', 'skip'):        # False if `other.status` not finished (always)
             new_data['finished'] = False
-        elif self.status in ('done', 'skip') and self.finished:
-            new_data['finished'] = self.finished
-        elif data.finished:
-            new_data['finished'] = data.finished
-        elif self.finished:
-            new_data['finished'] = self.finished
         else:
-            new_data['finished'] = utcnow
+            if self.finished:                          # Finished, and `self.finished` already set
+                new_data['finished'] = self.finished
+            elif data.finished:                        # Keep Finished set in `other`
+                new_data['finished'] = data.finished
+            else:                                      # set Finished to now
+                new_data['finished'] = utcnow
 
         return TaskData(**new_data)
 
