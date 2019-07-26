@@ -76,11 +76,8 @@ class _NodeData(tuple):
     def __eq__(self, other):
         if not isinstance(other, self.__class__):
             raise TypeError('type of `other` does not match')
-        for attr in self._attrs:
-            if not getattr(self, attr) == getattr(other, attr):
-                return False
 
-        return True
+        return self.as_dict() == other.as_dict()
 
     def as_dict(self):
         """
