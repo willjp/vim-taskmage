@@ -39,10 +39,14 @@ class LexerTypes(enum.Enum):
 
 
 class _Lexer(object):
-    """
-    Base class for all lexers. Reads a particular datatype,
+    """ Base class for all lexers. Reads a particular datatype,
     and returns a list of tokens, suitable for use with
     the parser.
+
+    Notes:
+        A token here is a dictionary representing a single node. That might
+        be a file, task, section, etc.
+
 
     Token Types:
 
@@ -97,39 +101,82 @@ class _Lexer(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self):
-        """
-        Constructor.
+        """ Constructor.
 
         Args:
             iostream (iostream.IOStream):
                 Special Parser File-Descriptor
         """
-        self.data = []  # list of token dictionaries, as they appear.
+        # NOTE: position is determined by the iostream character position,
+        #       not by a particular token index.
+
+        self._next = None  # the next token
+        self.data = []     # list of token dictionaries, as they appear.
 
     def read(self):
         """ Lex the entire source until EOF.
+
+        Returns:
+            list:
+                The entire list of tokens in the entire IOStream object.
+
+                .. code-block:: python
+
+                    [
+                        {
+                            '_id'    : 'a09e314015b34846a05114ce3bee9675'
+                            'type'   : 'task',
+                            'name'   : 'do something',
+                            'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
+                            'indent' : 0,  # number of spaces task is indented
+                            'data'   : {
+                                'status' : 'todo',
+                                'created':  datetime(...),
+                                'finished': datetime(...),
+                                'modified': datetime(...),
+                            }
+                        }
+                        ...
+                    ]
+
         """
         raise NotImplementedError()  # pragma: no cover
 
     def read_next(self):
+        """ Lex/Return the next token (based on current pos).
+        Changes position within buffer
+
+        Returns:
+            dict:
+
+                .. code-block:: python
+
+                    {
+                        '_id'    : 'a09e314015b34846a05114ce3bee9675'
+                        'type'   : 'task',
+                        'name'   : 'do something',
+                        'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
+                        'indent' : 0,
+                        'data'   : {
+                            'status' : 'todo',
+                            'created':  datetime(...),
+                            'finished': datetime(...),
+                            'modified': datetime(...),
+                        }
+                    }
+        """
         raise NotImplemented(  # pragma: no cover
             '`_Lexer` must be subclassed, and this method should be implemented \n'
             'in the subclass'
         )
 
-    def next(self):
-        """ stores next token in self._next,
-        returns previously set next.
-        """
-        token = self._next
-        self._next = None
-        return (token or self.read_next())
-
     def peek(self):
-        """
-        If no tokens have been obtained yet, returns next.
-        If eof, returns None.
-        Otherwise returns the next char without changing position.
+        """ Peeks at the next upcoming token (without changing current position).
+
+        Notes:
+            * If no tokens have been obtained yet, returns next.
+            * If eof, returns None.
+            * Otherwise returns the next char without changing position.
         """
         if self._next:
             return self._next
@@ -138,9 +185,16 @@ class _Lexer(object):
         return self._next()
 
     def eof(self):
+        """ Returns True if current position is the end of the iostream file.
+
+        Returns:
+            bool:
+        """
         return self.peek() is None
 
     def _parser_exception(self, msg=None):
+        """ Raises ParserError exception.
+        """
         if not msg:
             msg = ''
 
@@ -151,6 +205,8 @@ class _Lexer(object):
         )
 
     def _is_alphanumeric(self, ch):
+        """ Returns True if character is alphanumeric
+        """
         return re.match('[a-zA-Z0-9_]', ch)
 
 
@@ -180,7 +236,7 @@ class TaskList(_Lexer):
 
     def __init__(self, iostream):
         super(TaskList, self).__init__()
-        self._next = None  # the next token
+        self._next = None           # the next token
         self._iostream = iostream   # file-descriptor abstracted into an iostream.IOStream
 
         self._headerchar_order = []  # underline character used for each level of
@@ -223,9 +279,9 @@ class TaskList(_Lexer):
 
     def read_next(self):
         """ Obtains next token, saves to ``self.data`` , and returns it.
+        Changes position within buffer.
 
         Returns:
-
             A single token. See :py:obj:`_Lexer` for a list of all
             tokens.
 
@@ -251,10 +307,8 @@ class TaskList(_Lexer):
         return token
 
     def _read_next(self):
+        """ Obtains next token.
         """
-        Obtains next token.
-        """
-
         _id = uuid.uuid4().hex.upper()  # define in case new item
         ch = self._iostream.peek()
 
