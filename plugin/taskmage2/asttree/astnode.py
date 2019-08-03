@@ -136,6 +136,17 @@ class Node(object):
         raise KeyError('no child exists with id/index: {}'.format(repr(index)))
 
     @property
+    def parentid(self):
+        """
+        Returns:
+            str:  UUID of parent, if present
+            None: if node has no parent
+        """
+        if self.parent:
+            return self.parent.id
+        return None
+
+    @property
     def id(self):
         return self.__id
 
