@@ -182,7 +182,7 @@ class _Lexer(object):
             return self._next
         else:
             self._next = self.read_next()
-        return self._next()
+        return self._next
 
     def eof(self):
         """ Returns True if current position is the end of the iostream file.
@@ -203,11 +203,6 @@ class _Lexer(object):
             # 'ln:{} col:{} -- {}'.format(self._ln,self._col, msg)
             msg
         )
-
-    def _is_alphanumeric(self, ch):
-        """ Returns True if character is alphanumeric
-        """
-        return re.match('[a-zA-Z0-9_]', ch)
 
 
 class TaskList(_Lexer):
