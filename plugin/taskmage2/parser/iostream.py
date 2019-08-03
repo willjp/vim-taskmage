@@ -26,12 +26,12 @@ class IOStream(object):
     def next(self, offset=0):
         """ get next character, adjusting cursor position.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def peek(self, offset=0):
         """ get next character, without changing cursor position.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def peek_line(self, offset=0):
         """ Read until the end of the line (returns text)
@@ -74,12 +74,12 @@ class IOStream(object):
             offset (int):
                 desired position of cursor.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def eof(self):
         """ Returns True/False is the cursor at the end-of-file?
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def read(self):
         """ Reads the entire stream.
