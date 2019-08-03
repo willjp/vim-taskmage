@@ -60,9 +60,9 @@ class _Lexer(object):
                 'indent' : 0,  # number of spaces task is indented
                 'data'   : {
                     'status' : 'todo',
-                    'created':  datetime(...),
-                    'finished': datetime(...),
-                    'modified': datetime(...),
+                    'created':  '2018-01-01T00:00:00+00:00',
+                    'finished': '2018-01-01T00:00:00+00:00',
+                    'modified': '2018-01-01T00:00:00+00:00',
                 }
             }
 
@@ -131,9 +131,9 @@ class _Lexer(object):
                             'indent' : 0,  # number of spaces task is indented
                             'data'   : {
                                 'status' : 'todo',
-                                'created':  datetime(...),
-                                'finished': datetime(...),
-                                'modified': datetime(...),
+                                'created':  '2018-01-01T00:00:00+00:00',
+                                'finished': '2018-01-01T00:00:00+00:00',
+                                'modified': '2018-01-01T00:00:00+00:00',
                             }
                         }
                         ...
@@ -159,9 +159,9 @@ class _Lexer(object):
                         'indent' : 0,
                         'data'   : {
                             'status' : 'todo',
-                            'created':  datetime(...),
-                            'finished': datetime(...),
-                            'modified': datetime(...),
+                            'created':  '2018-01-01T00:00:00+00:00',
+                            'finished': '2018-01-01T00:00:00+00:00',
+                            'modified': '2018-01-01T00:00:00+00:00',
                         }
                     }
         """
@@ -259,9 +259,9 @@ class TaskList(_Lexer):
                             'indent' : 0,  # number of spaces task is indented
                             'data'   : {
                                 'status' : 'todo',
-                                'created':  datetime(...),
-                                'finished': datetime(...),
-                                'modified': datetime(...),
+                                'created':  '2018-01-01T00:00:00+00:00',
+                                'finished': '2018-01-01T00:00:00+00:00',
+                                'modified': '2018-01-01T00:00:00+00:00',
                             }
                         }
                         ...
@@ -291,9 +291,9 @@ class TaskList(_Lexer):
                     'indent' : 0,
                     'data'   : {
                         'status' : 'todo',
-                        'created':  datetime(...),
-                        'finished': datetime(...),
-                        'modified': datetime(...),
+                        'created':  '2018-01-01T00:00:00+00:00',
+                        'finished': '2018-01-01T00:00:00+00:00',
+                        'modified': '2018-01-01T00:00:00+00:00',
                     }
                 }
         """
@@ -495,9 +495,9 @@ class TaskList(_Lexer):
                     'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
                     'data'   : {
                         'status' : 'todo',
-                        'created':  datetime(...),
-                        'finished': datetime(...),
-                        'modified': datetime(...),
+                        'created':  '2018-01-01T00:00:00+00:00',
+                        'finished': '2018-01-01T00:00:00+00:00',
+                        'modified': '2018-01-01T00:00:00+00:00',
                     }
                 }
 
