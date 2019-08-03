@@ -13,6 +13,8 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 import uuid
 import json
+import pprint
+import datetime
 # package
 from taskmage2.parser import iostream, lexers
 from taskmage2.utils import excepts
@@ -21,6 +23,7 @@ import six
 import pytest
 import mock
 # internal
+from taskmage2.utils import timezone
 
 
 ns = lexers.__name__
@@ -31,6 +34,14 @@ def get_lexer_tasklist(text):
     fd.write(text)
     iofd = iostream.FileDescriptor(fd)
     lexer = lexers.TaskList(iofd)
+    return lexer
+
+
+def get_lexer_mtask(text):
+    fd = six.StringIO()
+    fd.write(text)
+    fd.seek(0)
+    lexer = lexers.Mtask(fd)
     return lexer
 
 
@@ -592,52 +603,104 @@ class Test_TaskList:
 class Test_Mtask:
     """ Mtask shouldn't alter raw json
     """
-    def test_task(self):
-        task = {
-            '_id': uid().hex.upper(),
-            'type': 'task',
-            'name': 'taskA',
-            'indent': 0,
-            'parent': None,
-            'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
-        }
-        assert self.mtask(json.dumps([task])) == [task]
+    class Test_read_next:
+        def test_task(self):
+            task = {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {'status': 'todo', 'created': None, 'finished': False, 'modified': None},
+            }
+            assert self.mtask(json.dumps([task])) == [task]
 
-    def test_section(self):
-        section = {
-            '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
-            'type': 'section',
-            'name': 'home',
-            'indent': 0,
-            'parent': None,
-            'data': {},
-        }
-        assert self.mtask(json.dumps([section])) == [section]
+        def test_section(self):
+            section = {
+                '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            }
+            assert self.mtask(json.dumps([section])) == [section]
 
-    def test_file(self):
-        file_ = {
-            '_id': uid().hex.upper(),
-            'type': 'file',
-            'name': 'path/home.mtask',
-            'indent': 0,
-            'parent': None,
-            'data': {},
-        }
-        assert self.mtask(json.dumps([file_])) == [file_]
+        def test_file(self):
+            file_ = {
+                '_id': uid().hex.upper(),
+                'type': 'file',
+                'name': 'path/home.mtask',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            }
+            assert self.mtask(json.dumps([file_])) == [file_]
 
-    def mtask(self, filecontents):
-        # load lexer
-        fd = six.StringIO()
-        fd.write(filecontents)
-        fd.seek(0)
-        lexer = lexers.Mtask(fd)
+        def test_taskdata_converts_mtask_isoformat_to_datetime_objects(self):
+            task = {
+                '_id': uid().hex.upper(),
+                'type': 'task',
+                'name': 'taskA',
+                'indent': 0,
+                'parent': None,
+                'data': {
+                    'status': 'done',
+                    'created': '2018-01-01T00:00:00+00:00',
+                    'finished': '2018-01-01T00:00:00+00:00',
+                    'modified': '2018-01-01T00:00:00+00:00'
+                },
+            }
+            result = self.mtask(json.dumps([task]))
 
-        # read all tokens
-        _lexertokens = []
-        token = ''
-        while token is not None:
-            token = lexer.read_next()
-            if token is not None:
-                _lexertokens.append(token)
+            expects = [
+                {
+                    '_id': uid().hex.upper(),
+                    'type': 'task',
+                    'name': 'taskA',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {
+                        'status': 'done',
+                        'created': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                        'finished': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                        'modified': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                    },
+                }
+            ]
+            pprint.pprint(result)
+            print('----')
+            pprint.pprint(expects)
+            assert result == expects
 
-        return _lexertokens
+        def mtask(self, filecontents):
+            # load lexer
+            lexer = get_lexer_mtask(filecontents)
+
+            # read all tokens
+            _lexertokens = []
+            token = ''
+            while token is not None:
+                token = lexer.read_next()
+                if token is not None:
+                    _lexertokens.append(token)
+
+            return _lexertokens
+
+    class Test_read:
+        def test(self):
+            contents = [
+                {
+                    '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                    'type': 'section',
+                    'name': 'home',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {},
+                },
+            ]
+            contents_json = json.dumps(contents)
+            lexer = get_lexer_mtask(contents_json)
+            results = lexer.read()
+
+            assert results == contents
