@@ -15,6 +15,7 @@ import uuid
 import json
 # package
 from taskmage2.parser import iostream, lexers
+from taskmage2.utils import excepts
 import six
 # external
 import pytest
@@ -202,6 +203,33 @@ class Test_TaskList:
                     '_id': uid().hex.upper(),
                     'type': 'section',
                     'name': 'home',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {},
+                }
+            ]
+
+        def test_multiple_sections_at_same_indentation(self):
+            tokens = self.tasklist(
+                'home\n'
+                '====\n'
+                '\n'
+                'work\n'
+                '====\n'
+            )
+            assert tokens == [
+                {
+                    '_id': uid().hex.upper(),
+                    'type': 'section',
+                    'name': 'home',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {},
+                },
+                {
+                    '_id': uid().hex.upper(),
+                    'type': 'section',
+                    'name': 'work',
                     'indent': 0,
                     'parent': None,
                     'data': {},
@@ -450,6 +478,25 @@ class Test_TaskList:
                     'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
                 }
             ]
+
+        def test_invalid_character_raises_parseerror(self):
+            with pytest.raises(excepts.ParserError):
+                self.tasklist('^')
+
+        def test_parsererror_if_section_without_title(self):
+            with pytest.raises(excepts.ParserError):
+                self.tasklist('====\n')
+
+        def test_parsererror_if_section_title_length_exceeds_underline(self):
+            with pytest.raises(excepts.ParserError):
+                self.tasklist('ABCDEFGHI\n====\n')
+
+        def test_parsererror_if_bad_uuid_indicator_start(self):
+            with pytest.raises(excepts.ParserError):
+                self.tasklist('{A49FFE9027384D23A269EF07CC3B6A51*}SEC\n===\n')
+
+        def test_parsing_empty_file_does_not_produce_error(self):
+            self.tasklist('')
 
         def tasklist(self, filecontents):
             """ Initializes a TaskList(), returns the lexed contents as a list.

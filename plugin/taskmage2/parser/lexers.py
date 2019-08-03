@@ -234,7 +234,8 @@ class TaskList(_Lexer):
         self._next = None           # the next token
         self._iostream = iostream   # file-descriptor abstracted into an iostream.IOStream
 
-        self._headerchar_order = []  # underline character used for each level of
+        self._headerchar_order = []  # underline characters, in order of their first occurrence.
+        # used for each level of
         # header indent. ex: ['=', '-', '.'] if
         # header lv1 is underlined with '==='
         # header lv2 is underlined with '---'
@@ -418,8 +419,7 @@ class TaskList(_Lexer):
         title = self._iostream.peek_line()
 
         if title is None:
-            raise RuntimeError('Expected a title. Received: "{}"'.format(title))
-
+            self._parser_exception('Expected a title. Received: "{}"'.format(title))
         underline = self._iostream.peek_line(len(title) + 1)  # +1 for \n
 
         if len(title.strip()) > len(underline):
