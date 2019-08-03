@@ -603,6 +603,11 @@ class Test_TaskList:
 class Test_Mtask:
     """ Mtask shouldn't alter raw json
     """
+
+    class Test__init__:
+        def test_init_empty_without_error(self):
+            get_lexer_mtask('')
+
     class Test_read_next:
         def test_task(self):
             task = {
@@ -704,3 +709,8 @@ class Test_Mtask:
             results = lexer.read()
 
             assert results == contents
+
+
+class Test_get_lexer:
+    def test(self):
+        assert False
