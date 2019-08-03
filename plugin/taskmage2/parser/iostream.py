@@ -55,13 +55,19 @@ class IOStream(object):
             Nonetype: if current position is EOF
             str: if current position is a valid line
         """
-        text = ''
+        text = None
         while True:
             ch = self.peek(offset)
 
+            # if char is None, we are at EOF, and should line to date
             if ch is None:
-                return None
-            elif ch == '\n':
+                return text
+            # if the first-read char is *not* EOF, then set text to an empty string.
+            # (this allows us to return None if EOF from start, otherwise the line until EOF)
+            elif text is None:
+                text = ''
+
+            if ch == '\n':
                 return text
             else:
                 text += ch
@@ -125,7 +131,8 @@ class PureVimBuffer(IOStream):
     """
 
     def __init__(self, buf=None):
-        """
+        """ Constructor.
+
         Args:
             buf (vim.api.buffer.Buffer):
                 A vim buffer. For example: ``vim.current.buffer`` .
@@ -260,7 +267,7 @@ class FileDescriptor(IOStream):
     """
 
     def __init__(self, fd):
-        """
+        """ Constructor.
 
         Args:
             fd (open, io.StringIO):
@@ -314,11 +321,17 @@ class VimBuffer(FileDescriptor):
         this implementation only takes 0.04s .
     """
     def __init__(self, buf=None):
+        """ Constructor.
+
+        Args:
+            buf (vim.api.buffer.Buffer):
+                A vim buffer. For example: ``vim.current.buffer`` .
+        """
 
         stringio_buf = buf
         if buf is not None:
             stringio_buf = six.moves.StringIO()
-            stringio_buf.write('\n'.join(buf[:]))
+            stringio_buf.write('\n'.join(buf[:]) + '\n')
             stringio_buf.seek(0)
 
         super(VimBuffer, self).__init__(stringio_buf)

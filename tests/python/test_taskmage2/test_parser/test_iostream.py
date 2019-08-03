@@ -64,7 +64,7 @@ def get_filedescriptor(contents):
 # =====
 
 
-class Test_PureVimBuffer(object):
+class Test_PureVimBuffer:
     class Test_peek:
         def test_peek_overflow(self):
             buf = get_vimbuffer(['a', 'b', 'c'])
@@ -158,7 +158,7 @@ class Test_PureVimBuffer(object):
             assert buf.read() == 'abc\ndefg\n'
 
 
-class Test_FileDescriptor(object):
+class Test_FileDescriptor:
     class Test_peek:
         def test_peek_overflow(self):
             buf = get_filedescriptor('a\nb\nc\n')
@@ -200,6 +200,10 @@ class Test_FileDescriptor(object):
             buf = get_filedescriptor('abc\ndefg')
             assert buf.peek_line(1) == 'bc'
 
+        def test_peek_lastline_without_newline(self):
+            buf = get_filedescriptor('abc')
+            assert buf.peek_line() == 'abc'
+
     class Test_eof:
         def test_eof_returns_false_before_end_of_file(self):
             buf = get_filedescriptor('a\n')
@@ -218,3 +222,14 @@ class Test_FileDescriptor(object):
         def test_read(self):
             buf = get_filedescriptor('abc\ndefg\n')
             assert buf.read() == 'abc\ndefg\n'
+
+
+class Test_VimBuffer:
+    class Test__init__:
+        def test_loads_vimbuffer(self):
+            vimbuf = ['abc', 'defg']
+            buf = iostream.VimBuffer(vimbuf)
+            assert buf.read() == 'abc\ndefg\n'
+
+        def test_loads_without_vimbuffer(self):
+            iostream.VimBuffer()
