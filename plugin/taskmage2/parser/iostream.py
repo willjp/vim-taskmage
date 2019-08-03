@@ -237,8 +237,10 @@ class PureVimBuffer(IOStream):
 
             offset -= 1
 
-        if hasattr(ch, 'decode'):
-            ch = ch.decode()
+        # NOTE: following appears to be exist for handling bytestring vimbuffers.
+        #       commented until it's usage is required.
+        #if hasattr(ch, 'decode'):
+        #    ch = ch.decode()
         return ch_info(line, col, ch)
 
     def offset(self, offset):

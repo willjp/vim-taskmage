@@ -92,6 +92,11 @@ class Test_PureVimBuffer(object):
                 result.append(buf.peek(i))
             assert result == ['a', 'b', 'c', '\n', 'd', '\n', 'e', 'f', 'g', 'h', 'i', 'j', '\n', None]
 
+        def test_peek_from_empty_file_returns_none(self):
+            buf = get_vimbuffer([])
+            assert buf.peek() is None
+
+    class Test_peek_line:
         def test_peek_line_from_linestart(self):
             buf = get_vimbuffer(['abc', 'defg'])
             assert buf.peek_line() == 'abc'
@@ -110,6 +115,27 @@ class Test_PureVimBuffer(object):
         def test_peek_offset(self):
             buf = get_vimbuffer(['abc', 'defg'])
             assert buf.peek_line(1) == 'bc'
+
+    class Test_offset:
+        def test_offset_changes_pos(self):
+            buf = get_vimbuffer(['abc'])
+            buf.offset(1)
+            ch = buf.peek()
+            assert ch == 'b'
+
+    class Test_eof:
+        def test_eof_returns_false_before_end_of_file(self):
+            buf = get_vimbuffer(['a'])
+            assert buf.eof() is False
+
+        def test_eof_returns_true_at_end_of_file(self):
+            buf = get_vimbuffer(['a'])
+            buf.offset(2)  # once for 'a', once for '\n'
+            assert buf.eof() is True
+
+        def test_eof_returns_true_in_empty_file(self):
+            buf = get_vimbuffer([])
+            assert buf.eof() is True
 
     class Test_read:
         def test_read(self):
