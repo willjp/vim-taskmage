@@ -237,10 +237,6 @@ class PureVimBuffer(IOStream):
 
             offset -= 1
 
-        # NOTE: following appears to be exist for handling bytestring vimbuffers.
-        #       commented until it's usage is required.
-        #if hasattr(ch, 'decode'):
-        #    ch = ch.decode()
         return ch_info(line, col, ch)
 
     def offset(self, offset):
@@ -291,9 +287,6 @@ class FileDescriptor(IOStream):
         pos = self.pos + offset
         self._fd.seek(pos)
         ch = self._fd.read(1)
-
-        if hasattr(ch, 'decode'):
-            ch = ch.decode()
 
         if ch == '':
             return None
