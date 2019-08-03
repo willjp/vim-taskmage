@@ -200,6 +200,20 @@ class Test_FileDescriptor(object):
             buf = get_filedescriptor('abc\ndefg')
             assert buf.peek_line(1) == 'bc'
 
+    class Test_eof:
+        def test_eof_returns_false_before_end_of_file(self):
+            buf = get_filedescriptor('a\n')
+            assert buf.eof() is False
+
+        def test_eof_returns_true_at_end_of_file(self):
+            buf = get_filedescriptor('a')
+            buf.offset(1)
+            assert buf.eof() is True
+
+        def test_eof_returns_true_in_empty_file(self):
+            buf = get_filedescriptor('')
+            assert buf.eof() is True
+
     class Test_read:
         def test_read(self):
             buf = get_filedescriptor('abc\ndefg\n')
