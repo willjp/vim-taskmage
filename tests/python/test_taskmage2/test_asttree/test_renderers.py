@@ -386,9 +386,9 @@ class Test_Mtask(object):
                 name='task A',
                 data={
                     'status': 'todo',
-                    'created': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                    'created': None,
                     'finished': False,
-                    'modified': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                    'modified': None,
                 },
                 children=None,
             )
@@ -401,9 +401,9 @@ class Test_Mtask(object):
                 'indent': 0,
                 'data': {
                     'status': 'todo',
-                    'created': '2018-01-01T00:00:00+00:00',
+                    'created': None,
                     'finished': False,
-                    'modified': '2018-01-01T00:00:00+00:00',
+                    'modified': None,
                 },
                 'parent': None,
             }
@@ -452,6 +452,57 @@ class Test_Mtask(object):
                 'parent': None,
             }
         ]
+
+    def test_task_created_converted_to_iso8601(self):
+        render = self.render([
+            astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                    'finished': False,
+                    'modified': None,
+                },
+                children=None,
+            )
+        ])
+        assert render[0]['data']['created'] == '2018-01-01T00:00:00+00:00'
+
+    def test_task_modified_converted_to_iso8601(self):
+        render = self.render([
+            astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': None,
+                    'finished': False,
+                    'modified': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                },
+                children=None,
+            )
+        ])
+        assert render[0]['data']['modified'] == '2018-01-01T00:00:00+00:00'
+
+    def test_task_finished_converted_to_iso8601(self):
+        render = self.render([
+            astnode.Node(
+                _id=None,
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': None,
+                    'finished': datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                    'modified': None,
+                },
+                children=None,
+            )
+        ])
+        assert render[0]['data']['finished'] == '2018-01-01T00:00:00+00:00'
 
     def test_invalid_nodetype(self):
         # enum astnode.NodeType raises ValueError when nodetype is invalid.

@@ -383,7 +383,6 @@ class Mtask(Renderer):
         }
 
 
-
 if __name__ == '__main__':  # pragma: no cover
     from taskmage2.parser import lexers, iostream, parser
 
