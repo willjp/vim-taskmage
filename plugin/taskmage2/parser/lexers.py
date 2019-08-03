@@ -733,11 +733,47 @@ class Mtask(_Lexer):
 
         Example of an *.mtask file (stored in the same format as the Lexer object).
 
+        Converts an MTASK file (json)
+
+        .. code-block:: json
+
+            [
+                {
+                    '_id': 'F228BE2BE28340368B69CE63724C19F5',
+                    'type': 'task',
+                    'name': 'taskA',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {
+                        'status': 'done',
+                        'created': '2018-01-01T00:00:00+00:00',
+                        'finished': '2018-01-01T00:00:00+00:00',
+                        'modified': '2018-01-01T00:00:00+00:00'
+                    },
+                },
+                {...},
+                ...
+            ]
+
+        Into a list of tokens (python)
+
         .. code-block:: python
 
             [
-                {'_id':'...', 'type':'task', 'name':'do something', 'parent':..., 'indent':0, 'data':{...}},
-                {'_id':'...', 'type':'task', 'name':'do something', 'parent':..., 'indent':0, 'data':{...}},
+                {
+                    '_id': 'F228BE2BE28340368B69CE63724C19F5',
+                    'type': 'task',
+                    'name': 'taskA',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {
+                        'status': 'done',
+                        'created': datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                        'finished': datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                        'modified': datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                    },
+                },
+                {...},
                 ...
             ]
 
