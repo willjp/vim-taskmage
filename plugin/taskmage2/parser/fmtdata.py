@@ -18,8 +18,7 @@ class TaskList(object):
 
     @classmethod
     def statuschar(cls, status):
-        """
-        Returns a status-char from a status.
+        """ Returns a status-char from a status.
 
         Returns:
 
@@ -36,8 +35,7 @@ class TaskList(object):
 
     @classmethod
     def status(cls, char):
-        """
-        Returns a status from a statuschar
+        """ Returns a status from a statuschar
 
         Returns:
 
