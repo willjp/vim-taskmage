@@ -8,6 +8,10 @@ else: # pragma: no cover
     import enum
 
 
+# TODO: instead of NodeType enum, create NodeType classes. More
+#       straightforwards to test, and to change..
+
+
 class NodeType(enum.Enum):
     task = 'task'
     section = 'section'
@@ -37,6 +41,8 @@ class Node(object):
 
     """
 
+    # maps nodetype enum-values to their `data` class
+    # (ex: task `data` class has status, created, ...)
     _data_map = (
         (NodeType.task,     nodedata.TaskData),
         (NodeType.section,  nodedata.SectionData),

@@ -12,12 +12,15 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 import datetime
 import json
-from taskmage2.asttree import astnode, renderers
-from taskmage2.utils import timezone
-
 
 # external
+import pytest
+import mock
+import enum
+
 # internal
+from taskmage2.asttree import astnode, renderers
+from taskmage2.utils import timezone
 
 
 class Test_TaskList(object):
@@ -92,6 +95,18 @@ class Test_TaskList(object):
         ])
 
         assert render == ['- task A']
+
+    def test_invalid_nodetype(self):
+        # enum astnode.NodeType raises ValueError when nodetype is invalid.
+        with pytest.raises(ValueError):
+            self.render([
+                astnode.Node(
+                    _id=None,
+                    ntype='invalid-ntype',
+                    name='name',
+                    data={},
+                )
+            ])
 
     def test_task_with_id(self):
         render = self.render([
