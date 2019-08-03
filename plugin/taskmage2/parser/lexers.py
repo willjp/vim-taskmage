@@ -26,9 +26,9 @@ import sys
 # internal
 from taskmage2.utils import excepts, timezone
 from taskmage2.parser import fmtdata
-if sys.version_info[0] < 3:
+if sys.version_info[0] < 3:  # pragma: no cover
     from taskmage2.vendor import enum
-else:
+else:  # pragma: no cover
     import enum
 
 
@@ -109,10 +109,10 @@ class _Lexer(object):
     def read(self):
         """ Lex the entire source until EOF.
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def read_next(self):
-        raise NotImplemented(
+        raise NotImplemented(  # pragma: no cover
             '`_Lexer` must be subclassed, and this method should be implemented \n'
             'in the subclass'
         )
