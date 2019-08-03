@@ -118,8 +118,7 @@ class _Lexer(object):
         )
 
     def next(self):
-        """
-        stores next token in self._next,
+        """ stores next token in self._next,
         returns previously set next.
         """
         token = self._next
