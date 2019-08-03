@@ -326,16 +326,6 @@ class Mtask(Renderer):
 
         return render
 
-    def _get_parent(self, render, node, indent):
-        if indent == 0:
-            return None
-
-        for i in reversed(range(len(render))):
-            if render[i]['indent'] < indent:
-                return render[i]['_id']
-
-        raise RuntimeError('could not find parent')
-
     def _render_fileheader(self, render, node, indent=0):
         """
         Returns:
@@ -350,7 +340,7 @@ class Mtask(Renderer):
             'type': node.type,
             'name': node.name,
             'indent': indent,
-            'parent': self._get_parent(render, node, indent),
+            'parent': node.parentid,
             'data': {},
         }
 
@@ -360,7 +350,7 @@ class Mtask(Renderer):
             'type': node.type,
             'name': node.name,
             'indent': indent,
-            'parent': self._get_parent(render, node, indent),
+            'parent': node.parentid,
             'data': {},
         }
 
@@ -383,7 +373,7 @@ class Mtask(Renderer):
             'type': node.type,
             'name': node.name,
             'indent': indent,
-            'parent': self._get_parent(render, node, indent),
+            'parent': node.parentid,
             'data': {
                 'status': node.data.status,
                 'created': created,

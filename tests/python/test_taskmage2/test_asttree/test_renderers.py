@@ -12,6 +12,7 @@ ________________________________________________________________________________
 from __future__ import absolute_import, division, print_function
 import datetime
 import json
+import pprint
 
 # external
 import pytest
@@ -376,7 +377,8 @@ class Test_Mtask(object):
     """
     the AST is essentially the same as JSON .mtask -- not many tests needed here.
     """
-    def test_status_todo(self):
+
+    def test_task(self):
         render = self.render([
             astnode.Node(
                 _id=None,
@@ -406,6 +408,150 @@ class Test_Mtask(object):
                 'parent': None,
             }
         ]
+
+    def test_section(self):
+        render = self.render([
+            astnode.Node(
+                _id=None,
+                ntype='section',
+                name='cleanup',
+                data={},
+                children=None,
+            )
+        ])
+
+        assert render == [
+            {
+                '_id': None,
+                'type': 'section',
+                'name': 'cleanup',
+                'data': {},
+                'parent': None,
+                'indent': 0,
+            }
+        ]
+
+    def test_file(self):
+        render = self.render([
+            astnode.Node(
+                _id=None,
+                ntype='file',
+                name='path/projectA.mtask',
+                data={},
+                children=None,
+            )
+        ])
+
+        assert render == [
+            {
+                '_id': None,
+                'type': 'file',
+                'name': 'path/projectA.mtask',
+                'data': {},
+                'indent': 0,
+                'parent': None,
+            }
+        ]
+
+    def test_invalid_nodetype(self):
+        # enum astnode.NodeType raises ValueError when nodetype is invalid.
+        with pytest.raises(ValueError):
+            self.render([
+                astnode.Node(
+                    _id=None,
+                    ntype='invalid-ntype',
+                    name='name',
+                    data={},
+                )
+            ])
+
+    def test_task_multiline(self):
+        render = self.render([
+            astnode.Node(
+                _id=None,
+                ntype='task',
+                name='line A\nline B\nline C',
+                data={
+                    'status': 'todo',
+                    'created': None,
+                    'finished': False,
+                    'modified': None,
+                },
+                children=None,
+            )
+        ])
+        assert render[0]['name'] == 'line A\nline B\nline C'
+
+    def test_section_with_tasks(self):
+        section = astnode.Node(
+                _id='B6DFB2D4A79F4FD3BB434CE0A0D90692',
+                ntype='section',
+                name='cleanup',
+        )
+        task_A = astnode.Node(
+            _id='D236F8BAFCDE45E98E3A04F305BBC160',
+            ntype='task',
+            name='subtask A',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': False,
+                'modified': None,
+            },
+            parent=section,
+        )
+        task_B = astnode.Node(
+            _id='B49C058B023C4CBF9D94F3DED3BA7C62',
+            ntype='task',
+            name='subtask B',
+            data={
+                'status': 'todo',
+                'created': None,
+                'finished': False,
+                'modified': None,
+            },
+            parent=section,
+        )
+        section.children = [task_A, task_B]
+        render = self.render([section])
+
+        expects = [
+            {
+                '_id':  'B6DFB2D4A79F4FD3BB434CE0A0D90692',
+                'type': 'section',
+                'name': 'cleanup',
+                'data': {},
+                'parent': None,
+                'indent': 0,
+            },
+            {
+                '_id': 'D236F8BAFCDE45E98E3A04F305BBC160',
+                'type': 'task',
+                'name': 'subtask A',
+                'indent': 1,
+                'data': {
+                    'status': 'todo',
+                    'created': None,
+                    'finished': False,
+                    'modified': None,
+                },
+                'parent': 'B6DFB2D4A79F4FD3BB434CE0A0D90692',
+            },
+            {
+                '_id': 'B49C058B023C4CBF9D94F3DED3BA7C62',
+                'type': 'task',
+                'name': 'subtask B',
+                'indent': 1,
+                'data': {
+                    'status': 'todo',
+                    'created': None,
+                    'finished': False,
+                    'modified': None,
+                },
+                'parent': 'B6DFB2D4A79F4FD3BB434CE0A0D90692',
+            }
+        ]
+        assert render == expects
 
     def render(self, ast):
         """ Render parser_data using a TaskList renderer.
