@@ -15,19 +15,22 @@ import uuid
 import json
 import pprint
 import datetime
-# package
-from taskmage2.parser import iostream, lexers
-from taskmage2.utils import excepts
 import six
 # external
 import pytest
 import mock
 # internal
+from taskmage2.parser import iostream, lexers
+from taskmage2.utils import excepts
 from taskmage2.utils import timezone
 
 
 ns = lexers.__name__
 
+
+# =====
+# Utils
+# =====
 
 def get_lexer_tasklist(text):
     fd = six.StringIO()
@@ -52,6 +55,11 @@ def mock_uuid():
 
 def uid():
     return uuid.UUID('481ae479e4ab4c9b81653db9b92469c0')
+
+
+# =====
+# Tests
+# =====
 
 
 class Test_TaskList:
@@ -712,5 +720,12 @@ class Test_Mtask:
 
 
 class Test_get_lexer:
-    def test(self):
-        assert False
+    def test_get_lexer_from_enum_option_val(self):
+        fd = six.StringIO()
+        lexer = lexers.get_lexer(fd, 'mtask')
+        assert isinstance(lexer, lexers.Mtask)
+
+    def test_get_lexer_from_enum_option(self):
+        fd = six.StringIO()
+        lexer = lexers.get_lexer(fd, lexers.LexerTypes.mtask)
+        assert isinstance(lexer, lexers.Mtask)

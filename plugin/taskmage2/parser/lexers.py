@@ -33,6 +33,8 @@ else:  # pragma: no cover
 
 
 class LexerTypes(enum.Enum):
+    """ Enum describing the lexer types.
+    """
     tasklist = 'tasklist'
     taskdetails = 'taskdetails'
     mtask = 'mtask'
@@ -946,6 +948,15 @@ class Mtask(_Lexer):
 
 
 def get_lexer(iostream, lexertype):
+    """ Instantiates a lexer object loaded with an iostream object.
+
+    Args:
+        iostream (taskmage2.parser.iostream.IOStream):
+            iostream object you'll be lexing into tokens.
+
+        lexertype (taskmage2.parser.lexers.LexerTypes, str): ``(ex: LexerTypes.tasklist, 'tasklist' )``
+            the type of lexer object you'd like to instantiate
+    """
     lexertype = LexerTypes(lexertype)
     lexertype_map = {
         LexerTypes.tasklist:    TaskList,
