@@ -915,15 +915,25 @@ class Mtask(_Lexer):
         return dtype
 
     def _validate_keys(self, index, data, reqd_keys, desc):
-        """
+        """ Confirms that dict `data` contains all/only keys within `reqd_keys` .
+
+        Raises
+            taskmage2.excepts.ParserError:
+                if dict is invalid.
+
         Args:
             index (int):
-                The current location in list.
+                The current location in list
+                (only used for exception message).
 
             data (dict):
                 The dictionary we are validating
 
             reqd_keys (list)
+                List of keys that must be in dictionary
+
+            desc (str):
+                This Message will be added to exception
         """
         missing_keys = set(data.keys()) - set(reqd_keys)
         extra_keys = set(reqd_keys) - set(data.keys())

@@ -701,7 +701,7 @@ class Test_Mtask:
             return _lexertokens
 
     class Test_read:
-        def test(self):
+        def test_valid_data(self):
             contents = [
                 {
                     '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
@@ -717,6 +717,59 @@ class Test_Mtask:
             results = lexer.read()
 
             assert results == contents
+
+        def test_missing_keys_raises_parsererror(self):
+            contents = [
+                {
+                    '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                    'type': 'section',
+                    'name': 'home',
+                },
+            ]
+            contents_json = json.dumps(contents)
+            lexer = get_lexer_mtask(contents_json)
+
+            with pytest.raises(excepts.ParserError):
+                lexer.read()
+
+        def test_extra_keys_raises_parsererror(self):
+            contents = [
+                {
+                    '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                    'type': 'section',
+                    'name': 'home',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {},
+                    'extra_key': 123,
+                },
+            ]
+            contents_json = json.dumps(contents)
+            lexer = get_lexer_mtask(contents_json)
+
+            with pytest.raises(excepts.ParserError):
+                lexer.read()
+
+        def test_invalid_task_status_raises_parsererror(self):
+            contents = [
+                {
+                    '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                    'type': 'section',
+                    'name': 'home',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {
+                        'status': 'invalid-status',  # <-- invalid data
+                        'created': None,
+                        'finished': None,
+                        'modified': None,
+                    }
+                },
+            ]
+            contents_json = json.dumps(contents)
+            lexer = get_lexer_mtask(contents_json)
+            with pytest.raises(excepts.ParserError):
+                lexer.read()
 
 
 class Test_get_lexer:
