@@ -673,10 +673,12 @@ class TaskList(_Lexer):
         for token in reversed(self.data):
             if token['indent'] < indent:
                 return token['_id']
+
         return None
 
     def _get_header_hierinfo(self, underline_char):
-        """
+        """ Get indent/parent info of a header based on it's underline-character.
+
         Returns:
 
             A tuble with the indent (header-level), and parent header.

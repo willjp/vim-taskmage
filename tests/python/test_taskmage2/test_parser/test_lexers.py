@@ -124,6 +124,10 @@ class Test_TaskList:
                 }
             ]
 
+        def test_indented_task_without_parent_still_returns_none_as_parent(self):
+            tokens = self.tasklist('    * taskA')
+            assert tokens[0]['parent'] is None
+
         def test_toplevel_task_with_leading_whitespace(self):
             tokens = self.tasklist_data('\n\n* taskA')
 
@@ -388,6 +392,22 @@ class Test_TaskList:
                     'data': {'status': 'todo', 'created': None, 'finished': None, 'modified': None},
                 }
             ]
+
+        def test_section_missing_title(self):
+            with pytest.raises(excepts.ParserError):
+                self.tasklist(
+                    '\n'
+                    '====\n'
+                    '\n'
+                )
+
+        def test_section_title_shorter_than_underline(self):
+            with pytest.raises(excepts.ParserError):
+                self.tasklist(
+                    'abcdefghij\n'
+                    '====\n'
+                    '\n'
+                )
 
         def test_section_subtask_non_indented(self):
             tokens = self.tasklist(
