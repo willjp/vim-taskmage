@@ -26,8 +26,30 @@ class AbstractSyntaxTree(UserList):
 
     """
     def __init__(self, data=None):
+        """ Constructor.
+
+        Args:
+            data (list):
+                A list of astnodes.
+
+                .. code-block:: python
+
+                    [
+                        astnode.Node(id=.., type='file', name='home/todo.mtask', children=[
+                            astnode.Node(id=.., type='task', name='toplv task', data={}, children=[]),
+                            astnode.Node(id=.., type='section', name='home', data={}, children=[
+                                astnode.Node(id=.., type='task', name='write task parser', data={}, children=[])
+                            ])
+                        ])
+                    ]
+
+
+        """
         if data is None:
             data = []
+
+        if not isinstance(data, (list, tuple)):
+            raise TypeError('expected `data` to be a list of astnodes. received {}'.format(repr(data)))
 
         for node in data:
             if not isinstance(node, astnode.Node):

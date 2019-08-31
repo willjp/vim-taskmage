@@ -38,6 +38,15 @@ class Test_AbstractSyntaxTree(object):
             with pytest.raises(TypeError):
                 asttree.AbstractSyntaxTree(['a', 'b'])
 
+        def test_raises_typeerror_if_data_not_iterable(self):
+            node = astnode.Node(
+                _id=None,
+                name='abc',
+                ntype=astnode.NodeType.section,
+            )
+            with pytest.raises(TypeError):
+                asttree.AbstractSyntaxTree(node)
+
     class Test_render:
         def test_render_invalid_renderer(self):
             tree = asttree.AbstractSyntaxTree([
