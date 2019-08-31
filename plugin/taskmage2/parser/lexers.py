@@ -843,11 +843,9 @@ class Mtask(_Lexer):
             return type_map[type_](index)
 
         self._parser_exception(
-            (
-                'Invalid entry in mtaskfile: \n'
-                'key "type" has unexpected value: "{}"\n'
-                '{}\n'
-            ).format(self._rawdata[index]['type'], repr(self._rawdata[index]))
+            ('Invalid entry in mtaskfile: \n'
+             'key "type" has unexpected value: "{}"\n'
+             '{}\n').format(self._rawdata[index]['type'], repr(self._rawdata[index]))
         )
 
     def _read_task(self, index):

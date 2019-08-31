@@ -4,6 +4,11 @@ import mock
 from taskmage2.asttree import asttree, astnode, renderers
 
 
+# =====
+# Utils
+# =====
+
+
 class Not_A_Renderer(object):
     pass
 
@@ -30,6 +35,11 @@ def renderer():
             cls.render_calls += 1
 
     return Renderer
+
+
+# =====
+# Tests
+# =====
 
 
 class Test_AbstractSyntaxTree(object):

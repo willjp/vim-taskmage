@@ -229,8 +229,32 @@ class Test_parse:
 
         assert AST == expected_AST
 
-
-
-
     def test_sets_parent_attribute_on_ast_nodes(self):
-        assert False
+        # input
+        data = [
+            {
+                '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            },
+            {
+                '_id': 'D23BC64989644012A546EAC8C6A85F55',
+                'type': 'task',
+                'name': 'task A',
+                'indent': 4,
+                'parent': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                'data': {
+                    'status': 'todo',
+                    'created': None,
+                    'modified': None,
+                    'finished': False,
+                },
+            },
+        ]
+        fd = get_iostream(json.dumps(data))
+        AST = parsers.parse(fd, lexers.LexerTypes.mtask)
+
+        assert AST[0][0].parent == AST[0]
