@@ -91,8 +91,7 @@ class Project(object):
             taskmage.projects.Project: a project instance.
         """
 
-        if os.path.basename(root) == '.taskmage':
-            root = os.path.dirname(root)
+        root = format_rootpath(root)
 
         if os.path.exists(root):
             if not os.path.isdir(root):
@@ -363,3 +362,26 @@ class Project(object):
             fd = iostream.FileDescriptor(fd_src)
             AST = parsers.parse(fd, 'mtask')
         return AST
+
+
+def format_rootpath(path):
+    """ Formats a project-directory path.
+    Ensures path ends with `.taskmage` dir, and uses forward slashes exclusively.
+
+    Returns:
+        str:
+            a new formatted path
+    """
+    return functional.pipeline(
+        path,
+        [
+            _ensure_path_ends_with_dot_taskmage,
+            filesystem.format_path,
+        ]
+    )
+
+
+def _ensure_path_ends_with_dot_taskmage(path):
+    if os.path.basename(path):
+        return path
+    return '{}/.taskmage'.format(path)

@@ -42,19 +42,20 @@ class Test_Project(object):
                 return project_root
 
     class Test_create:
-        def test_create_sets_up_filesystem(self):
-            (mock_os, project) = self.create('/src/project')
-            mock_os.makedirs.called_with('/src/project/.taskmage')
+        def test_accepts_dir_above_taskmagedir(self):
+            with mock.patch('{}.os'.format(ns)) as mock_os:
+                projects.Project.create('/src/project/')
+                mock_os.makedirs.called_with('/src/project/.taskmage')
 
-        def test_create_ignores_existing(self):
+        def test_sets_up_filesystem(self):
+            with mock.patch('{}.os'.format(ns)) as mock_os:
+                projects.Project.create('/src/project/.taskmage')
+                mock_os.makedirs.called_with('/src/project/.taskmage')
+
+        def test_ignores_existing(self):
             with mock.patch('{}.os'.format(ns)) as mock_os:
                 mock_os.path.isdir = mock.Mock(return_value=True)
                 projects.Project.create('/src/project')
-
-        def create(self, root):
-            with mock.patch('{}.os'.format(ns)) as mock_os:
-                project = projects.Project.create(root)
-                return (mock_os, project)
 
     class Test_load:
         def test_load_sets_root(self):
@@ -158,3 +159,14 @@ class Test_Project(object):
         def test_project_hash_is_different_from_string(self):
             project = projects.Project(_sample_project_dir)
             assert hash(project) != hash(project.root)
+
+    class Test__repr__:
+        def test_project_is_none(self):
+            with mock.patch('taskmage2.project.projects.id', return_value=139844126520592):
+                project_a = projects.Project(None)
+                assert repr(project_a) == '<Project(None) at 0x7f2fff7c3510>'
+
+        def test_project_is_set(self):
+            with mock.patch('taskmage2.project.projects.id', return_value=139844126520592):
+                project_a = projects.Project(_sample_project_dir)
+                assert repr(project_a) == '<Project({}) at 0x7f2fff7c3510>'.format(os.path.relpath(_sample_project_dir))
