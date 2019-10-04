@@ -42,15 +42,15 @@ class Test_Project(object):
                 return project_root
 
     class Test_create:
-        @mock.patch.object(projects, 'os')
-        def test_create_sets_up_filesystem(self, mock_os):
+        @mock.patch.object(projects, 'filesystem')
+        def test_create_sets_up_filesystem(self, mock_filesystem):
             projects.Project.create('/src/project')
-            mock_os.makedirs.called_with('/src/project/.taskmage')
+            assert mock_filesystem.make_directories.called_with('/src/project/.taskmage')
 
-        @mock.patch.object(projects, 'os')
-        def test_create_ignores_existing(self, mock_os):
-            mock_os.path.isdir = mock.Mock(return_value=True)
-            projects.Project.create('/src/project')
+        @mock.patch.object(projects, 'filesystem')
+        def test_create_with_taskmage_dir(self, mock_filesystem):
+            projects.Project.create('/src/project/.taskmage')
+            assert mock_filesystem.make_directories.called_with('/src/project/.taskmage')
 
     class Test_load:
         def test_load_sets_root(self):
@@ -156,7 +156,13 @@ class Test_Project(object):
             assert hash(project) != hash(project.root)
 
     class Test__repr__:
-        def test_simple(self):
+        def test_uninitialized(self):
+            project = projects.Project(None)
+            project_id = id(project)
+            project_repr = '<Project(None) at {}>'.format(project_id)
+            repr(project) == project_repr
+
+        def test_initialized(self):
             project = projects.Project(None)
             project._root = '/src/project'
             project_id = id(project)

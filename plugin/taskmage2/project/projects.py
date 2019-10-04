@@ -88,30 +88,13 @@ class Project(object):
                 Path to the root of your taskmage project.
 
         Returns:
-            taskmage.projects.Project: a project instance.
+            str: project root directory
         """
-
         if os.path.basename(root) == '.taskmage':
             root = os.path.dirname(root)
-
-        if os.path.exists(root):
-            if not os.path.isdir(root):
-                raise OSError(
-                    'unable to create taskmage project, provided '
-                    'path exists and is not a directory. "{}"'.format(root)
-                )
-
         taskmage_dir = '{}/.taskmage'.format(root)
-        if os.path.exists(taskmage_dir):
-            if not os.path.isdir(taskmage_dir):
-                raise OSError(
-                    'unable to create taskmage project, provided '
-                    'path exists and is not a directory. "{}"'.format(taskmage_dir)
-                )
-            return Project(root)
-
-        os.makedirs(taskmage_dir)
-        return Project(root)
+        filesystem.make_directories(taskmage_dir)
+        return root
 
     @staticmethod
     def find(path):
@@ -135,7 +118,7 @@ class Project(object):
             if os.path.isdir('{}/.taskmage'.format(parent_dir)):
                 return parent_dir
 
-        raise RuntimeError('unable to find taskmage project')
+        raise RuntimeError('unable to find taskmage project from path: {}'.format(path))
 
     def load(self, path):
         """ Loads a taskmage project from a path.

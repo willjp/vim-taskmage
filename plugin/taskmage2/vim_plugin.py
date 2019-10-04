@@ -99,7 +99,8 @@ def create_project():
         print('No project defined. aborting')
         return
 
-    project = projects.Project.create(projectroot)
+    projectroot = projects.Project.create(projectroot)
+    project = projects.Project(projectroot)
     return project
 
 
