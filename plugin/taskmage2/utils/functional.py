@@ -1,3 +1,15 @@
+import functools
+
+
+def pipeline(data, fn_list):
+    """ Runs all functions in `fn_list` on `data` .
+    Each is expected to return a new copy of `data` .
+    """
+    return functools.reduce(
+        lambda a, x: map(x, a),
+        fn_list,
+        data,
+    )
 
 
 def multifilter(filters, result):

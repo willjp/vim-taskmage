@@ -32,6 +32,9 @@
     - combined vim/python test coverage
     - changed setup.py commands (adds test_python, test_vim, test, coverage_python, coverage_vim, coverage)
     - bugfix to tagbar support
+1.2.1:
+    - improved test-coverage
+    - bugfix to TaskData.copy()
 
 # TODO: update README/vim-help to include information about tagbar support
 # TODO: finish --iro flag in tagbar support

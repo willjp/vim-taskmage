@@ -7,6 +7,7 @@ import pytest
 from taskmage2.asttree import astnode, nodedata
 from taskmage2.utils import timezone
 
+
 ns = astnode.__name__
 
 
@@ -811,3 +812,44 @@ class Test_Node(object):
                 ],
             )
             assert task.is_complete() is True
+
+    class Test_parentid:
+        def test_node_with_parent_returns_id(self):
+            parent_node = astnode.Node(
+                _id='393444843C3A4BB08839D9949F04F715',
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': None,
+                    'finished': False,
+                    'modified': None,
+                },
+            )
+            node = astnode.Node(
+                _id='212BA0B5FA144F71BCF73B07F9DEBABD',
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': None,
+                    'finished': False,
+                    'modified': None,
+                },
+                parent=parent_node
+            )
+            assert node.parentid == '393444843C3A4BB08839D9949F04F715'
+
+        def test_node_without_parent_returns_none(self):
+            node = astnode.Node(
+                _id='99805A4613714AB1859CB57DFF0F85CA',
+                ntype='task',
+                name='task A',
+                data={
+                    'status': 'todo',
+                    'created': None,
+                    'finished': False,
+                    'modified': None,
+                },
+            )
+            assert node.parentid is None

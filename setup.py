@@ -241,6 +241,7 @@ setuptools.setup(
         'pytest',
         'pytest-cov',
         'mock',
+        'pyfakefs',
     ],
     cmdclass={
         # test_python (configured in setup.cfg)

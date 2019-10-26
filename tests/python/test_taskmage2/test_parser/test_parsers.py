@@ -8,14 +8,35 @@ ________________________________________________________________________________
 Description :   tests parsers.
 ________________________________________________________________________________
 """
-# builtin
 from __future__ import absolute_import, division, print_function
-from taskmage2.parser import parsers
+from taskmage2.asttree import astnode, asttree
+from taskmage2.parser import parsers, lexers
 import mock
-from taskmage2.asttree import astnode
-# package
-# external
-# internal
+import six
+import json
+
+
+# =====
+# Utils
+# =====
+
+
+def get_iostream(text):
+    fd = six.StringIO()
+    fd.write(text)
+    fd.seek(0)
+    return fd
+
+
+def get_lexer_mtask(text):
+    fd = get_iostream(text)
+    lexer = lexers.Mtask(fd)
+    return lexer
+
+
+# =====
+# Tests
+# =====
 
 
 class Test_Parser:
@@ -179,3 +200,61 @@ class Test_Parser:
         return parser.parse()
 
 
+class Test_parse:
+    def test_produces_ast(self):
+        # input
+        data = [
+                {
+                    '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                    'type': 'section',
+                    'name': 'home',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {},
+                },
+        ]
+        fd = get_iostream(json.dumps(data))
+        AST = parsers.parse(fd, lexers.LexerTypes.mtask)
+
+        # expects
+        expected_AST = asttree.AbstractSyntaxTree(
+            [
+                astnode.Node(
+                    _id='C5ED1030425A436DABE94E0FCCCE76D6',
+                    ntype=astnode.NodeType.section,
+                    name='home',
+                ),
+            ]
+        )
+
+        assert AST == expected_AST
+
+    def test_sets_parent_attribute_on_ast_nodes(self):
+        # input
+        data = [
+            {
+                '_id': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                'type': 'section',
+                'name': 'home',
+                'indent': 0,
+                'parent': None,
+                'data': {},
+            },
+            {
+                '_id': 'D23BC64989644012A546EAC8C6A85F55',
+                'type': 'task',
+                'name': 'task A',
+                'indent': 4,
+                'parent': 'C5ED1030425A436DABE94E0FCCCE76D6',
+                'data': {
+                    'status': 'todo',
+                    'created': None,
+                    'modified': None,
+                    'finished': False,
+                },
+            },
+        ]
+        fd = get_iostream(json.dumps(data))
+        AST = parsers.parse(fd, lexers.LexerTypes.mtask)
+
+        assert AST[0][0].parent == AST[0]

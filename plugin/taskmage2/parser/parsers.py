@@ -102,6 +102,19 @@ class Parser(object):
 
 
 def parse(iostream, lexer):
+    """ Parse text from `iostream` using `lexer` .
+
+    Args:
+        iostream (taskmage2.parser.iostream.IOStream):
+            stream object containing text
+
+        lexer (taskmage2.parser.LexerTypes, str):
+            enum/value-str of the lexer you'd like to parse `iostream` with.
+
+    Returns:
+        taskmage2.asttree.AbstractSyntaxTree:
+            AbstractSyntaxTree built from `iostream`
+    """
     lexer = lexers.get_lexer(iostream, lexer)
     lexer.read()
 

@@ -26,23 +26,29 @@ import sys
 # internal
 from taskmage2.utils import excepts, timezone
 from taskmage2.parser import fmtdata
-if sys.version_info[0] < 3:
+if sys.version_info[0] < 3:  # pragma: no cover
     from taskmage2.vendor import enum
-else:
+else:  # pragma: no cover
     import enum
 
 
 class LexerTypes(enum.Enum):
+    """ Enum describing the lexer types.
+    """
     tasklist = 'tasklist'
     taskdetails = 'taskdetails'
     mtask = 'mtask'
 
 
 class _Lexer(object):
-    """
-    Base class for all lexers. Reads a particular datatype,
+    """ Base class for all lexers. Reads a particular datatype,
     and returns a list of tokens, suitable for use with
     the parser.
+
+    Notes:
+        A token here is a dictionary representing a single node. That might
+        be a file, task, section, etc.
+
 
     Token Types:
 
@@ -97,51 +103,100 @@ class _Lexer(object):
     __metaclass__ = abc.ABCMeta
 
     def __init__(self):
-        """
-        Constructor.
+        """ Constructor.
 
         Args:
             iostream (iostream.IOStream):
                 Special Parser File-Descriptor
         """
-        self.data = []  # list of token dictionaries, as they appear.
+        # NOTE: position is determined by the iostream character position,
+        #       not by a particular token index.
+
+        self._next = None  # the next token
+        self.data = []     # list of token dictionaries, as they appear.
 
     def read(self):
         """ Lex the entire source until EOF.
+
+        Returns:
+            list:
+                The entire list of tokens in the entire IOStream object.
+
+                .. code-block:: python
+
+                    [
+                        {
+                            '_id'    : 'a09e314015b34846a05114ce3bee9675'
+                            'type'   : 'task',
+                            'name'   : 'do something',
+                            'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
+                            'indent' : 0,  # number of spaces task is indented
+                            'data'   : {
+                                'status' : 'todo',
+                                'created':  datetime(...),
+                                'finished': datetime(...),
+                                'modified': datetime(...),
+                            }
+                        }
+                        ...
+                    ]
+
         """
-        raise NotImplementedError()
+        raise NotImplementedError()  # pragma: no cover
 
     def read_next(self):
-        raise NotImplemented(
+        """ Lex/Return the next token (based on current pos).
+        Changes position within buffer
+
+        Returns:
+            dict:
+
+                .. code-block:: python
+
+                    {
+                        '_id'    : 'a09e314015b34846a05114ce3bee9675'
+                        'type'   : 'task',
+                        'name'   : 'do something',
+                        'parent' : '9c9c37c4704748698b8c846214fa57b0', # or None
+                        'indent' : 0,
+                        'data'   : {
+                            'status' : 'todo',
+                            'created':  datetime(...),
+                            'finished': datetime(...),
+                            'modified': datetime(...),
+                        }
+                    }
+        """
+        raise NotImplemented(  # pragma: no cover
             '`_Lexer` must be subclassed, and this method should be implemented \n'
             'in the subclass'
         )
 
-    def next(self):
-        """
-        stores next token in self._next,
-        returns previously set next.
-        """
-        token = self._next
-        self._next = None
-        return (token or self.read_next())
-
     def peek(self):
-        """
-        If no tokens have been obtained yet, returns next.
-        If eof, returns None.
-        Otherwise returns the next char without changing position.
+        """ Peeks at the next upcoming token (without changing current position).
+
+        Notes:
+            * If no tokens have been obtained yet, returns next.
+            * If eof, returns None.
+            * Otherwise returns the next char without changing position.
         """
         if self._next:
             return self._next
         else:
             self._next = self.read_next()
-        return self._next()
+        return self._next
 
     def eof(self):
+        """ Returns True if current position is the end of the iostream file.
+
+        Returns:
+            bool:
+        """
         return self.peek() is None
 
     def _parser_exception(self, msg=None):
+        """ Raises ParserError exception.
+        """
         if not msg:
             msg = ''
 
@@ -150,9 +205,6 @@ class _Lexer(object):
             # 'ln:{} col:{} -- {}'.format(self._ln,self._col, msg)
             msg
         )
-
-    def _is_alphanumeric(self, ch):
-        return re.match('[a-zA-Z0-9_]', ch)
 
 
 class TaskList(_Lexer):
@@ -181,10 +233,11 @@ class TaskList(_Lexer):
 
     def __init__(self, iostream):
         super(TaskList, self).__init__()
-        self._next = None  # the next token
+        self._next = None           # the next token
         self._iostream = iostream   # file-descriptor abstracted into an iostream.IOStream
 
-        self._headerchar_order = []  # underline character used for each level of
+        self._headerchar_order = []  # underline characters, in order of their first occurrence.
+        # used for each level of
         # header indent. ex: ['=', '-', '.'] if
         # header lv1 is underlined with '==='
         # header lv2 is underlined with '---'
@@ -224,9 +277,9 @@ class TaskList(_Lexer):
 
     def read_next(self):
         """ Obtains next token, saves to ``self.data`` , and returns it.
+        Changes position within buffer.
 
         Returns:
-
             A single token. See :py:obj:`_Lexer` for a list of all
             tokens.
 
@@ -252,10 +305,8 @@ class TaskList(_Lexer):
         return token
 
     def _read_next(self):
+        """ Obtains next token.
         """
-        Obtains next token.
-        """
-
         _id = uuid.uuid4().hex.upper()  # define in case new item
         ch = self._iostream.peek()
 
@@ -370,8 +421,7 @@ class TaskList(_Lexer):
         title = self._iostream.peek_line()
 
         if title is None:
-            raise RuntimeError('Expected a title. Received: "{}"'.format(title))
-
+            self._parser_exception('Expected a title. Received: "{}"'.format(title))
         underline = self._iostream.peek_line(len(title) + 1)  # +1 for \n
 
         if len(title.strip()) > len(underline):
@@ -623,10 +673,12 @@ class TaskList(_Lexer):
         for token in reversed(self.data):
             if token['indent'] < indent:
                 return token['_id']
+
         return None
 
     def _get_header_hierinfo(self, underline_char):
-        """
+        """ Get indent/parent info of a header based on it's underline-character.
+
         Returns:
 
             A tuble with the indent (header-level), and parent header.
@@ -685,11 +737,47 @@ class Mtask(_Lexer):
 
         Example of an *.mtask file (stored in the same format as the Lexer object).
 
+        Converts an MTASK file (json)
+
+        .. code-block:: json
+
+            [
+                {
+                    '_id': 'F228BE2BE28340368B69CE63724C19F5',
+                    'type': 'task',
+                    'name': 'taskA',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {
+                        'status': 'done',
+                        'created': '2018-01-01T00:00:00+00:00',
+                        'finished': '2018-01-01T00:00:00+00:00',
+                        'modified': '2018-01-01T00:00:00+00:00'
+                    },
+                },
+                {...},
+                ...
+            ]
+
+        Into a list of tokens (python)
+
         .. code-block:: python
 
             [
-                {'_id':'...', 'type':'task', 'name':'do something', 'parent':..., 'indent':0, 'data':{...}},
-                {'_id':'...', 'type':'task', 'name':'do something', 'parent':..., 'indent':0, 'data':{...}},
+                {
+                    '_id': 'F228BE2BE28340368B69CE63724C19F5',
+                    'type': 'task',
+                    'name': 'taskA',
+                    'indent': 0,
+                    'parent': None,
+                    'data': {
+                        'status': 'done',
+                        'created': datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                        'finished': datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                        'modified': datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()),
+                    },
+                },
+                {...},
                 ...
             ]
 
@@ -755,11 +843,9 @@ class Mtask(_Lexer):
             return type_map[type_](index)
 
         self._parser_exception(
-            (
-                'Invalid entry in mtaskfile: \n'
-                'key "type" has unexpected value: "{}"\n'
-                '{}\n'
-            ).format(self._rawdata[index]['type'], repr(self._rawdata[index]))
+            ('Invalid entry in mtaskfile: \n'
+             'key "type" has unexpected value: "{}"\n'
+             '{}\n').format(self._rawdata[index]['type'], repr(self._rawdata[index]))
         )
 
     def _read_task(self, index):
@@ -829,15 +915,25 @@ class Mtask(_Lexer):
         return dtype
 
     def _validate_keys(self, index, data, reqd_keys, desc):
-        """
+        """ Confirms that dict `data` contains all/only keys within `reqd_keys` .
+
+        Raises
+            taskmage2.excepts.ParserError:
+                if dict is invalid.
+
         Args:
             index (int):
-                The current location in list.
+                The current location in list
+                (only used for exception message).
 
             data (dict):
                 The dictionary we are validating
 
             reqd_keys (list)
+                List of keys that must be in dictionary
+
+            desc (str):
+                This Message will be added to exception
         """
         missing_keys = set(data.keys()) - set(reqd_keys)
         extra_keys = set(reqd_keys) - set(data.keys())
@@ -862,6 +958,15 @@ class Mtask(_Lexer):
 
 
 def get_lexer(iostream, lexertype):
+    """ Instantiates a lexer object loaded with an iostream object.
+
+    Args:
+        iostream (taskmage2.parser.iostream.IOStream):
+            iostream object you'll be lexing into tokens.
+
+        lexertype (taskmage2.parser.lexers.LexerTypes, str): ``(ex: LexerTypes.tasklist, 'tasklist' )``
+            the type of lexer object you'd like to instantiate
+    """
     lexertype = LexerTypes(lexertype)
     lexertype_map = {
         LexerTypes.tasklist:    TaskList,

@@ -42,15 +42,20 @@ class Test_Project(object):
                 return project_root
 
     class Test_create:
-        @mock.patch.object(projects, 'filesystem')
-        def test_create_sets_up_filesystem(self, mock_filesystem):
-            projects.Project.create('/src/project')
-            assert mock_filesystem.make_directories.called_with('/src/project/.taskmage')
+        def test_accepts_dir_above_taskmagedir(self):
+            with mock.patch('{}.os'.format(ns)) as mock_os:
+                projects.Project.create('/src/project/')
+                mock_os.makedirs.called_with('/src/project/.taskmage')
 
-        @mock.patch.object(projects, 'filesystem')
-        def test_create_with_taskmage_dir(self, mock_filesystem):
-            projects.Project.create('/src/project/.taskmage')
-            assert mock_filesystem.make_directories.called_with('/src/project/.taskmage')
+        def test_sets_up_filesystem(self):
+            with mock.patch('{}.os'.format(ns)) as mock_os:
+                projects.Project.create('/src/project/.taskmage')
+                mock_os.makedirs.called_with('/src/project/.taskmage')
+
+        def test_ignores_existing(self):
+            with mock.patch('{}.os'.format(ns)) as mock_os:
+                mock_os.path.isdir = mock.Mock(return_value=True)
+                projects.Project.create('/src/project')
 
     class Test_load:
         def test_load_sets_root(self):
@@ -156,18 +161,13 @@ class Test_Project(object):
             assert hash(project) != hash(project.root)
 
     class Test__repr__:
-        def test_uninitialized(self):
-            project = projects.Project(None)
-            project_id = id(project)
-            project_repr = '<Project(None) at {}>'.format(project_id)
-            repr(project) == project_repr
+        def test_project_is_none(self):
+            with mock.patch('taskmage2.project.projects.id', return_value=139844126520592):
+                project_a = projects.Project(None)
+                assert repr(project_a) == '<Project(None) at 0x7f2fff7c3510>'
 
-        def test_initialized(self):
-            project = projects.Project(None)
-            project._root = '/src/project'
-            project_id = id(project)
-            project_repr = '<Project(/src/project) at {}>'.format(project_id)
-            repr(project) == project_repr
-
-
+        def test_project_is_set(self):
+            with mock.patch('taskmage2.project.projects.id', return_value=139844126520592):
+                project_a = projects.Project(_sample_project_dir)
+                assert repr(project_a) == '<Project({}) at 0x7f2fff7c3510>'.format(os.path.relpath(_sample_project_dir))
 

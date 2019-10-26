@@ -4,6 +4,11 @@ import mock
 from taskmage2.asttree import asttree, astnode, renderers
 
 
+# =====
+# Utils
+# =====
+
+
 class Not_A_Renderer(object):
     pass
 
@@ -32,11 +37,25 @@ def renderer():
     return Renderer
 
 
+# =====
+# Tests
+# =====
+
+
 class Test_AbstractSyntaxTree(object):
     class Test__init__:
         def test_raises_typeerror_on_invalid_data(self):
             with pytest.raises(TypeError):
                 asttree.AbstractSyntaxTree(['a', 'b'])
+
+        def test_raises_typeerror_if_data_not_iterable(self):
+            node = astnode.Node(
+                _id=None,
+                name='abc',
+                ntype=astnode.NodeType.section,
+            )
+            with pytest.raises(TypeError):
+                asttree.AbstractSyntaxTree(node)
 
     class Test_render:
         def test_render_invalid_renderer(self):

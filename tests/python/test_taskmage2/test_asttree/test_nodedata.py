@@ -11,14 +11,193 @@ from taskmage2.utils import timezone
 ns = nodedata.__name__
 
 
-class Test_TaskData(object):
+class Test__NodeData:
+    class Test__init__:
+        def test_no_attrs_runs_without_except(self):
+            class MyData(nodedata._NodeData):
+                _attrs = tuple()
+            MyData(tuple())
+
+        def test_attrs_tuple_is_missing(self):
+            class MyData(nodedata._NodeData):
+                pass
+
+            with pytest.raises(AttributeError):
+                data = (1, 2, 3)
+                MyData(data)
+
+        def test_incorrect_number_of_params_raises_except(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            with pytest.raises(RuntimeError):
+                data = (1, 2)
+                MyData(data)
+
+        def test_attrs_tuple_is_invalid_datatype(self):
+            class MyData(nodedata._NodeData):
+                _attrs = {'a': 1, 'b': 2}
+
+            with pytest.raises(AttributeError):
+                data = (1, 2)
+                MyData(data)
+
+    class Test__repr__:
+        def test(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            mydata = MyData((1, 2, 3))
+            mydata_repr = repr(mydata)
+            expects = 'MyData(one=1, two=2, three=3)'
+            assert expects == mydata_repr
+
+    class Test__getattr__:
+        def test_valid_attr(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            mydata = MyData((1, 2, 3))
+            assert mydata.two == 2
+
+        def test_invalid_attr_raises_attributeerror(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            mydata = MyData((1, 2, 3))
+            with pytest.raises(AttributeError):
+                mydata.four
+
+    class Test__eq__:
+        def test_equality(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            data_A = MyData((1, 2, 3))
+            data_B = MyData((1, 2, 3))
+            assert data_A == data_B
+
+        def test_class_inequality(self):
+            class DataA(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            class DataB(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            data_A = DataA((1, 2))
+            data_B = DataB((1, 2))
+
+            with pytest.raises(TypeError):
+                data_A == data_B
+
+        def test_data_inequality(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            data_A = MyData((1, 2))
+            data_B = MyData((3, 4))
+            assert data_A != data_B
+
+    class Test_as_dict:
+        def test(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            data = MyData((1, 2))
+            assert data.as_dict() == {'one': 1, 'two': 2}
+
+    class Test_copy:
+        def test_exact_copy(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            data_a = MyData((1, 2))
+            data_b = data_a.copy()
+            assert data_a == data_b
+
+        def test_copy_modified_with_args(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            data_a = MyData((1, 2, 3))
+            data_b = data_a.copy(4, 5)
+            assert data_b != data_a
+            assert data_b.as_dict() == {
+                'one': 4,
+                'two': 5,
+                'three': 3,
+            }
+
+        def test_copy_modified_with_kwargs(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two', 'three')
+
+            data_a = MyData((1, 2, 3))
+            data_b = data_a.copy(three=6)
+            assert data_b != data_a
+            assert data_b.as_dict() == {
+                'one': 1,
+                'two': 2,
+                'three': 6,
+            }
+
+        def test_invalid_kwargs_raises_keyerror(self):
+            class MyData(nodedata._NodeData):
+                _attrs = ('one', 'two')
+
+            data_a = MyData((1, 2))
+            with pytest.raises(KeyError):
+                data_a.copy(three=3)
+
+
+class Test_FileData:
+    def test_init(self):
+        assert nodedata.FileData().as_dict() == {}
+
+    def test_touch(self):
+        data = nodedata.FileData()
+        assert data.touch() == data
+
+    def test_finalize(self):
+        data = nodedata.FileData()
+        assert data.finalize() == data
+
+    def test_update(self):
+        data_a = nodedata.FileData()
+        data_b = nodedata.FileData()
+        data_a.update(data_b)
+
+        assert data_a == data_b
+
+
+class Test_SectionData:
+    def test_init(self):
+        assert nodedata.SectionData().as_dict() == {}
+
+    def test_touch(self):
+        data = nodedata.SectionData()
+        assert data.touch() == data
+
+    def test_finalize(self):
+        data = nodedata.SectionData()
+        assert data.finalize() == data
+
+    def test_update(self):
+        data_a = nodedata.SectionData()
+        data_b = nodedata.SectionData()
+        data_a.update(data_b)
+
+        assert data_a == data_b
+
+
+class Test_TaskData:
     class Test__init__:
         @pytest.mark.parametrize(
             'status', ('todo', 'skip', 'done', 'wip'),
         )
         def test_status_valid(self, status):
             taskdata = nodedata.TaskData(status=status)
-            assert getattr(taskdata, 'status') == status
+            assert taskdata.status == status
 
         def test_status_invalid(self):
             with pytest.raises(TypeError):
@@ -29,11 +208,16 @@ class Test_TaskData(object):
         )
         def test_created_valid(self, created):
             taskdata = nodedata.TaskData(status='todo', created=created)
-            assert getattr(taskdata, 'created') == created
+            assert taskdata.created == created
 
-        def test_created_invalid(self):
+        def test_created_invalid_type(self):
             with pytest.raises(TypeError):
                 nodedata.TaskData(status='todo', created='November 1st')
+
+        def test_created_datetime_without_tzinfo(self):
+            created = datetime.datetime(2018, 1, 1, 0, 0, 0)
+            with pytest.raises(TypeError):
+                nodedata.TaskData(status='todo', created=created)
 
         def test_finished_defaults_to_false(self):
             taskdata = nodedata.TaskData(
@@ -44,10 +228,20 @@ class Test_TaskData(object):
             )
             assert taskdata.finished is False
 
-        def test_finished_valid(self):
-            dt = datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC())
-            taskdata = nodedata.TaskData('todo', finished=dt)
-            assert taskdata.finished == dt
+        @pytest.mark.parametrize(
+            'finished', (False, datetime.datetime(2018, 1, 1, 0, 0, 0, tzinfo=timezone.UTC()))
+        )
+        def test_finished_valid(self, finished):
+            taskdata = nodedata.TaskData('todo', finished=finished)
+            assert taskdata.finished == finished
+
+        def test_finished_none_defaults_to_false(self):
+            taskdata = nodedata.TaskData('todo', finished=None)
+            assert taskdata.finished is False
+
+        def test_finished_invalid_type(self):
+            with pytest.raises(TypeError):
+                nodedata.TaskData('todo', finished='abc')
 
         def test_finished_missing_timezone(self):
             with pytest.raises(TypeError):
@@ -59,7 +253,12 @@ class Test_TaskData(object):
         )
         def test_modified_valid(self, modified):
             taskdata = nodedata.TaskData(status='todo', modified=modified)
-            assert getattr(taskdata, 'modified') == modified
+            assert taskdata.modified == modified
+
+        def test_modified_datetime_missing_tzinfo(self):
+            modified = datetime.datetime(2018, 1, 1, 0, 0, 0)
+            with pytest.raises(TypeError):
+                nodedata.TaskData(status='todo', modified=modified)
 
         def test_modified_invalid(self):
             with pytest.raises(TypeError):

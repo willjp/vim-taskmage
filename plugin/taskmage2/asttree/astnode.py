@@ -8,6 +8,10 @@ else: # pragma: no cover
     import enum
 
 
+# TODO: instead of NodeType enum, create NodeType classes. More
+#       straightforwards to test, and to change..
+
+
 class NodeType(enum.Enum):
     task = 'task'
     section = 'section'
@@ -37,6 +41,8 @@ class Node(object):
 
     """
 
+    # maps nodetype enum-values to their `data` class
+    # (ex: task `data` class has status, created, ...)
     _data_map = (
         (NodeType.task,     nodedata.TaskData),
         (NodeType.section,  nodedata.SectionData),
@@ -128,6 +134,17 @@ class Node(object):
             if child.id == index:
                 return child
         raise KeyError('no child exists with id/index: {}'.format(repr(index)))
+
+    @property
+    def parentid(self):
+        """
+        Returns:
+            str:  UUID of parent, if present
+            None: if node has no parent
+        """
+        if self.parent:
+            return self.parent.id
+        return None
 
     @property
     def id(self):
