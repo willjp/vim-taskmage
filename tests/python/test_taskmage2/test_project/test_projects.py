@@ -170,3 +170,4 @@ class Test_Project(object):
             with mock.patch('taskmage2.project.projects.id', return_value=139844126520592):
                 project_a = projects.Project(_sample_project_dir)
                 assert repr(project_a) == '<Project({}) at 0x7f2fff7c3510>'.format(os.path.relpath(_sample_project_dir))
+

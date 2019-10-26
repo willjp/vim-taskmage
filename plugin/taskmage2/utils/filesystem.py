@@ -19,3 +19,11 @@ def walk_parents(path):
         yield parent_dir
         last_dir = parent_dir
         parent_dir = os.path.dirname(last_dir)
+
+
+def make_directories(path):
+    if os.path.isdir(path):
+        return
+    elif os.path.exists(path):
+        raise OSError('Path Exists, but is not a directory: "{}"'.format(path))
+    os.makedirs(path)
