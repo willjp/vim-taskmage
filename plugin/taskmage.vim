@@ -7,14 +7,19 @@
 let s:scriptroot=expand('<sfile>:p:h')
 
 if !has('python')
+    echom "[taskmage error]: requires python"
     finish
-    echo "Your version of vim does not support python"
 else
-    py import sys
-    py import logging
-    py logging.basicConfig(lv=20)
-    execute 'py if "' . s:scriptroot . '" not in sys.path: sys.path.append("' . s:scriptroot . '")'
-    py import taskmage2.vim_plugin
+    try
+        py import sys
+        py import logging
+        py logging.basicConfig(lv=20)
+        execute 'py if "' . s:scriptroot . '" not in sys.path: sys.path.append("' . s:scriptroot . '")'
+        py import taskmage2.vim_plugin
+    catch 
+        echom "hello"
+        echom "[taskmage error]: " . v:errmsg
+    endtry
 endif
 
 
