@@ -6,18 +6,16 @@
 
 let s:scriptroot=expand('<sfile>:p:h')
 
-if !has('python')
-    echom "[taskmage error]: requires python"
+if !has('pythonx')
+    echom "[taskmage error]: requires python 2 or 3"
     finish
 else
     try
-        py import sys
-        py import logging
-        py logging.basicConfig(lv=20)
-        execute 'py if "' . s:scriptroot . '" not in sys.path: sys.path.append("' . s:scriptroot . '")'
-        py import taskmage2.vim_plugin
+        pyx import sys
+        pyx import logging
+        execute 'pyx if "' . s:scriptroot . '" not in sys.path: sys.path.append("' . s:scriptroot . '")'
+        pyx import taskmage2.vim_plugin
     catch 
-        echom "hello"
         echom "[taskmage error]: " . v:errmsg
     endtry
 endif
@@ -32,12 +30,12 @@ function! TaskMageSaveStart()
     let s:saved_view = winsaveview()
 
     " converts TaskList(rst)-to-Mtask(json)
-    py taskmage2.vim_plugin.handle_presave_mtask()
+    pyx taskmage2.vim_plugin.handle_presave_mtask()
 endfunc
 
 function! TaskMageSaveEnd()
     " converts saved-Mtask(json) back to TaskList(rst), restores cursor-pos 
-    py taskmage2.vim_plugin.handle_postsave_mtask()
+    pyx taskmage2.vim_plugin.handle_postsave_mtask()
 
     " restore cursor postion
     call winrestview(s:saved_view)
@@ -67,22 +65,22 @@ let g:tagbar_type_taskmage = {
 " Commands
 " ========
 
-command TaskMageCreateProject     py taskmage2.vim_plugin.create_project()
-command TaskMageArchiveCompleted  py taskmage2.vim_plugin.archive_completed_tasks()
+command TaskMageCreateProject     pyx taskmage2.vim_plugin.create_project()
+command TaskMageArchiveCompleted  pyx taskmage2.vim_plugin.archive_completed_tasks()
 
-command -nargs=* TaskMageOpenCounterpart   py taskmage2.vim_plugin.open_counterpart('<args>')
-command          TaskMageToggle            py taskmage2.vim_plugin.open_counterpart('edit')
-command          TaskMageSplit             py taskmage2.vim_plugin.open_counterpart('split')
-command          TaskMageVSplit            py taskmage2.vim_plugin.open_counterpart('vsplit')
-command -nargs=1 TaskMageSearch            py taskmage2.vim_plugin.search_keyword('<args>')
-command          TaskMageLatest            py taskmage2.vim_plugin.search_latest()
+command -nargs=* TaskMageOpenCounterpart   pyx taskmage2.vim_plugin.open_counterpart('<args>')
+command          TaskMageToggle            pyx taskmage2.vim_plugin.open_counterpart('edit')
+command          TaskMageSplit             pyx taskmage2.vim_plugin.open_counterpart('split')
+command          TaskMageVSplit            pyx taskmage2.vim_plugin.open_counterpart('vsplit')
+command -nargs=1 TaskMageSearch            pyx taskmage2.vim_plugin.search_keyword('<args>')
+command          TaskMageLatest            pyx taskmage2.vim_plugin.search_latest()
 
 
 " ========
 " AutoCmds
 " ========
 
-autocmd BufReadCmd          *.mtask  call pyeval('taskmage2.vim_plugin.handle_open_mtask()')
+autocmd BufReadCmd          *.mtask  call pyxeval('taskmage2.vim_plugin.handle_open_mtask()')
 autocmd BufNewFile,BufRead  *.mtask  set filetype=taskmage
 autocmd BufWritePre         *.mtask  call TaskMageSaveStart()
 autocmd BufWritePost        *.mtask  call TaskMageSaveEnd()
