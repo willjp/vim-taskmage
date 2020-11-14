@@ -227,6 +227,13 @@ class TotalCoverage(setuptools.Command):
             sys.exit(subprocess.call(cmds, universal_newlines=True))
 
 
+def read_requirements(filepath):
+    """ Reads a requirements.txt file into a list suitable for ``setuptools.setup(requires=)``
+    """
+    with open(filepath, 'r') as fd:
+        return fd.read().split('\n')
+
+
 # see python setup.py --help-commands for all commands
 setuptools.setup(
     name='taskmage',
@@ -237,12 +244,7 @@ setuptools.setup(
     setup_requires=[
         'pytest-runner',
     ],
-    tests_require=[
-        'pytest',
-        'pytest-cov',
-        'mock',
-        'pyfakefs',
-    ],
+    tests_require=read_requirements('tests/requirements.txt'),
     cmdclass={
         # test_python (configured in setup.cfg)
         'test_vim': VimTest,

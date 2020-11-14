@@ -8,5 +8,6 @@
 .coverage
 .coverage_covimerage
 .test_deps/*
+shell.nix
 coverage.xml
 htmlcov/*

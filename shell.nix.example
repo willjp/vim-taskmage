@@ -1,0 +1,30 @@
+# Overrides default.nix, adding inserting your own development tools.
+#
+# INSTRUCTIONS:
+#   Copy this file to `shell.nix` and alter with desired packages.
+#
+# RUN:
+#   nix-shell -p nixFlakes --run nix-shell
+
+{ pkgs ? import <nixpkgs> {} }:
+
+let
+  extra-python-packages = pkgs.config.vim-python-pkgs; # ex: [ rope nvim ]
+  extra-os-packages = pkgs.config.vim-base;            # ex: [ neovim ripgrep ]
+
+  mach-nix = import 
+    (builtins.fetchGit { url = "https://github.com/DavHau/mach-nix/"; ref = "refs/tags/3.0.2"; }) 
+    { python = "python38"; };
+
+  pkg = import ./default.nix { 
+    mach-nix = mach-nix; 
+    extra_python_requirements = extra-python-packages;
+  };
+
+in
+  pkg.overrideAttrs(
+    old: { 
+      buildInputs = old.buildInputs ++ extra-os-packages;
+    }
+  )
+
