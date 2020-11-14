@@ -280,14 +280,19 @@ class Mtask(Renderer):
 
         """
         render = []
-
         for node in self.ast:
             render = self._render_node(render, node, indent=0)
 
-        render_as_json = json.dumps(render, indent=2)
-        render = render_as_json.split('\n')
-        render.append('')
-        return render
+        # one node per line
+        json_nodes = ['  {},'.format(json.dumps(r)) for r in render]
+        # remove comma from last entry
+        json_nodes[-1] = json_nodes[-1][:-1]  
+
+        render_json = ['[']
+        render_json.extend(json_nodes)
+        render_json.append(']')
+        render_json.append('')
+        return render_json
 
     def _render_node(self, render, node, indent=0):
         """
@@ -314,12 +319,11 @@ class Mtask(Renderer):
             'file':    self._render_fileheader,
         }
         if node.type not in node_renderer_map:
-            raise NotImplementedError(
-                'unexpected nodetype: {}'.format(repr(node))
-            )
-        render.append(
-            node_renderer_map[node.type](render, node, indent)
-        )
+            msg = 'unexpected nodetype: {}'.format(repr(node))
+            raise NotImplementedError(msg)
+
+        perform_render = node_renderer_map[node.type]
+        render.append(perform_render(render, node, indent))
 
         for child in node.children:
             render = self._render_node(render, child, indent=indent + 1)
