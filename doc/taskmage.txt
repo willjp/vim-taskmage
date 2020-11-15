@@ -10,55 +10,85 @@ CONTENTS                           *taskmage-contents*
 
     1.Introduction.....................taskmage-intro
         1.1.History
-    2.Commands.........................taskmage-commands
-        2.1.Project
-        2.1.Search
-        2.1.Active/Archived
-    3.Usage............................taskmage-usage
-        3.1.Creating Projects
-        3.2.Task Syntax
-        3.3.Task Comments
-        3.4.Task Sections
-        3.5.Archiving Tasks
-    4.Plugin Integration...............taskmage-plugin-integration
-        4.1.TagBar
+    2.QuickStart.......................taskmage-quickstart
+    3.Commands.........................taskmage-commands
+        3.1.Project
+        3.1.Search
+        3.1.Active/Archived
+    4.Usage............................taskmage-usage
+        4.1.Creating Projects
+        4.2.Task Syntax
+        4.3.Task Comments
+        4.4.Task Sections
+        4.5.Archiving Tasks
+    5.Plugin Integration...............taskmage-plugin-integration
+        5.1.TagBar
 
 ================================================================================
 INTRODUCTION                       *taskmage-intro*
 ================================================================================
 
-TaskMage is a simple plugin to create/manage tasklists. A TaskMage project
-lets you organize tasks into regular files, using a syntax inspired by 
-reStructuredText. When tasks are saved, metadata is added automatically, and
-the files are stored as JSON files. Completed tasks can be periodically
-archived using `:TaskMageArchiveCompleted`.
+TaskMage lets you create/manage tasklists in a format inspired by
+RestructuredText. Completed tasks are archived in the .taskmage
+directory so you can use this data later (reports etc.).
+
+Goals:~
+
+I've tried a few cli task managers and none perfectly suited my workflow.
+I wanted something relatively free-form (like a piece of paper) that cleans
+itself when the task list gets too large.
+
+* Very simple syntax
+* Quickly edit/change tasks
+* Easily annotate
+* Store annotations within the task
 
 
-History:~
+================================================================================
+QUICKSTART                         *taskmage-quickstart*
+================================================================================
 
-I spent a long time using TaskWarrior, and a long time reading up on TODO.txt,
-the project where it drew inspiration. Each project tries to solve complex
-task-management problems in different ways.
+1. Create a file with the extension 
+   `:e chores.mtask`
 
-todo.txt, at it's core lets you write tasks in plaintext. Metadata is also
-manually added to each task, in a format that is consistent, parsible, and
-syntax highlighted. My issue with todo.txt was that it was too much typing,
-and I found that the metadata got in the way of what I was trying to do.
+2. Create some tasks, and save
 
-Taskwarrior tried to solve this issue by managing tasks through a commandline
-interface. You could have several views of your tasks (and create custom views)
-which allowed you to dynamically search for tasks, sort by various columns,
-add custom columns etc. TaskWarrior could also generate beautiful and motivating 
-charts/stats about the tasks you created/accomplished. Dependencies could be added between taskIds forming
-very complex dependency chains. This was where it fell apart for me, it took
-too long to add/manage dependencies. I found myself creating taskwarrior
-tasks, and then linking them to restructured-text files where I could more
-quickly manage subtasks. I also didn't like constantly having to type
-in the projectname to filter tasks by project, I wanted to manage tasks
-in folders, but keep a history and metadata like taskwarrior.
+`> kitchen`
+`> =======`
+`>`
+`> * clean kitchen`
+`>   * sink`
+`>   * oven`
+`>   * coffee maker`
 
-This project is a bit of an experiment that attempts to merge the two 
-philosophies.
+
+3. Begin a task by replacing `x` with `o`
+   (look! it changes colour!)
+
+`> kitchen`
+`> =======`
+`>`
+`> * clean kitchen`
+`>   o sink`
+`>   * oven`
+`>   * coffee maker`
+
+
+4. Complete some tasks by replacing `o` with `x`
+   Indicate skipped tasks by replacing `o` with `-`
+
+`> kitchen`
+`> =======`
+`>`
+`> x clean kitchen`
+`>   x sink`
+`>   x oven`
+`>   - coffee maker  # cleaned last week`
+
+
+5. Archive a section once completed with 
+   `:TaskMageArchiveCompleted`
+
 
 ================================================================================
 COMMANDS                           *taskmage-commands*
@@ -77,8 +107,18 @@ Search:~
 `:TaskMageSearch <keyword>`
    Search all tasks for a keyword.
 
-`:TaskMageLatest`
+`:TaskMageLatest [active:0] [finished:0] [modified:[<>]DATE] [created:[<>]DATE]`
    List all tasks sorted by modified-date.
+   The filter active:1 is implied unless it is provided.
+
+   filters:
+    `active:`   0/1              archived/active
+    `finished:` 0/1              (done/skip) vs (todo/wip)
+    `modified:` [<>]YYYY-MM-DD   last recorded change to task
+    `created:`  [<>]YYYY-MM-DD   task creation date
+
+    example:
+    `:TaskMageLatest finished:0 created:>2020-01-01`
 
 
 Active/Archived:~

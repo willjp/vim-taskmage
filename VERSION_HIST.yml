@@ -41,7 +41,15 @@
     - pyfakefs no longer supports python2, discards python2 CI run
     - calls finish if plugin already loaded (avoids plugin issues)
     - nix development environment setup
+1.3.0:
+    - FilterLatest accepts filters. status:0/1 finished:0/1 status:done/skip/todo/started
+x.x.X:
+    # TODO- abstract :TaskMageLatest filters so cleaner. with tests. (command pattern?)
 
+
+# TODO: vim_plugin.py is too powerful, and cannot easily be tested (because requires vim). Logic should live elsewhere
+# TODO: create a `sample_tasks.json` to visualize data
+# TODO: refactor `TaskFile.iter_tasks` and `TaskFile.filter_tasks` to replace 'tasks' with 'nodes' (more accurate)
 # TODO: update README/vim-help to include information about tagbar support
 # TODO: finish --iro flag in tagbar support
 # TODO: order tasks by date (at least in console, if not properly within vim)

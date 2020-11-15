@@ -35,15 +35,6 @@ class TaskFile(object):
     def filepath(self):
         return self._filepath
 
-    def filter_tasks(self, filters):
-        """
-        Returns:
-            Iterable:
-                iterable of task-dictionaries.
-        """
-        tasks = functional.multifilter(filters, self.iter_tasks())
-        return tasks
-
     def read(self):
         with open(self.filepath, 'r') as fd:
             return fd.read()
@@ -74,6 +65,29 @@ class TaskFile(object):
 
         # copy the file
         shutil.copyfile(self.filepath, filepath)
+
+    def filter_tasks(self, filters):
+        """ Returns a list of all tasks in file, filtered by provided `filters` .
+
+        Args:
+            filters (list):
+                List of functions that accepts a task-dictionary
+                as an argument, and returns True (keep) or False (remove)
+
+        Returns:
+            Iterable:
+                iterable of project taskfiles (after all filters applied to them).
+
+                .. code-block:: python
+
+                    [
+                        {"name": "task A", ..., "data": {"status": "todo", ... }},
+                        {"name": "task B", ..., "data": {"status": "todo", ... }},
+                        ...
+                    ]
+
+        """
+        return functional.multifilter(filters, self.iter_tasks())
 
     def iter_tasks(self):
         """ Iterator that yields task dictionaries contained within taskfile.

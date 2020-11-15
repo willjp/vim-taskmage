@@ -201,11 +201,10 @@ class Project(object):
         """ Returns filepath to corresponding archived mtask file's (from un-archived mtask file).
         """
         if not self.is_project_path(filepath):
-            raise RuntimeError(
-                ('filepath not within current taskmage project. \n'
-                 'project "{}"\n'
-                 'filepath "{}\n').format(self.root, filepath)
-            )
+            msg = ('filepath not within current taskmage project. \n'
+                   'project "{}"\n'
+                   'filepath "{}\n').format(self.root, filepath)
+            raise RuntimeError(msg)
         if self.is_archived_path(filepath):
             return filepath
 

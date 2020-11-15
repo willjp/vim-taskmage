@@ -28,10 +28,10 @@ def parse_utc_iso8601(datestr):
 
 
 def parse_local_isodate(datestr):
-    if not re.match('^\d...-\d.-\d.$', datestr):
-        raise ArgumentError('invalid date format. expects "2018-01-01"')
-    dt = datetime.datetime.strptime(datestr, '%Y-%m-%d')
-    return datetime.datetime(dt.year, dt.month, dt.day, 0, 0, 0, tzinfo=LocalTimezone())
+    if not re.match(r'^\d...-\d.-\d.$', datestr):
+        raise TypeError('invalid date format (YYYY-MM-DD). Received "{}"'.format(datestr))
+    date = datetime.datetime.strptime(datestr, '%Y-%m-%d')
+    return datetime.datetime(date.year, date.month, date.day, 0, 0, 0, tzinfo=LocalTimezone())
 
 
 class LocalTimezone(datetime.tzinfo):

@@ -78,7 +78,7 @@ command          TaskMageToggle            pyx taskmage2.vim_plugin.open_counter
 command          TaskMageSplit             pyx taskmage2.vim_plugin.open_counterpart('split')
 command          TaskMageVSplit            pyx taskmage2.vim_plugin.open_counterpart('vsplit')
 command -nargs=1 TaskMageSearch            pyx taskmage2.vim_plugin.search_keyword('<args>')
-command          TaskMageLatest            pyx taskmage2.vim_plugin.search_latest()
+command -nargs=* TaskMageLatest            pyx taskmage2.vim_plugin.search_latest('<f-args>')
 
 
 " ========

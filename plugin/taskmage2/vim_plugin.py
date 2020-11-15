@@ -149,19 +149,69 @@ def search_keyword(searchterm):
     _set_searchbuffer_contents(lines)
 
 
-def search_latest():
+def search_latest(filter_paramstr=None):
     """ Lists tasks sorted by modified-date in descending order in the search-buffer.
+
+    Args:
+        filter_paramstr (str): ``(ex: '"active:1","status:todo","created:>2018-01-01"' )``
+            Filters you'd like to apply to tasks
+            (if not set, active: defaults to 1)
     """
     # get project
     project = projects.Project.from_path(vim.current.buffer.name)
 
-    # get taskfiles
-    taskfiles_ = project.iter_taskfiles()
+    # parse filters
+    filter_params = []
+    if filter_paramstr:
+        filter_paramstr = filter_paramstr[1:-1]  # strip quotes
+        filter_params = filter_paramstr.split('","')
+
+    # defaults
+    if not filter(lambda x: x.split(':')[0] == 'active', filter_params):
+        filter_params.append('active:1')
+
+    # create filters
+    # TODO: command patternize this
+    file_filters = []
+    task_filters = [lambda t: t.get('type', None) == 'task']
+    for filterp in filter_params:
+        (filtername, val) = filterp.split(':')
+        if filtername == 'active':
+            def filter_active(value, taskfile):
+                return ('.taskmage/' not in taskfile.filepath) == value
+            expects = bool(int(val))
+            file_filters.append(functools.partial(filter_active, expects))
+        elif filtername == 'finished':
+            def filter_finished(value, taskdict):
+                return bool(taskdict['data']['finished']) is value
+            expects = bool(int(val))
+            task_filters.append(functools.partial(filter_finished, expects))
+        elif filtername == 'status':
+            def filter_status(value, taskdict):
+                return taskdict['data']['status'] == value
+            task_filters.append(functools.partial(filter_status, val))
+        elif filtername in ('modified', 'created'):
+            def filter_date(key, value, taskdict):
+                if value.startswith('<'):
+                    operator = '__lt__'
+                    value = value[1:]
+                elif value.startswith('>'):
+                    operator = '__gt__'
+                    value = value[1:]
+                else:
+                    operator = '__eq__'
+                val_dt = timezone.parse_local_isodate(value)
+                task_dt = timezone.parse_utc_iso8601(taskdict['data'][key])
+                return getattr(task_dt, operator)(val_dt)
+            task_filters.append(functools.partial(filter_date, filtername, val))
+        else:
+            print('[taskmage] invalid filter provided: {}'.format(filtername))
+            return
 
     # get tasks (and format as lines)
     tasks_w_filepath = []  # [{...}, ..]
-    for taskfile in taskfiles_:
-        for task in taskfile.iter_tasks():
+    for taskfile in project.filter_taskfiles(file_filters):
+        for task in taskfile.filter_tasks(task_filters):
             if not task['data'].get('modified', None):
                 continue
             task['filepath'] = taskfile
@@ -217,3 +267,4 @@ def _set_searchbuffer_contents(lines):
     vim.command('call taskmage#searchbuffer#clear()')
     bufnr = vim.eval('taskmage#searchbuffer#bufnr()')
     vim.buffers[int(bufnr)][:] = lines
+

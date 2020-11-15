@@ -58,10 +58,12 @@ Instructions
 
 * usage_
 * syntax_
+* commands_
 * projects_
 
 .. _usage: ./doc/readme/usage.rst
 .. _syntax: ./doc/readme/syntax.rst
+.. _commands: ./doc/readme/commands.rst
 .. _projects: ./doc/readme/projects.rst
 
 
