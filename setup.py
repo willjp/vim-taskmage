@@ -66,9 +66,9 @@ class VimTest(setuptools.Command):
     def run_static(cls, interactive=False):
         cls.requirements.install()
         if interactive:
-            cmds = ['vim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']
+            cmds = ['nvim', '-Nu', 'tests/resources/vimrc', '+Vader', 'tests/viml/*']
         else:
-            cmds = ['vim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']  # output to console
+            cmds = ['nvim', '-Nu', 'tests/resources/vimrc', '-c', 'Vader! tests/viml/*']  # output to console
         returncode = subprocess.call(cmds, universal_newlines=True)
         return returncode
 

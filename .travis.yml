@@ -1,8 +1,9 @@
 language: python
+dist: bionic  # ubuntu-18.04
 python:
-    - '2.7'
     - '3.6'
 install:
+    - sudo apt-get -y install neovim
     - pip install codecov
     - pip install covimerage
 script:
