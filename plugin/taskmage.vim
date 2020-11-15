@@ -1,3 +1,8 @@
+if exists('vim_taskmage_loaded') || &cp
+    finish
+endif
+let vim_taskmage_loaded=1
+
 
 " ===========
 " Plugin Init
