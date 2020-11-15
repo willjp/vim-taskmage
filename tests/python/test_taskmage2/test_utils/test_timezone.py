@@ -11,6 +11,13 @@ class Test_parse_utc_iso8610:
         assert dt == expected_dt
 
 
+class Test_parse_local_isodate:
+    def test_succeeds(self):
+        dt = timezone.parse_local_isodate('2019-07-19')
+        expected_dt = datetime.datetime(2019, 7, 19, 0, 0, 0, tzinfo=timezone.LocalTimezone())
+        assert dt == expected_dt
+
+
 class Test_timezones:
     def test_utc_offsets_differ(self):
         # NOTE: mocking non-dst UTC-offset in case someone (or a CI server)
