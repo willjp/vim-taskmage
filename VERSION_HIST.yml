@@ -12,7 +12,7 @@
     - parser sets parent attribute on astnode.Node()
     - bin/taskmage2ctags.py creates ctags file for tagbar
     - taskmage.vim defines new tagbar_type for taskmage
-    - parentid added to astnode.Node()'s __repr__
+    - parentid added to astnode.Node()s __repr__
     - new utils.ctags file and tests
 1.1.1:
     - cleanup/modularization of utils.ctags
@@ -35,6 +35,12 @@
 1.2.1:
     - improved test-coverage
     - bugfix to TaskData.copy()
+1.2.2:
+    - JSON representation of tasks have 1 line per node
+    - CI uses neovim, ubuntu-18.04
+    - pyfakefs no longer supports python2, discards python2 CI run
+    - calls finish if plugin already loaded (avoids plugin issues)
+    - nix development environment setup
 
 # TODO: update README/vim-help to include information about tagbar support
 # TODO: finish --iro flag in tagbar support
