@@ -43,6 +43,8 @@
     - nix development environment setup
 1.3.0:
     - FilterLatest accepts filters. status:0/1 finished:0/1 status:done/skip/todo/started
+1.3.1:
+    - Fixes editing/saving files opened from quickfix
 x.x.X:
     # TODO- abstract :TaskMageLatest filters so cleaner. with tests. (command pattern?)
 

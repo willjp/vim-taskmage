@@ -191,8 +191,10 @@ function! taskmage#searchbuffer#pop_and_run_postcmds()
         return
     endif
 
-    let l:post_cmds = remove(s:taskmage_postpopenfile_cmds_stack[l:abspath], 0)
-    exec l:post_cmds
+    if len(s:taskmage_postpopenfile_cmds_stack[l:abspath]) > 0
+        let l:post_cmds = remove(s:taskmage_postpopenfile_cmds_stack[l:abspath], 0)
+        exec l:post_cmds
+    endif
 endfunction
 
 
