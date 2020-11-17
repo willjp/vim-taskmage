@@ -1,4 +1,5 @@
 # Defines minimal env to run code/tests within interpreter.
+# (optionally, override with your preferred packages in with a `shell.nix`)
 #
 # If you just want to run tests, use `python setup.py test`.
 # See https://nixos.org/features.html
