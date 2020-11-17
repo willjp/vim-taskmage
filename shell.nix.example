@@ -1,4 +1,6 @@
-# Overrides default.nix, adding inserting your own development tools.
+# vim: ft=nix
+#
+# Overrides default.nix, for inserting your own development tools.
 #
 # INSTRUCTIONS:
 #   Copy this file to `shell.nix` and alter with desired packages.
@@ -9,7 +11,7 @@
 { pkgs ? import <nixpkgs> {} }:
 
 let
-  extra-python-packages = pkgs.config.vim-python-pkgs; # ex: [ rope nvim ]
+  extra-python-packages = pkgs.config.vim-python-pkgs; # ex: [ pylint rope pynvim ]
   extra-os-packages = pkgs.config.vim-base;            # ex: [ neovim ripgrep ]
 
   mach-nix = import 
