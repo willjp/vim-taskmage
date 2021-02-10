@@ -5,11 +5,11 @@
 # See https://nixos.org/features.html
 #
 # Run:
-#    nix-shell -p nixFlakes --run nix-shell
+#    nix-shell
 
 { 
   pkgs ? import <nixpkgs> {}, 
-  mach-nix ? import (builtins.fetchGit { url = "https://github.com/DavHau/mach-nix/"; ref = "refs/tags/3.0.2"; }) { python = "python38"; },
+  mach-nix ? import (builtins.fetchGit { url = "https://github.com/DavHau/mach-nix/"; ref = "refs/tags/3.1.1"; }) { python = "python38"; },
   extra_python_requirements ? []
 }:
 
@@ -29,5 +29,8 @@ in
       pkgs.hello
       python
     ];
+    shellHook = ''
+      export PYTHONPATH+=":$(pwd)/plugin"
+    '';
   }
 
