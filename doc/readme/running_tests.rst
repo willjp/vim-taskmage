@@ -28,9 +28,13 @@ Interpreted Environment
 If you're running Linux/MacOs, you can also use `nix`_ to resolve an 
 environment with a python interpreter and requirements. 
 
-You may also modify this environment by defining a ``shell.nix`` in the project root.
-For example, I add vim/rope/pylint for refactoring, and code-completion.
-See ``shell.nix.example`` for details.
+.. code-block:: bash
+
+    nix-shell   # enter nix-shell
+    pytest      # run python tests
+
+You may find it useful to further customize the nix-shell environment to add
+linters/refactoring tools etc. Simply copy ``shell.nix.example`` to ``shell.nix`` and customize to your liking.
 
 .. _nix: https://nixos.org/
 

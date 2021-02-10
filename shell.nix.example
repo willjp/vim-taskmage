@@ -6,7 +6,7 @@
 #   Copy this file to `shell.nix` and alter with desired packages.
 #
 # RUN:
-#   nix-shell -p nixFlakes --run nix-shell
+#   nix-shell
 
 { pkgs ? import <nixpkgs> {} }:
 
@@ -15,7 +15,7 @@ let
   extra-os-packages = pkgs.config.vim-base;            # ex: [ neovim ripgrep ]
 
   mach-nix = import 
-    (builtins.fetchGit { url = "https://github.com/DavHau/mach-nix/"; ref = "refs/tags/3.0.2"; }) 
+    (builtins.fetchGit { url = "https://github.com/DavHau/mach-nix/"; ref = "refs/tags/3.1.1"; }) 
     { python = "python38"; };
 
   pkg = import ./default.nix { 
