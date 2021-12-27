@@ -1,13 +1,13 @@
 " Vim syntax file
 " Language:   taskmage folds/syntax highlighting
 " Maintainer: Will Pittman <willjpittman@gmail.com>
-" Website: 
+" Website:
 " Latest Revision: 2017-06-11
 "
 "
 " syntax folding:
 " ===============
-"   {*09042C43304F4B87927E9243470AF250*}    " UUIDs should be in all-caps 
+"   {*09042C43304F4B87927E9243470AF250*}    " UUIDs should be in all-caps
 "                                           " (they will be hidden)
 "
 " syntax colouring:
@@ -43,6 +43,11 @@ let s:done_colour     = 'green'
 let s:wip_colour      = '045'
 let s:comment_colour  = '244'
 
+let s:gui_todo_colour     = '#F57900'
+let s:gui_skip_colour     = '#FF9D9D'
+let s:gui_done_colour     = '#5FBA50'
+let s:gui_wip_colour      = '#5CCEF4'
+let s:gui_comment_colour  = '#7D7D7D'
 
 let s:uuid_regex          = '{\*[A-Z0-9]\+\*}'
 let s:todo_regex          = '\(^\s*\)\@<=\*\([a-zA-Z]\)\@!'
@@ -52,7 +57,7 @@ let s:wip_regex           = '\(^\s*\)\@<=o\([a-zA-Z]\)\@!'
 let s:comment_regex       = '#.*$'
 
 " uuid without task-status, OR without a header-underline
-let s:uuid_nostatus_regex = '' . 
+let s:uuid_nostatus_regex = '' .
             \ '\([\*\-ox]\w*\)\@<!' .
             \ '{\*[A-Z0-9]\+\*}' .
             \ '\(.*\n[=\-`:\.\"~\^_+]\+\)\@!'
@@ -70,7 +75,7 @@ let s:uuid_nostatus_regex = '' .
 "
 
 execute "syntax match taskmage_uuid    '". s:uuid_regex          ."' conceal "
-execute "syntax match taskmage_uuid    '". s:uuid_nostatus_regex ."' conceal cchar=E"   
+execute "syntax match taskmage_uuid    '". s:uuid_nostatus_regex ."' conceal cchar=E"
 execute "syntax match taskmage_todo    '". s:todo_regex          ."'"
 execute "syntax match taskmage_skip    '". s:skip_regex          ."'"
 execute "syntax match taskmage_done    '". s:done_regex          ."'"
@@ -78,11 +83,11 @@ execute "syntax match taskmage_wip     '". s:wip_regex           ."'"
 execute "syntax match taskmage_comment '". s:comment_regex       ."'"
 
 
-execute ' highlight taskmage_todo     ctermfg='. s:todo_colour     .' ctermbg=none cterm=bold'
-execute ' highlight taskmage_skip     ctermfg='. s:skip_colour     .' ctermbg=none cterm=bold'
-execute ' highlight taskmage_done     ctermfg='. s:done_colour     .' ctermbg=none cterm=bold'
-execute ' highlight taskmage_wip      ctermfg='. s:wip_colour      .' ctermbg=none cterm=bold'
-execute ' highlight taskmage_comment  ctermfg='. s:comment_colour  .' ctermbg=none '
+execute ' highlight taskmage_todo     ctermfg='. s:todo_colour     .' guifg='. s:gui_todo_colour    .' ctermbg=none cterm=bold gui=bold'
+execute ' highlight taskmage_skip     ctermfg='. s:skip_colour     .' guifg='. s:gui_skip_colour    .' ctermbg=none cterm=bold gui=bold'
+execute ' highlight taskmage_done     ctermfg='. s:done_colour     .' guifg='. s:gui_done_colour    .' ctermbg=none cterm=bold gui=bold'
+execute ' highlight taskmage_wip      ctermfg='. s:wip_colour      .' guifg='. s:gui_wip_colour     .' ctermbg=none cterm=bold gui=bold'
+execute ' highlight taskmage_comment  ctermfg='. s:comment_colour  .' guifg='. s:gui_comment_colour .' ctermbg=none '
 
 
 highlight Conceal ctermfg=221 ctermbg=095 cterm=bold
